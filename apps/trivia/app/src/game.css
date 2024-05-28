@@ -1,0 +1,71 @@
+div {
+    box-sizing: border-box;
+    width: 100%;
+  }
+  
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    padding: 10px;
+  }
+  
+  .cell {
+    display: flex;
+    flex: 50%;
+    padding: 10px;
+    height: 400px;    
+    overflow: initial;
+  }
+
+  .question-cell {
+    display: flex;
+    flex: 30%;
+    padding: 10px;
+    height: 400px;
+    background-color: rgb(166, 219, 244);
+    overflow: initial;
+  }
+
+  .inactive-cell {
+    display: flex;
+    flex: 30%;
+    padding: 10px;
+    height: 400px;
+    overflow: initial;
+  }
+
+  .overflow-cell {
+    display: flex;
+    flex: 50%;
+    padding: 10px;
+    height: 300px;
+    background-color: darkgray;
+    border: 1px solid black;  
+    overflow: auto;
+  }
+  
+  .data {
+    width: 100%;
+    justify-content: middle;
+    flex: 1;
+  }
+  
+  @media only screen and (max-width: 640px) {
+    
+    .container { 
+      flex-direction: row;
+      flex-wrap: wrap;
+      display: flex;
+    }
+    
+    .cell { 
+      flex: 100%; 
+    }
+  }
+  
+  @media only screen and (min-width: 640px) and (max-width: 1024px) {
+    .container {
+      position: relative;
+    }
+  }

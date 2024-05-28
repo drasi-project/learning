@@ -1,0 +1,16 @@
+kind: Source
+apiVersion: v1
+name: retail-ops
+spec:
+  kind: CosmosGremlin
+  services:
+    reactivator: 
+      properties:
+        partitionKey: name
+  properties:
+    accountEndpoint:
+      kind: Secret
+      name: retail-ops-creds
+      key: accountEndpoint
+    database: Contoso
+    container: RetailOperations

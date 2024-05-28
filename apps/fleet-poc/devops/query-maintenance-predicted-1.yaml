@@ -1,0 +1,68 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: predicted-maintenance
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry
+        nodes:
+          - sourceLabel: vehiclestatus
+        pipeline:
+          - extract-vehicle
+      - id: assets
+        nodes:
+          - sourceLabel: msdyn_customerasset
+    joins:
+      - id: HAS
+        keys:
+          - label: VehicleLog
+            property: vehicleId
+          - label: msdyn_customerasset
+            property: cr5e7_vehicleid
+    middleware:
+      - kind: map
+        name: extract-vehicle
+        vehiclestatus:        
+          insert:
+            - selector: $.signals[?(@.name == 'Vehicle.TraveledDistance')]
+              op: Insert
+              label: VehicleLog
+              id: $.additionalProperties.Id
+              properties:
+                vehicleId: $.vehicleId
+                odometer: $['$selected'].value
+                timestamp: $['$selected'].timestamp
+            
+  query: >
+      MATCH
+        (a:msdyn_customerasset)-[:HAS]->(vs:VehicleLog)
+      WITH
+        vs.vehicleId as vehicleId,
+        a.msdyn_customerassetid as assetId,
+        a.msdyn_name as licensePlate,
+        a.cr5e7_serviceinterval as serviceInterval,
+        datetime(a.cr5e7_lastmaintenancedate) as lastMaintenanceDate,
+        a.cr5e7_lastmaintenanceodometer as lastMaintenanceOdometer,
+        vs.odometer as odometer,
+        duration.between(datetime(a.cr5e7_lastmaintenancedate), datetime(vs.timestamp)) as time,
+        duration.between(datetime(a.cr5e7_lastmaintenancedate), datetime(vs.timestamp) + duration( { days: 30 })) as threshold
+      WITH
+        vehicleId,
+        assetId,
+        licensePlate,        
+        lastMaintenanceOdometer,
+        drasi.last(lastMaintenanceOdometer + serviceInterval) as nextMaintenanceOdometer,
+        odometer + (threshold.hours * drasi.linearGradient(time.hours, odometer)) as predictedOdometer        
+      WHERE predictedOdometer > nextMaintenanceOdometer
+      RETURN
+        vehicleId,
+        assetId,
+        licensePlate,
+        predictedOdometer,
+        nextMaintenanceOdometer,
+        'Service - ' + licensePlate as token
+          
+
+        
+      

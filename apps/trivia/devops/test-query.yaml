@@ -1,0 +1,24 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: questions-per-category
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: questions
+        nodes:
+          - sourceLabel: Question
+          - sourceLabel: Category
+    joins:
+      - id: FROM_CATEGORY
+        keys:
+          - label: Category
+            property: id
+          - label: Question
+            property: cat_id
+  query: >
+      MATCH
+          (q:Question)-[:FROM_CATEGORY]->(c:Category)
+      RETURN
+          c.name AS CategoryName,
+          count(q) as QuestionCount

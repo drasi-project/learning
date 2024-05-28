@@ -1,0 +1,18 @@
+kind: Source
+apiVersion: v1
+name: assets
+spec:
+  kind: Dataverse
+  properties:
+    endpoint: https://crm146351.api.crm4.dynamics.com/
+    clientId: 
+      kind: Secret
+      name: fleet-creds
+      key: dataverse_client_id
+    secret: 
+      kind: Secret
+      name: fleet-creds
+      key: dataverse_secret
+    interval: 30
+    entities:
+      - msdyn_customerasset

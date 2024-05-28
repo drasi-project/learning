@@ -1,0 +1,26 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: test-1
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: games
+  query: >
+      MATCH
+          (a:Answer)-[:ANSWER_FROM]->(p:Player)-[:MEMBER_OF]->(t:Team)
+      WITH
+          p.name AS PlayerName,
+          t.name AS TeamName,
+          max(datetime({ epochMillis: a.time })) AS InactiveSince
+      WHERE
+          InactiveSince <= (datetime.realtime() - duration({ seconds: 30 }))
+      OR
+          drasi.trueLater(InactiveSince <= datetime.realtime() - duration({ seconds: 30 }), InactiveSince + duration({ seconds: 30 }))
+      RETURN
+          PlayerName,
+          TeamName,
+          InactiveSince,
+          datetime.realtime() AS CurrentTime,
+          datetime.realtime() - duration({ seconds: 30 }) AS Epoch,
+          InactiveSince + duration({ seconds: 30 }) AS FutureEpoch

@@ -1,0 +1,20 @@
+kind: Reaction
+apiVersion: v1
+name: evict-players
+spec:
+  image: reaction-gremlin
+  queries:
+    players-to-evict: 
+  properties: 
+    AddedResultCommand: g.V('@PlayerId').union(g.V('@PlayerId'), __.in(), outE(), inE()).drop()
+    DatabaseHost:
+      kind: Secret
+      name: trivia-creds
+      key: gremlinHost
+    DatabasePrimaryKey:
+      kind: Secret
+      name: trivia-creds
+      key: gremlinKey
+    DatabaseName: Contoso
+    DatabaseContainerName: Trivia
+    DatabasePort: "443"

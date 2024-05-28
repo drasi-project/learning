@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Source
+name: k8s
+spec:
+  kind: Kubernetes 
+  services:
+    reactivator: 
+      properties:
+        kubeconfig: 
+          kind: Secret
+          name: k8s-context
+          key: demo-credentials.yaml

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Reaction
+name: non-events-debug-reaction
+spec:
+  image: reaction-debug
+  queries:
+    freezer:
+    sensors-not-reporting: 

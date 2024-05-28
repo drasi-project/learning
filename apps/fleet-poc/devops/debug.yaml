@@ -1,0 +1,10 @@
+kind: Reaction
+apiVersion: v1
+name: test-debug
+spec:
+  kind: Debug
+  queries:
+    predicted-maintenance:
+    unplanned-maintenance:
+    odometer-prediction:
+  

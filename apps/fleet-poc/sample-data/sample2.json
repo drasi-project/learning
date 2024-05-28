@@ -1,0 +1,23 @@
+{
+    "additionalProperties": {
+        "Data": {},
+        "DataContentType": null,
+        "DataSchema": null,
+        "ExtensionAttributes": {},
+        "Id": "33f574cf-64ea-4131-8856-f8ff5b1cef7f",
+        "Source": "CCDKfeed",
+        "Time": "2024-05-02T17:44:28.000Z",
+        "Type": "VehicleDataStream"
+    },
+    "geoLocation": null,
+    "schemaVersion": "1.0",
+    "signals": [
+        {
+            "name": "Vehicle.TraveledDistance",
+            "timestamp": "2024-05-02T17:44:28.000Z",
+            "value": "27260"
+        }
+    ],
+    "timestamp": "2024-05-02T17:44:28.000Z",
+    "vehicleId": "320546"
+}

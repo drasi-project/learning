@@ -1,0 +1,221 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: query1
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry
+        nodes:
+          - sourceLabel: '*'
+            bootstrap:
+              defaults:
+            op: update
+            select: $[?(@.type == 'Telemetry')]
+            label: Vehicle
+            id: $.vehicleId
+            properties:
+              - speed: $.signals[name="Vehicle.Speed"].value
+              - odometer: $.signals[name="Vehicle.TraveledDistance"].value
+  query: >
+      MATCH...
+
+---
+
+kind: ContinuousQuery
+apiVersion: v1
+name: query1
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry      
+        nodes:
+          - sourceLabel: '*'
+            middleware:
+              - kind: map-jsonpath
+                opFilter: 
+                  - insert
+                labelFilter:
+                  - Vehicle
+                op: update
+                select: $[?(@.type == 'Telemetry')]
+                label: Vehicle
+                id: $.vehicleId
+                properties:
+                  - speed: $.signals[name="Vehicle.Speed"].value
+                  - odometer: $.signals[name="Vehicle.TraveledDistance"].value
+              - kind: rollup
+                opFilter: 
+                  - insert
+                labelFilter:
+                  - Vehicle
+                properties:
+                  - telemetryCount: old.telemetryCount + 1
+                  - peakSpeed: max(old.peakSpeed, new.speed)
+
+            
+  query: >
+      MATCH...
+
+---
+
+kind: ContinuousQuery
+apiVersion: v1
+name: query1
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: source1
+        nodes:
+          - sourceLabel: Telemetry
+        pipeline:
+          - log-redacted
+          - relabel
+          - extract-vehicle
+          - mutate
+
+    middleware:
+      - kind: redacted-logger
+        name: log-redacted
+        redact:
+          - $.confidentialField1
+          - $.confidentialField2
+      - kind: relabel
+        name: relabel
+        rename:
+          TelemetryData: Telemetry
+      - kind: map
+        name: extract-vehicle
+        Telemetry:        
+          insert:
+            - select: $[?(@.type == 'Telemetry')]
+              op: update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                - speed: $.signals[?(@.name == 'Vehicle.Speed')].value
+                - odometer: $.signals[?(@.name == 'Vehicle.TraveledDistance')].value
+      - kind: mutate
+        name: mutate
+        Vehicle:          
+          insert:
+            - telemetryCount: 1
+            - peakSpeed: new.speed
+          update:
+            - telemetryCount: old.telemetryCount + 1
+            - peakSpeed: max(old.peakSpeed, new.speed)
+      
+      - kind: event-source
+        name: apply
+        apply:
+          - where: event.type = 'OrderItemAdded'
+            mutate:
+              - state:
+                  label: Order
+                  elementId: event.orderId              
+                set:
+                  - status: "open"
+                  - total: state.total + (event.price * event.quantity)
+          - where: event.type = 'OrderPaid'
+            mutate:
+            - state:
+                label: Order
+                elementId: event.orderId              
+              set:
+                - status: "paid"
+                - paidDate: event.date
+          - where: event.type = 'OrderCancelled'
+            mutate:
+            - state:
+                label: Order
+                elementId: event.orderId              
+              set:
+                - status: "cancelled"
+          - where: event.type = 'OrderDeleted'
+            mutate:
+            - state:
+                label: Order
+                elementId: event.orderId              
+              delete: true
+      - kind: mutate
+        name: mutate
+        apply:
+          - where: event.kind = 'OrderItemAdded'
+            mutation: >
+              MATCH (o:Order {id: $orderId})
+              CREATE (o)-[:CONTAINS]->(oi:OrderItem {id: $itemId, quantity: $quantity, price: $price})
+              SET o.total = o.total + (oi.quantity * oi.price)
+          - where: event.kind = 'OrderPaid'
+            mutation: >
+              MATCH (o:Order {id: $orderId})
+              SET o.status = 'paid'
+              SET o.paidDate = $date
+          - where: event.kind = 'OrderCancelled'
+            mutation: >
+              MATCH (o:Order {id: $orderId})
+              SET o.status = 'cancelled'
+          - where: event.kind = 'OrderDeleted'
+            mutation: >
+              MATCH (o:Order {id: $orderId})
+              DELETE o
+
+
+        
+
+            
+
+
+            
+    
+      
+            
+  query: >
+      MATCH...
+
+
+
+
+nodes:
+  - op: update
+    select: $[?(@.type == 'Telemetry')]
+    label: Vehicle
+    id: $.vehicleId
+    properties:
+      - speed: $.signals[name="Vehicle.Speed"].value
+      - odometer: $.signals[name="Vehicle.TraveledDistance"].value
+
+
+  - op: insert
+    select: $[?(@.type == 'Telemetry')]
+    label: Telemetry
+    id: 
+      context: Selected / Root / Static
+      expression: $.event_id
+    properties:
+      - engine_hours: $.signals[name="Vehicle.TraveledDistance"].value
+      - odometer: $.signals[name="Vehicle.TraveledDistance"].value
+      - battery_level: 
+          context: Selected
+          expression: $.battery_level
+
+    - op: insert
+      match:
+        - type: "telemetry"
+        - (exists($.signals[name="engine_hours"]))
+      label: EngineHoursTelemetry
+      id: $.event_id
+      properties:
+        - value: $.signals[name="engine_hours"].value
+
+    
+    - op: update
+      match:
+        - type: "signal"      
+        - signal_name: "BRAKE_FLUID_LOW"
+      label: Vehicle
+      id: $.vehicle_id
+      properties:
+        - brake_fluid_low: $.value
+

@@ -1,0 +1,23 @@
+{
+    "additionalProperties": {
+        "Data": {},
+        "DataContentType": null,
+        "DataSchema": null,
+        "ExtensionAttributes": {},
+        "Id": "8a9cbe0a-fb37-4ba6-a7a8-2e2be8e7fa45",
+        "Source": "CCDKfeed",
+        "Time": "2024-05-03T02:14:44.000Z",
+        "Type": "VehicleDataStream"
+    },
+    "geoLocation": null,
+    "schemaVersion": "1.0",
+    "signals": [
+        {
+            "name": "Vehicle.CurrentLocation.Latitude",
+            "timestamp": "2024-05-03T02:14:44.000Z",
+            "value": "55.961259"
+        }
+    ],
+    "timestamp": "2024-05-03T02:14:44.000Z",
+    "vehicleId": "320546"
+}

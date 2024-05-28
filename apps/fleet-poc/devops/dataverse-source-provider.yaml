@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: SourceProvider
+name: Dataverse
+spec: 
+  services:
+    proxy:
+      image: source-dataverse-proxy
+      dapr:
+        app-port: "80"
+    reactivator: 
+      image: source-dataverse-reactivator
+  config_schema:
+    type: object
+    properties:
+      endpoint:
+        type: string
+      clientId:
+        type: string
+      secret:
+        type: string
+      entities:
+        type: array
+      interval:
+        type: integer
+        default: 60
+    required:
+      - endpoint
+      - clientId
+      - secret
+      - entities

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Source
+name: daniel-test
+spec:
+  kind: PostgreSQL
+  properties:
+    host: <host>
+    port: 5432
+    user: <username>
+    password:
+      kind: Secret
+      name: pg-creds
+      key: password
+    database: test
+    ssl: true
+    tables:
+      - public.Equipment
+      - public.Sensor
+      - public.SensorValue
+      - public.Invoice
+      - public.Freezer

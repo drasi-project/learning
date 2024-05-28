@@ -1,0 +1,157 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: player-scores
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: questions
+        nodes:
+          - sourceLabel: Question
+      - id: games
+        nodes:
+          - sourceLabel: Answer
+          - sourceLabel: Player
+          - sourceLabel: Team
+        relations:
+          - sourceLabel: ANSWER_FROM
+          - sourceLabel: MEMBER_OF
+    joins:
+      - id: ANSWER_TO
+        keys:
+          - label: Question
+            property: id
+          - label: Answer
+            property: questionId
+  query: >
+      MATCH
+          (a:Answer)-[:ANSWER_FROM]->(p:Player)-[:MEMBER_OF]->(t:Team),
+          (a:Answer)-[:ANSWER_TO]->(q:Question)
+      RETURN
+          p.name AS PlayerName,
+          t.name AS TeamName,
+          avg(a.duration) as AverageDuration,
+          count(
+            CASE 
+              WHEN a.answer = q.answer AND NOT a.skipped THEN 1 
+              ELSE NULL 
+            END 
+          ) AS QuestionsCorrect,
+          count(
+            CASE 
+              WHEN a.answer <> q.answer AND NOT a.skipped THEN 1 
+              ELSE NULL 
+            END 
+          ) AS QuestionsIncorrect,
+          count(
+            CASE a.skipped 
+              WHEN TRUE THEN 1 
+              ELSE NULL 
+            END 
+          ) AS QuestionsSkipped     
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: team-scores
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: questions
+        nodes:
+          - sourceLabel: Question
+          - sourceLabel: Category
+      - id: games
+        nodes:
+          - sourceLabel: Answer
+          - sourceLabel: Player
+          - sourceLabel: Team
+        relations:
+          - sourceLabel: ANSWER_FROM
+          - sourceLabel: MEMBER_OF
+    joins:
+      - id: ANSWER_TO
+        keys:
+          - label: Question
+            property: id
+          - label: Answer
+            property: questionId
+      - id: FROM_CATEGORY
+        keys:
+          - label: Category
+            property: id
+          - label: Question
+            property: cat_id
+  query: >
+      MATCH
+          (a:Answer)-[:ANSWER_FROM]->(p:Player)-[:MEMBER_OF]->(t:Team),
+          (a:Answer)-[:ANSWER_TO]->(q:Question)-[:FROM_CATEGORY]->(c:Category)
+      RETURN
+          t.name AS TeamName,
+          c.name AS CategoryName,
+          avg(a.duration) as AverageDuration,
+          count(
+            CASE 
+              WHEN a.answer = q.answer AND NOT a.skipped THEN 1 
+              ELSE NULL 
+            END 
+          ) AS QuestionsCorrect,
+          count(
+            CASE 
+              WHEN a.answer <> q.answer AND NOT a.skipped THEN 1 
+              ELSE NULL 
+            END 
+          ) AS QuestionsIncorrect,
+          count(
+            CASE a.skipped 
+              WHEN TRUE THEN 1 
+              ELSE NULL 
+            END 
+          ) AS QuestionsSkipped      
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: inactive-players
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: games
+  query: >
+      MATCH
+          (a:Answer)-[:ANSWER_FROM]->(p:Player)-[:MEMBER_OF]->(t:Team)
+      WITH
+          p,
+          t,
+          max(datetime({ epochMillis: a.time })) AS InactiveSince
+      WHERE
+          InactiveSince <= datetime.realtime() - duration({ seconds: 30 })
+      OR
+          drasi.trueLater(InactiveSince <= datetime.realtime() - duration({ seconds: 30 }), InactiveSince + duration({ seconds: 30 }))
+      RETURN
+          p.name AS PlayerName,
+          t.name AS TeamName,
+          InactiveSince
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: players-to-evict
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: games
+  query: >
+      MATCH
+          (a:Answer)-[:ANSWER_FROM]->(p:Player)
+      WITH
+          elementId(p) AS PlayerId,
+          max(datetime({ epochMillis: a.time })) AS InactiveSince
+      WHERE
+          InactiveSince <= datetime.realtime() - duration({ seconds: 300 })
+      OR
+          drasi.trueLater(InactiveSince <= datetime.realtime() - duration({ seconds: 300 }), InactiveSince + duration({ seconds: 300 }))
+      RETURN
+          PlayerId
+
+

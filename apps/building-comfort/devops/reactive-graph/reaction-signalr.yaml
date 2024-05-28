@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Reaction
+name: signalr-building
+spec:
+  kind: SignalR
+  queries:
+    building-comfort-level-calc:
+    floor-comfort-level-calc:
+    building-alert:
+    room-alert:
+    floor-alert:
+    building-comfort-ui:

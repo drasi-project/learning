@@ -1,0 +1,26 @@
+{
+    "eventId": "4942",
+    "eventType": "MaintenanceAlert",
+    "eventSubType": "OilChange",
+    "driverId": null,
+    "extendedProperties": [
+        {
+            "name": "MaximumDueDates",
+            "value": "2024-04-10T14:01:00.000Z"
+        }
+    ],
+    "additionalProperties": {
+        "Data": {},
+        "Id": "a0221796-4333-47ac-9565-d0e31525cf28",
+        "Source": "CCDKfeed",
+        "Type": "VehicleDataStream",
+        "Time": "2024-04-10T14:01:00.000Z",
+        "DataSchema": null,
+        "DataContentType": null,
+        "ExtensionAttributes": {}
+    },
+    "vehicleId": "300367",
+    "timestamp": "2024-04-10T14:01:00.000Z",
+    "schemaVersion": "1.0",
+    "geoLocation": null
+}

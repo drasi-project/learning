@@ -1,0 +1,17 @@
+kind: Reaction
+apiVersion: v1
+name: signalr-trivia
+spec:
+  image: reaction-signalr
+  queries:
+    player-scores:
+    team-scores:
+    inactive-players:
+    players-to-evict:
+  properties:
+    AzureSignalRConnectionString:
+      kind: Secret
+      name: trivia-creds
+      key: az-signalr
+  endpoints:
+    gateway: 8080

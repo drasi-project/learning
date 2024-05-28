@@ -1,0 +1,42 @@
+{
+    "signals": [
+        {
+            "name": "Vehicle.CurrentLocation.Latitude",
+            "value": "-29.12249",
+            "timestamp": "2024-04-05T16:07:16.0000000Z"
+        },
+        {
+            "name": "Vehicle.CurrentLocation.Longitude",
+            "value": "25.42657",
+            "timestamp": "2024-04-05T16:07:16.0000000Z"
+        },
+        {
+            "name": "Vehicle.CurrentLocation.Heading",
+            "value": "96",
+            "timestamp": "2024-04-05T16:07:16.0000000Z"
+        },
+        {
+            "name": "Vehicle.Speed",
+            "value": "119",
+            "timestamp": "2024-04-05T16:07:16.0000000Z"
+        },
+        {
+            "name": "Vehicle.TraveledDistance",
+            "value": "4563",
+            "timestamp": "2024-04-05T16:07:16.0000000Z"
+        }
+    ],
+    "extendedProperties": {
+        "values": []
+    },
+    "additionalProperties": {
+        "Id": "7dada2cb-a85a-4f38-bc4a-3d74a22c04b0",
+        "Source": "netstar.telemetry",
+        "Type": "Kafka.Location",
+        "Time": "2024-04-05T16:07:19.1146588Z",
+        "Subject": "client1-authnID/vehiclestatus"
+    },
+    "vehicleId": "865610042294967",
+    "timestamp": "2024-04-05T16:07:19.1146605Z",
+    "schemaVersion": "1.0"
+}

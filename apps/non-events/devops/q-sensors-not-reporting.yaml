@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ContinuousQuery
+name: sensors-not-reporting
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: daniel-test
+    joins:
+      - id: HAS_SENSOR
+        keys:
+          - label: Equipment
+            property: id
+          - label: Sensor
+            property: equipment_id
+      - id: HAS_VALUE
+        keys:
+          - label: Sensor
+            property: id
+          - label: SensorValue
+            property: sensor_id
+  query: > 
+    MATCH
+        (e:Equipment)-[:HAS_SENSOR]->(s:Sensor)-[:HAS_VALUE]->(v:SensorValue)
+    WITH
+        e.name AS equipment,
+        s.type AS sensor,
+        max(drasi.changeDateTime(v)) AS last_ts
+    WHERE 
+        last_ts <= (datetime.realtime() - duration( { seconds: 10 } ))        
+    OR
+        drasi.trueLater(last_ts <= (datetime.realtime() - duration( { seconds: 10 } )), last_ts + duration( { seconds: 10 } ))
+    RETURN
+        equipment AS equipment,
+        sensor AS sensor,
+        last_ts AS last_ts

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trivia-creds
+type: Opaque
+stringData:
+  pg_host: <postgres_dns_name>
+  pg_user: <postgres_user_id>
+  pg_password: <postgres_user_password>
+  pg_database: <postgres_db_name>
+  accountEndpoint: <cosmosdb_account_endpoint>
+  gremlinHost: <cosmosdb_gremlin_dns_name>
+  gremlinKey: <cosmosdb_gremlin_key>

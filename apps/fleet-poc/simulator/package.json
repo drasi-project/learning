@@ -1,0 +1,17 @@
+{
+  "name": "simulator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/event-hubs": "^5.11.4",
+    "@azure/identity": "^4.2.0",
+    "dotenv": "^16.4.5",
+    "uuid": "^9.0.1"
+  }
+}

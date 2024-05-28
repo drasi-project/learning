@@ -1,0 +1,12 @@
+kind: Source
+apiVersion: v1
+name: games
+spec:
+  kind: CosmosGremlin
+  accountEndpoint:
+    kind: Secret
+    name: trivia-creds
+    key: accountEndpoint
+  database: Contoso
+  container: Trivia
+  partitionKey: partition

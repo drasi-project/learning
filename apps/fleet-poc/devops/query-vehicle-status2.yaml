@@ -1,0 +1,37 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: vehicle-status2
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry-events
+        nodes:
+          - sourceLabel: vehiclestatus
+        pipeline:
+          - extract-vehicle
+    middleware:
+      - kind: map
+        name: extract-vehicle
+        vehiclestatus:        
+          insert:
+            - selector: $[?(@.additionalProperties.Source == 'netstar.telemetry')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                odometer: $.signals[?(@.name == 'Vehicle.TraveledDistance')].value
+                speed: $.signals[?(@.name == 'Vehicle.Speed')].value
+            
+  query: >
+      MATCH
+        (v:Vehicle)
+      RETURN
+        v.vehicleId as vehicleId,
+        v.odometer as odometer,
+        v.speed as speed
+          
+
+        
+      

@@ -1,0 +1,22 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: building-comfort-ui
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: facilities
+  query: > 
+    MATCH 
+      (r:Room)-[:PART_OF]->(f:Floor)-[:PART_OF]->(b:Building) 
+    RETURN 
+      elementId(r) AS RoomId,
+      r.name AS RoomName,
+      elementId(f) AS FloorId,
+      f.name AS FloorName,
+      elementId(b) AS BuildingId,
+      b.name AS BuildingName, 
+      r.temp AS Temperature, 
+      r.humidity AS Humidity, 
+      r.co2 AS CO2, 
+      r.comfortLevel AS ComfortLevel

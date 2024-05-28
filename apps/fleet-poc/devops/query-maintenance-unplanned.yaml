@@ -1,0 +1,36 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: unplanned-maintenance
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry
+        nodes:
+          - sourceLabel: vehicleevent
+      - id: assets
+        nodes:
+          - sourceLabel: msdyn_customerasset
+    joins:
+      - id: HAS
+        keys:
+          - label: msdyn_customerasset
+            property: cr5e7_vehicleid
+          - label: vehicleevent
+            property: vehicleId
+            
+  query: >
+      MATCH
+        (a:msdyn_customerasset)-[:HAS]->(e:vehicleevent)
+      WHERE e.eventType = 'MaintenanceAlert'
+      RETURN
+        e.vehicleId as vehicleId,
+        e.eventSubType as maintenanceType,
+        a.msdyn_customerassetid as assetId,
+        a.msdyn_name as licensePlate,
+        e.timestamp as timestamp,
+        e.eventSubType + e.vehicleId as token
+          
+
+        
+      

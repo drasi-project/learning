@@ -1,0 +1,98 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: vehicles-in-parking-lot
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: phys-ops
+  query: >
+    MATCH 
+      (v:Vehicle)-[:LOCATED_IN]->(:Zone {type:'Parking Lot'}) 
+    RETURN 
+      elementId(v) AS id, 
+      v.make AS make, 
+      v.model AS model, 
+      v.color AS color, 
+      v.plate AS plate
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: vehicles-in-queue
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: phys-ops
+  query: >
+    MATCH 
+      (v:Vehicle)-[:LOCATED_IN]->(:Zone {type:'Curbside Queue'}) 
+    RETURN 
+      elementId(v) AS id, 
+      v.make AS make, 
+      v.model AS model, 
+      v.color AS color, 
+      v.plate AS plate
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: orders-prep
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: retail-ops
+  query: >
+    MATCH 
+      (o:Order { status: 'preparing' } ) 
+    RETURN 
+      elementId(o) AS id, 
+      o.name AS name
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: orders-ready
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: retail-ops
+  query: >
+    MATCH 
+      (o:Order { status: 'ready' } ) 
+    RETURN 
+      elementId(o) AS id, 
+      o.name AS name
+---
+kind: ContinuousQuery
+apiVersion: v1
+name: orders-matched-vehicle
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: phys-ops
+        nodes:
+          - sourceLabel: Vehicle
+          - sourceLabel: Zone
+        relations:
+          - sourceLabel: LOCATED_IN
+      - id: retail-ops
+        nodes:
+          - sourceLabel: Driver
+          - sourceLabel: Order
+          - sourceLabel: OrderPickup
+        relations:
+          - sourceLabel: PICKUP_DRIVER
+          - sourceLabel: PICKUP_ORDER
+    joins:
+      - id: VEHICLE_TO_DRIVER
+        keys:
+          - label: Vehicle
+            property: plate
+          - label: Driver
+            property: plate
+  query: >
+    MATCH 
+      (o:Order {status:'ready'})<-[:PICKUP_ORDER]-(:OrderPickup)-[:PICKUP_DRIVER]->(d:Driver)-[:VEHICLE_TO_DRIVER]->(v:Vehicle)-[:LOCATED_IN]->(:Zone {type:'Curbside Queue'}) 
+      RETURN elementId(o) AS OrderNumber, d.name AS DriverName, v.plate AS LicensePlate

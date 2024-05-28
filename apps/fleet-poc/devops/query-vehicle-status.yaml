@@ -1,0 +1,50 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: vehicle-status
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry
+        nodes:
+          - sourceLabel: Telemetry
+        pipeline:
+          - extract-vehicle
+    middleware:
+      - kind: map
+        name: extract-vehicle
+        Telemetry:        
+          insert:
+            - selector: $[?(@.meter == 'engineHours')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                engineHours: $.value
+            - selector: $[?(@.meter == 'odometer')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                odometer: $.value
+            - selector: $[?(@.meter == 'engineRpm')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                engineRpm: $.value
+  query: >
+      MATCH
+        (v:Vehicle)
+      RETURN
+        v.vehicleId as vehicleId,
+        v.engineHours as engineHours,
+        v.odometer as odometer,
+        v.engineRpm as engineRpm
+          
+
+        
+      

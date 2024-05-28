@@ -1,0 +1,7 @@
+{
+    "api": "http://localhost:7071/api",
+    "signalr": "http://localhost:8086/hub",
+    "playerScoresQueryId": "player-scores",
+    "teamScoresQueryId": "team-scores",
+    "inactivePLayersQueryId": "inactive-players"
+}

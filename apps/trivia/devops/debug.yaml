@@ -1,0 +1,12 @@
+kind: Reaction
+apiVersion: v1
+name: test-debug
+spec:
+  image: reaction-debug
+  queries:
+    player-scores:
+    team-scores:
+    inactive-players:
+    players-to-evict:
+  endpoints:
+    gateway: 8080

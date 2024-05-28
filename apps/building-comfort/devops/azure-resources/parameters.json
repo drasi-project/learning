@@ -1,0 +1,14 @@
+{
+  "deploymentName": {
+    "value": "rg-building-comfort-demo"
+  },
+  "cosmosAccountName": {
+    "value": "reactive-graph-demo"
+  },
+  "storageAccountName": {
+    "value": "rgbuildingcomfort"
+  },
+  "eventGridTopicName": {
+    "value": "rg-building-comfort-demo"
+  }
+}

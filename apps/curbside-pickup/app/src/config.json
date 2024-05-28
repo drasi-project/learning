@@ -1,0 +1,9 @@
+{
+  "crudApiUrl": "http://localhost:7071",
+  "signalRUrl": "http://localhost:5001/hub",
+  "vehiclesQueryId": "vehicles-in-parking-lot",
+  "zoneQueryId": "vehicles-in-queue",
+  "dispatchQueryId": "orders-ready",
+  "ordersQueryId": "orders-prep",
+  "matchQueryId": "orders-matched-vehicle"
+}

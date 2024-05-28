@@ -1,0 +1,26 @@
+kind: Source
+apiVersion: v1
+name: questions
+spec:
+  kind: PostgreSQL
+  host: 
+    kind: Secret
+    name: trivia-creds
+    key: pg_host
+  port: 5432
+  user: 
+    kind: Secret
+    name: trivia-creds
+    key: pg_user
+  password:
+    kind: Secret
+    name: trivia-creds
+    key: pg_password
+  database: 
+    kind: Secret
+    name: trivia-creds
+    key: pg_database
+  ssl: true
+  tables:
+    - public.Category
+    - public.Question

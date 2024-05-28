@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Reaction
+name: signalr1-reaction
+spec:
+  kind: SignalR
+  queries:
+    vehicles-in-parking-lot:
+    vehicles-in-queue:
+    orders-prep:
+    orders-ready:
+    orders-matched-vehicle:

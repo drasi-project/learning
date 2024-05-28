@@ -1,0 +1,59 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: vehicle-status2
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: telemetry-events
+        nodes:
+          - sourceLabel: vehiclestatus
+        pipeline:
+          - extract-vehicle
+    middleware:
+      - kind: map
+        name: extract-vehicle
+        vehiclestatus:        
+          insert:
+            - selector: $.signals[?(@.name == 'Vehicle.TraveledDistance')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                traveledDistance: $['$selected'].value
+            - selector: $.signals[?(@.name == 'OBD.FuelLevel')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                fuelLevel: $['$selected'].value
+            - selector: $.signals[?(@.name == 'OBD.Speed')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                speed: $['$selected'].value
+            - selector: $.signals[?(@.name == 'OBD.EngineSpeed')]
+              op: Update              
+              label: Vehicle
+              id: $.vehicleId
+              properties:
+                vehicleId: $.vehicleId
+                engineSpeed: $['$selected'].value
+            
+  query: >
+      MATCH
+        (v:Vehicle)
+      RETURN
+        v.vehicleId as vehicleId,
+        v.traveledDistance as traveledDistance,
+        v.speed as speed,
+        v.engineSpeed as engineSpeed,
+        v.fuelLevel as fuelLevel
+          
+
+        
+      

@@ -1,0 +1,4 @@
+kind create cluster
+curl -fsSL "https://drasi.blob.core.windows.net/installs/install-drasi-cli.sh" | /bin/bash
+drasi init --version preview.1
+kubectl apply -n drasi-system -f ./trivia-creds-dev.yaml

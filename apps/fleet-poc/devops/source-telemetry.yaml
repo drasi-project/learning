@@ -1,0 +1,15 @@
+kind: Source
+apiVersion: v1
+name: telemetry
+spec:
+  kind: EventHub
+  properties:
+    connectionString: 
+      kind: Secret
+      name: fleet-creds
+      key: eventHubConnectionString
+    eventHubs:
+      - vehicleevent
+      - vehiclestatus      
+    bootstrapWindow: 0
+    

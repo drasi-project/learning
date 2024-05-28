@@ -1,0 +1,50 @@
+kind: Reaction
+apiVersion: v1
+name: dv-reaction
+spec:
+  kind: Dataverse
+  properties:
+    endpoint: https://crm146351.api.crm4.dynamics.com/
+    clientId: 
+      kind: Secret
+      name: fleet-creds
+      key: dataverse_client_id
+    secret: 
+      kind: Secret
+      name: fleet-creds
+      key: dataverse_secret
+  queries:
+    unplanned-maintenance: |
+      added:
+        - kind: createEntity
+          entityName: msdyn_iotalert          
+          msdyn_customerasset: '@assetId'
+          msdyn_description: '@maintenanceType'
+          msdyn_alerttime: '@timestamp'
+          msdyn_alerttype: 192350000
+          msdyn_alerttoken: '@token'
+          msdyn_parentalerttoken: '@token'
+          
+          ifNotExists:
+            msdyn_customerasset: '@assetId'
+            msdyn_description: '@maintenanceType'
+            msdyn_alerttype: 192350000
+    predicted-maintenance: |
+      added:
+        - kind: createEntity
+          entityName: msdyn_iotalert
+          msdyn_customerasset: '@assetId'
+          msdyn_description: Service
+          msdyn_alerttime: '@timestamp'
+          msdyn_alerttype: 192350001
+          msdyn_alerttoken: '@token'
+          msdyn_parentalerttoken: '@token'
+          
+          ifNotExists:
+            msdyn_customerasset: '@assetId'
+            msdyn_description: General
+            msdyn_alerttype: 192350001
+
+
+
+
