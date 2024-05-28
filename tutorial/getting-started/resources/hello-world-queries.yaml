@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ContinuousQuery
+name: hello-world-from
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: hello-world
+  query: > 
+    MATCH 
+      (m:Message {Message: 'Hello World'})
+    RETURN 
+      m.MessageId AS MessageId,
+      m.From AS MessageFrom
+---
+apiVersion: v1
+kind: ContinuousQuery
+name: message-count
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: hello-world
+  query: > 
+    MATCH 
+      (m:Message)
+    RETURN 
+      m.Message AS Message,
+      count(m.Message) AS Frequency
+---
+apiVersion: v1
+kind: ContinuousQuery
+name: inactive-people
+spec:
+  mode: query
+  sources:    
+    subscriptions:
+      - id: hello-world
+  query: >
+      MATCH
+        (m:Message)
+      WITH
+        m.From AS MessageFrom,
+        max(drasi.changeDateTime(m)) AS LastMessageTimestamp
+      WHERE
+        LastMessageTimestamp <= datetime.realtime() - duration({ seconds: 20 })
+      OR
+        drasi.trueLater(LastMessageTimestamp <= datetime.realtime() - duration({ seconds: 20 }), LastMessageTimestamp + duration({ seconds: 20 }))
+      RETURN
+        MessageFrom,
+        LastMessageTimestamp
