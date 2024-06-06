@@ -6,7 +6,10 @@ on:
   push:
     branches:
       - "main"
-
+      
+permissions:
+  id-token: write # Required for requesting the JWT
+  contents: read  # Required for actions/checkout
 
 jobs:
   archive_and_upload:
