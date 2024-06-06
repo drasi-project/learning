@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - "main"
-      
+
 permissions:
   id-token: write # Required for requesting the JWT
   contents: read  # Required for actions/checkout
@@ -14,7 +14,7 @@ permissions:
 jobs:
   archive_and_upload:
     runs-on: ubuntu-latest
-    environment: tutorial
+    environment: learning
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
