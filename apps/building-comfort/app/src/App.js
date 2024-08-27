@@ -25,6 +25,7 @@ initBldQuery();
 initFloorQuery();
 initUIQuery();
 
+// This function listens to the 'building-comfort-ui' query, which lives in the query-ui.yaml file
 function initUIQuery() {
   uiListener = new ReactionListener(config.signalRUrl, config.uiQueryId, change => {
     if (change.op === 'x') {
@@ -38,7 +39,7 @@ function initUIQuery() {
       else
         removeRoomData(change.payload.after);
     }
-    else {
+    else {  // if op is 'i' or 'u'
       roomSubject.next(change.payload.after);
       upsertRoomData(change.payload.after);
     }
@@ -66,6 +67,7 @@ function initUIQuery() {
   });  
 }
 
+// This function listens to the 'floor-comfort-level-calc' query
 function initFloorQuery() {
   floorListener = new ReactionListener(config.signalRUrl, config.avgRoomQueryId, change => {
     if (change.op === 'x') {
@@ -83,6 +85,7 @@ function initFloorQuery() {
   });  
 }
 
+// This function listens to the 'building-comfort-level-calc' query
 function initBldQuery() {
   bldListener = new ReactionListener(config.signalRUrl, config.avgFloorQueryId, change => {
     if (change.op === 'x') {
@@ -146,7 +149,7 @@ function Building(props) {
 
   React.useEffect(() => {    
     let subscription = bldSubject.subscribe(v => {
-      if (v.BuildingId == props.building.id)
+      if (v.BuildingId === props.building.id)
         setBldComfort(v);
     });
     
@@ -154,7 +157,8 @@ function Building(props) {
       subscription.unsubscribe();
     };
   });
-  
+
+  // Init setup
   let level = bldComfort.ComfortLevel ?? 0;
   return (
     <Grid key={props.building.id} container spacing={2} bgcolor="pink">      
@@ -163,12 +167,14 @@ function Building(props) {
           <LinearProgress  variant="determinate" value={level} color={chooseColor(level)} ></LinearProgress>
           {level}
           <h3>Comfort Alerts</h3>
+          {/* If the comfort level of a room is outside of the desired range, a warning will be created here */}
           <ReactionResult 
             url={config.signalRUrl}
             queryId={config.roomAlertQueryId}
             itemKey={item => item.RoomId}>
               <RoomComfortAlert/>
           </ReactionResult>
+          {/* If the comfort level of a floor is outside of the desired range, a warning will be created here */}
           <ReactionResult 
             url={config.signalRUrl}
             queryId={config.floorAlertQueryId}
@@ -178,6 +184,7 @@ function Building(props) {
       </Grid>
       <Grid item xs={10}>
         <Stack spacing={2}>
+          {/* inits the floors */}
           {Array.from(props.building.floors.values()).map(floor => 
             <Floor key={floor.id} floor={floor}></Floor>
           )}
@@ -282,12 +289,14 @@ function Room(props) {
   )
 }
 
+// This function creates a warning that displays the room name and the comfort level of the room
 function RoomComfortAlert(props) {
   return (
     <Alert severity="warning">{props.RoomName} = {props.ComfortLevel}</Alert>
   );
 }
 
+// This function creates a warning that displays the floor name and the comfort level of the floor
 function FloorComfortAlert(props) {
   return (
     <Alert severity="warning">{props.FloorName} = {props.ComfortLevel}</Alert>
