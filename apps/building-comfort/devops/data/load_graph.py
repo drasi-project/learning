@@ -12,7 +12,7 @@ def print_status_attributes(result):
     #
     # These responses includes total request units charged and total server latency time.
     # 
-    # IMPORTANT: Make sure to consume ALL results returend by cliient tothe final status attributes
+    # IMPORTANT: Make sure to consume ALL results returend by client tothe final status attributes
     # for a request. Gremlin result are stream as a sequence of partial response messages
     # where the last response contents the complete status attributes set.
     #
@@ -35,7 +35,6 @@ def create_room(client, building_num, floor_num, room_num):
     room_id = f"room_{building_num:02}_{floor_num:02}_{room_num:02}"
     room_name = f"Room {floor_num:02}{room_num:02}"
     floor_id = f"floor_{building_num:02}_{floor_num:02}"
-    roomComfort = 50
 
     print(f"Creating Room - room_num:{room_num:02}, room_id: {room_id}, room_name:{room_name}")
 
@@ -45,7 +44,6 @@ def create_room(client, building_num, floor_num, room_num):
     query += f".property('temp', {config.defaultRoomTemp})"
     query += f".property('humidity', {config.defaultRoomHumidity})"
     query += f".property('co2', {config.defaultRoomCo2})"
-    query += f".property('comfortLevel', {roomComfort})"
 
     callback = client.submitAsync(query)
     if callback.result() is not None:
@@ -69,14 +67,12 @@ def create_floor(client, building_num, floor_num):
     floor_id = f"floor_{building_num:02}_{floor_num:02}"
     floor_name = f"Floor {floor_num:02}"
     building_id = f"building_{building_num:02}"
-    floorComfort = 50
 
     print(f"Creating Floor - floor_num:{floor_num:02}, floor_id: {floor_id}, floor_name:{floor_name}")
 
     # Add Floor Node
     query = f"g.addV('Floor').property('id', '{floor_id}')"
     query += f".property('name', '{floor_name}')"
-    query += f".property('comfortLevel', {floorComfort})"
 
     callback = client.submitAsync(query)
     if callback.result() is not None:
@@ -104,13 +100,11 @@ def create_building(client, building_num):
 
     building_id = f"building_{building_num:02}"
     building_name = f"Building {building_num:02}"
-    buildingComfort = 50
 
     print(f"Creating Building - building_num:{building_num:02}, building_id: {building_id}, building_name:{building_name}")
 
     query = f"g.addV('Building').property('id', '{building_id}')"
     query += f".property('name', '{building_name}')"
-    query += f".property('comfortLevel', {buildingComfort})"
 
     callback = client.submitAsync(query)
     if callback.result() is not None:

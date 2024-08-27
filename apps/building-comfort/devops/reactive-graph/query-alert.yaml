@@ -20,7 +20,9 @@ spec:
     RETURN 
       RoomId, RoomName, ComfortLevel
 ---
-# Calculates the comfort level of floors
+# Calculates the average comfort level of all rooms in a floor
+# Retrieves all floors that have a comfort level below 40 or above 50
+# Returns the floor ID, floor name and comfort level of each floor
 kind: ContinuousQuery
 apiVersion: v1
 name: floor-alert
@@ -45,6 +47,9 @@ spec:
       f.name AS FloorName, 
       ComfortLevel
 ---
+# Calculates the average comfort level of all floors in a building
+# Returns the building ID, building Name and the comfort level if 
+# the comfort leve is outside the acceptable range of 40-50
 kind: ContinuousQuery
 apiVersion: v1
 name: building-alert

@@ -1,3 +1,5 @@
+# Calculates the comfort level of the building by taking 
+# the average of the comfort level of all floors
 kind: ContinuousQuery
 apiVersion: v1
 name: building-comfort-level-calc
@@ -22,6 +24,8 @@ spec:
       elementId(b) AS BuildingId, 
       ComfortLevel
 ---
+# Calculates the comfort level of the floor by taking 
+# the average of the comfort level of all rooms
 kind: ContinuousQuery
 apiVersion: v1
 name: floor-comfort-level-calc
@@ -43,6 +47,7 @@ spec:
       elementId(f) AS FloorId, 
       ComfortLevel
 ---
+# Calculates the comfort level of a room
 kind: ContinuousQuery
 apiVersion: v1
 name: room-comfort-level-calc
