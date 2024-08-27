@@ -1,6 +1,9 @@
+# Calculates the comfort level of rooms.
+# Retrieves all rooms that have a comfort level below 40 or above 50.
+# Returns the room ID, room name, and comfort level of each room.
 kind: ContinuousQuery
 apiVersion: v1
-name: building-alert
+name: room-alert 
 spec:
   mode: query
   sources:
@@ -8,11 +11,16 @@ spec:
       - id: facilities
   query: >
     MATCH 
-      (b:Building) 
-    WHERE b.comfortLevel < 40 OR b.comfortLevel > 50 
+      (r:Room) 
+    WITH 
+      elementId(r) AS RoomId,
+      r.name AS RoomName,
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS ComfortLevel
+    WHERE ComfortLevel < 40 OR ComfortLevel > 50 
     RETURN 
-      elementId(b) AS BuildingId, b.name AS BuildingName, b.comfortLevel AS ComfortLevel
+      RoomId, RoomName, ComfortLevel
 ---
+# Calculates the comfort level of floors
 kind: ContinuousQuery
 apiVersion: v1
 name: floor-alert
@@ -23,14 +31,23 @@ spec:
       - id: facilities
   query: >
     MATCH 
-      (f:Floor) 
-    WHERE f.comfortLevel < 40 OR f.comfortLevel > 50 
+      (r:Room)-[:PART_OF]->(f:Floor) 
+    WITH
+      f, 
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH 
+      f, 
+      avg(RoomComfortLevel) AS ComfortLevel
+    WHERE 
+      ComfortLevel < 40 OR ComfortLevel > 50 
     RETURN 
-      elementId(f) AS FloorId, elementId(f) AS FloorName, f.comfortLevel AS ComfortLevel
+      elementId(f) AS FloorId, 
+      f.name AS FloorName, 
+      ComfortLevel
 ---
 kind: ContinuousQuery
 apiVersion: v1
-name: room-alert
+name: building-alert
 spec:
   mode: query
   sources:
@@ -38,7 +55,22 @@ spec:
       - id: facilities
   query: >
     MATCH 
-      (r:Room) 
-    WHERE r.comfortLevel < 40 OR r.comfortLevel > 50 
+      (r:Room)-[:PART_OF]->(f:Floor)-[:PART_OF]->(b:Building) 
+    WITH 
+      f, 
+      b,
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH 
+      f, 
+      b,
+      avg(RoomComfortLevel) AS FloorComfortLevel
+    WITH 
+      b, 
+      avg(FloorComfortLevel) AS ComfortLevel
+    WHERE 
+      ComfortLevel < 40 OR ComfortLevel > 50 
     RETURN 
-      elementId(r) AS RoomId, r.name AS RoomName, r.comfortLevel AS ComfortLevel
+      elementId(b) AS BuildingId, 
+      b.name AS BuildingName, 
+      ComfortLevel
+ 

@@ -36,6 +36,12 @@ async function UpdateSensor(context, bid, fid, rid, sid, sensorData) {
   // context.log(`UpdateOrder - res: ${JSON.stringify(res)}`);
   const node = res.first();
 
+  let roomName = node.properties?.name[0]?.value ?? "";
+  let temp = node.properties?.temp[0]?.value ?? "";
+  let humidity = node.properties?.humidity[0]?.value ?? "";
+  let co2 = node.properties?.co2[0]?.value ?? "";
+  let comfortLevel = Math.floor(50 + (temp - 72) + (humidity - 42) + (co2 > 500 ? (co2 - 500) / 25 : 0));
+  console.log(`comfortLevel: ${comfortLevel}`);
   return {
     body: {
       roomId: rid,
@@ -45,7 +51,7 @@ async function UpdateSensor(context, bid, fid, rid, sid, sensorData) {
       temp: node.properties?.temp[0]?.value ?? "",
       humidity: node.properties?.humidity[0]?.value ?? "",
       co2: node.properties?.co2[0]?.value ?? "",
-      comfortLevel: node.properties?.comfortLevel[0]?.value ?? ""
+      comfortLevel: comfortLevel
     }
   };
 }

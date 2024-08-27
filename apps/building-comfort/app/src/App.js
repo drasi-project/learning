@@ -71,7 +71,6 @@ function initFloorQuery() {
     if (change.op === 'x') {
       return;
     }
-
     floorStats.set(change.payload.after.FloorId, change.payload.after);
     floorSubject.next(change.payload.after);
   });
@@ -192,10 +191,9 @@ function Building(props) {
 function Floor(props) {
 
   const [floorComfort, setFloorComfort] = React.useState(floorStats.has(props.floor.id) ? floorStats.get(props.floor.id) : {});
-
   React.useEffect(() => {    
     let subscription = floorSubject.subscribe(v => {
-      if (v.FloorId == props.floor.id)
+      if (v.FloorId === props.floor.id)
         setFloorComfort(v);
     });
     
