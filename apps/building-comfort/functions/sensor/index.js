@@ -16,8 +16,6 @@ const client = new gremlin.driver.Client(
 );
 
 async function UpdateSensor(context, bid, fid, rid, sid, sensorData) {
-  // context.log(`UpdateSensor - rid:${rid}, sid:${sid}, sensorData:${JSON.stringify(sensorData)}`);
-
   var query = `g.V(bid).hasLabel("Building")`;
   query += `.in("PART_OF").hasLabel("Floor").hasId(fid)`;
   query += `.in("PART_OF").hasLabel("Room").hasId(rid)`;
@@ -33,13 +31,13 @@ async function UpdateSensor(context, bid, fid, rid, sid, sensorData) {
 
   const res = await client.submit(query, params);
 
-  // context.log(`UpdateOrder - res: ${JSON.stringify(res)}`);
   const node = res.first();
 
   let roomName = node.properties?.name[0]?.value ?? "";
   let temp = node.properties?.temp[0]?.value ?? "";
   let humidity = node.properties?.humidity[0]?.value ?? "";
   let co2 = node.properties?.co2[0]?.value ?? "";
+  // The comfort level is calculated based on the same formula used in the continuous queries
   let comfortLevel = Math.floor(50 + (temp - 72) + (humidity - 42) + (co2 > 500 ? (co2 - 500) / 25 : 0));
   console.log(`comfortLevel: ${comfortLevel}`);
   return {
@@ -57,8 +55,6 @@ async function UpdateSensor(context, bid, fid, rid, sid, sensorData) {
 }
 
 module.exports = async function (context, req) {
-  // context.log(`request: ${JSON.stringify(req)}`);
-
   var result = {};
 
   switch (req.method) {
