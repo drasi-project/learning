@@ -14,7 +14,7 @@ This folder contains the following sub-folders:
 - [devops](./devops/) - contains the files used to deploy and configure the Building Comfort Demo.
   - [azure-resources](./devops/azure-resources/) - contains the Bicep and configuration files used to deploy the Azure resources required by the Building Comfort Demo.
   - [data](./devops/data/) - contains the Python script used to populate the database used by the Building Comfort Demo with initial demo data.
-  - [reactive-graph](./devops/reactive-graph/) - contains the Drasi YAML files used to apply the Drasi components for the Building Comfort Demo.
+  - [drasi](./devops/drasi/) - contains the Drasi YAML files used to apply the Drasi components for the Building Comfort Demo.
 - [functions](./functions/) - contains Azure Functions used by the app and simulator to read and write to the source Cosmos database.
 
 ## Deploy Building Comfort Demo
@@ -33,7 +33,7 @@ The `parameters.json` file can be used to customize the deployment of the Azure 
 |Parameter|Description|Default Value|
 |-|-|-|
 |`deploymentName`|The name for the deployment. Also used as the Service Principal name, and prefix for the resulting Hosting Plan and Azure Functions app.|`rg-building-comfort-demo`|
-|`cosmosAccountName`|The name for the CosmosDB account to create.|`reactive-graph-demo`|
+|`cosmosAccountName`|The name for the CosmosDB account to create.|`drasi-demo`|
 |`storageAccountName`|The name for the Storage Account used to host the ReactJS app.|`rgbuildingcomfort`|
 |`eventGridTopicName`|The name of the Event Grid Topic to create.|`rg-building-comfort-demo`|
 
@@ -91,7 +91,7 @@ This step is similar to the [self-hosting instructions](https://project-drasi-do
 
 #### Deploy the sources
 
-From the `devops/reactive-graph` subfolder, edit the `source-facilities.yaml` file to specify your Cosmos DB instance:
+From the `devops/drasi` subfolder, edit the `source-facilities.yaml` file to specify your Cosmos DB instance:
 
 - `SourceAccountEndpoint` with the primary connection string
 - `SourceKey` with the primary key, same as the `cosmosPassword` in `config.py`
@@ -111,7 +111,7 @@ kubectl apply -f source-facilities.yaml
 
 #### Deploy the queries
 
-From the `devops/reactive-graph` subfolder, use `kubectl` to deploy the continuous queries:
+From the `devops/drasi` subfolder, use `kubectl` to deploy the continuous queries:
 
 ```bash
 kubectl apply -f query-alert.yaml
@@ -121,7 +121,7 @@ kubectl apply -f query-ui.yaml
 
 #### Deploy the reactions
 
-From the `devops/reactive-graph` subfolder,ppply the Reaction yaml files with `kubectl` to your AKS cluster running Drasi:
+From the `devops/drasi` subfolder,ppply the Reaction yaml files with `kubectl` to your AKS cluster running Drasi:
 
 ```bash
 kubectl apply -f reaction-signalr.yaml
