@@ -121,7 +121,7 @@ kubectl apply -f query-ui.yaml
 
 #### Deploy the reactions
 
-From the `devops/drasi` subfolder,ppply the Reaction yaml files with `kubectl` to your AKS cluster running Drasi:
+From the `devops/drasi` subfolder, apply the Reaction yaml files with `kubectl` to your AKS cluster running Drasi:
 
 ```bash
 kubectl apply -f reaction-signalr.yaml
