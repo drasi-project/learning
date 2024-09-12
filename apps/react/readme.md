@@ -31,9 +31,9 @@ function App() {
         <tbody>
         <ReactionResult 
             url="https://reactive-graph-proxy.azurewebsites.net/api"
-            source="queries/62ec2bab208a8d80363188ad/subscriptions/62ec2bab208a8d14643188ae"
+            queryId="query1"
             itemKey={item => item.EmployeeName + item.IncidentDescription}
-            template={ItemTemplate} />
+            onMessage={ItemTemplate} />
         </tbody>
       </table>
     </div>
