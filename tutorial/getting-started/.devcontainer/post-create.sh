@@ -10,7 +10,7 @@ while ( ! kubectl cluster-info ); do
 done
 
 ## Install Drasi
-drasi init --version preview.1
+drasi init
 
 ## Install PostgreSQL CLI
 sudo apt-get update
