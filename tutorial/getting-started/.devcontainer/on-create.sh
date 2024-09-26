@@ -13,8 +13,5 @@ sudo apt-get install -y kubectl
 ## Install PostgreSQL CLI
 sudo apt-get install --no-install-recommends --assume-yes postgresql-client
 
-# Install k3d
-curl -fsSL https://raw.githubusercontent.com/rancher/k3d/main/install.sh | /bin/bash 
-
 ## Install Drasi CLI
 curl -fsSL https://raw.githubusercontent.com/drasi-project/drasi-platform/main/cli/installers/install-drasi-cli.sh | /bin/bash 
