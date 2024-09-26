@@ -3,7 +3,7 @@
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 	"onCreateCommand": "sed -i 's/\r$//' ./.devcontainer/post-create.sh && sed -i  's/\r$//' ./.devcontainer/on-create.sh && bash ./.devcontainer/on-create.sh",
 	"postCreateCommand": "bash ./.devcontainer/post-create.sh",
-	"postStartCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 -n drasi-system &'",
+	"postStartCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
 	"runArgs": [
 	  "--privileged",
 	  "--init"

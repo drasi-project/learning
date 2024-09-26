@@ -4,7 +4,7 @@ name: hello-world
 spec:
   kind: PostgreSQL
   properties:
-    host: postgres
+    host: postgres.default.svc.cluster.local
     user: test
     port: 5432
     ssl: false

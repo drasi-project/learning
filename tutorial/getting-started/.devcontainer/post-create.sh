@@ -17,6 +17,6 @@ sudo apt-get update
 sudo apt-get install --no-install-recommends --assume-yes postgresql-client
 
 ## Install PostgreSQL on K3d
-kubectl apply -f https://drasi.blob.core.windows.net/installs/drasi-postgres.yaml -n drasi-system
+kubectl apply -f https://raw.githubusercontent.com/drasi-project/learning/main/tutorial/getting-started/resources/drasi-postgres.yaml
 sleep 15
-kubectl wait --for=condition=ready pod -l app=postgres -n drasi-system --timeout=60s
+kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s

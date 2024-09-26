@@ -1,0 +1,29 @@
+name: Draft Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version Tag'
+        required: true        
+
+jobs:
+  getting_started:
+    permissions:
+      contents: write
+      packages: read  
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Zip tutorial folder
+        run: |
+          zip -r quickstart-dev-container.zip tutorial/getting-started
+      
+      - name: Create GitHub Release
+        run: |
+          gh release create ${{ inputs.tag }} quickstart-dev-container.zip  --draft --title ${{ inputs.tag }}

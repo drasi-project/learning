@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-data-init
+data:
+  init.sql: >
+    CREATE TABLE "Message" (
+        "MessageId" integer NOT NULL,
+        "From" character varying(50) NOT NULL,
+        "Message" character varying(200) NOT NULL
+    );
+
+    ALTER TABLE "Message" ADD CONSTRAINT pk_message
+      PRIMARY KEY ("MessageId");
+
+    INSERT INTO public."Message" VALUES (1, 'Buzz Lightyear', 'To infinity and beyond!');
+    INSERT INTO public."Message" VALUES (2, 'Brian Kernighan', 'Hello World');
+    INSERT INTO public."Message" VALUES (3, 'Antoninus', 'I am Spartacus');
+    INSERT INTO public."Message" VALUES (4, 'David', 'I am Spartacus');
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-pg-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: hello-world
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          args: ["-c", "wal_level=logical"]
+          volumeMounts:
+          - name: init
+            mountPath: "/docker-entrypoint-initdb.d"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: test-pg-config
+      volumes:
+        - name: init
+          configMap:
+            name: test-data-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+   - port: 5432
+  selector:
+   app: postgres
