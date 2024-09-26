@@ -1,0 +1,64 @@
+# Calculates the comfort level of the building by taking 
+# the average of the comfort level of all floors
+kind: ContinuousQuery
+apiVersion: v1
+name: building-comfort-level-calc
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: facilities
+  query: > 
+    MATCH 
+      (r:Room)-[:PART_OF]->(f:Floor)-[:PART_OF]->(b:Building) 
+    WITH 
+      b,
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH 
+      b,
+      avg(RoomComfortLevel) AS FloorComfortLevel
+    WITH 
+      b, 
+      avg(FloorComfortLevel) AS ComfortLevel
+    RETURN 
+      elementId(b) AS BuildingId, 
+      ComfortLevel
+---
+# Calculates the comfort level of the floor by taking 
+# the average of the comfort level of all rooms
+kind: ContinuousQuery
+apiVersion: v1
+name: floor-comfort-level-calc
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: facilities
+  query: > 
+    MATCH 
+      (r:Room)-[:PART_OF]->(f:Floor) 
+    WITH
+      f, 
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH 
+      f, 
+      avg(RoomComfortLevel) AS ComfortLevel
+    RETURN 
+      elementId(f) AS FloorId, 
+      ComfortLevel
+---
+# Calculates the comfort level of a room
+kind: ContinuousQuery
+apiVersion: v1
+name: room-comfort-level-calc
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: facilities
+  query: > 
+    MATCH 
+      (r:Room) 
+    RETURN 
+      elementId(r) AS RoomId,
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS ComfortLevel

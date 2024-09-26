@@ -25,20 +25,14 @@ initBldQuery();
 initFloorQuery();
 initUIQuery();
 
+// This function listens to the 'building-comfort-ui' query, which lives in the query-ui.yaml file
 function initUIQuery() {
   uiListener = new ReactionListener(config.signalRUrl, config.uiQueryId, change => {
     if (change.op === 'x') {
       return;
     }
     
-    if (change.op === 'd') {
-      if (change.payload.before)
-        removeRoomData(change.payload.before);
-
-      else
-        removeRoomData(change.payload.after);
-    }
-    else {
+    if (change.op !== 'd') {  // if op 'u' or 'i'
       roomSubject.next(change.payload.after);
       upsertRoomData(change.payload.after);
     }
@@ -66,12 +60,12 @@ function initUIQuery() {
   });  
 }
 
+// This function listens to the 'floor-comfort-level-calc' query
 function initFloorQuery() {
   floorListener = new ReactionListener(config.signalRUrl, config.avgRoomQueryId, change => {
     if (change.op === 'x') {
       return;
     }
-
     floorStats.set(change.payload.after.FloorId, change.payload.after);
     floorSubject.next(change.payload.after);
   });
@@ -84,6 +78,7 @@ function initFloorQuery() {
   });  
 }
 
+// This function listens to the 'building-comfort-level-calc' query
 function initBldQuery() {
   bldListener = new ReactionListener(config.signalRUrl, config.avgFloorQueryId, change => {
     if (change.op === 'x') {
@@ -124,10 +119,6 @@ function upsertRoomData(data) {
   floor.rooms.set(data.RoomId, data);
 }
 
-function removeRoomData(data) {
-
-}
-
 function App() {
   const [data, setData] = React.useState(Array.from(buildings.values()));
 
@@ -147,7 +138,7 @@ function Building(props) {
 
   React.useEffect(() => {    
     let subscription = bldSubject.subscribe(v => {
-      if (v.BuildingId == props.building.id)
+      if (v.BuildingId === props.building.id)
         setBldComfort(v);
     });
     
@@ -155,7 +146,8 @@ function Building(props) {
       subscription.unsubscribe();
     };
   });
-  
+
+  // Init setup
   let level = bldComfort.ComfortLevel ?? 0;
   return (
     <Grid key={props.building.id} container spacing={2} bgcolor="pink">      
@@ -164,12 +156,14 @@ function Building(props) {
           <LinearProgress  variant="determinate" value={level} color={chooseColor(level)} ></LinearProgress>
           {level}
           <h3>Comfort Alerts</h3>
+          {/* If the comfort level of a room is outside of the desired range, a warning will be created here */}
           <ReactionResult 
             url={config.signalRUrl}
             queryId={config.roomAlertQueryId}
             itemKey={item => item.RoomId}>
               <RoomComfortAlert/>
           </ReactionResult>
+          {/* If the comfort level of a floor is outside of the desired range, a warning will be created here */}
           <ReactionResult 
             url={config.signalRUrl}
             queryId={config.floorAlertQueryId}
@@ -179,6 +173,7 @@ function Building(props) {
       </Grid>
       <Grid item xs={10}>
         <Stack spacing={2}>
+          {/* inits the floors */}
           {Array.from(props.building.floors.values()).map(floor => 
             <Floor key={floor.id} floor={floor}></Floor>
           )}
@@ -192,10 +187,9 @@ function Building(props) {
 function Floor(props) {
 
   const [floorComfort, setFloorComfort] = React.useState(floorStats.has(props.floor.id) ? floorStats.get(props.floor.id) : {});
-
   React.useEffect(() => {    
     let subscription = floorSubject.subscribe(v => {
-      if (v.FloorId == props.floor.id)
+      if (v.FloorId === props.floor.id)
         setFloorComfort(v);
     });
     
@@ -213,6 +207,7 @@ function Floor(props) {
           <LinearProgress  variant="determinate" value={level} color={chooseColor(level)} ></LinearProgress>
           {level}
         </Box>
+        {/* Setup the rooms in the floor */}
         {Array.from(props.floor.rooms.values()).map(initRoom => (
           <Room key={initRoom.RoomId} initRoom={initRoom}></Room>
         ))}
@@ -229,7 +224,8 @@ function Room(props) {
 
   React.useEffect(() => {    
     let subscription = roomSubject.subscribe(v => {
-      if (v.RoomId == props.initRoom.RoomId) {
+      if (v.RoomId === props.initRoom.RoomId) {
+        // Animation to show the change in values
         let prev = buildings.get(props.initRoom.BuildingId)
           .floors.get(props.initRoom.FloorId)
           .rooms.get(props.initRoom.RoomId);
@@ -274,9 +270,11 @@ function Room(props) {
         CO2: {room.CO2}
       </Grid>
     </Grid>
+    {/* This will cause the comfort level to go below the desired range */}
     <Button variant="outlined" onClick={e => updateRoom(room.BuildingId, room.FloorId, room.RoomId, 40, 20, 700)}>
         Break
     </Button>
+    {/* Resets the comfort level to 46, which is in the desired range of 40-50 */}
     <Button variant="outlined" onClick={e => updateRoom(room.BuildingId, room.FloorId, room.RoomId, 70, 40, 10)}>
         Reset
     </Button>
@@ -284,12 +282,14 @@ function Room(props) {
   )
 }
 
+// This function creates a warning that displays the room name and the comfort level of the room
 function RoomComfortAlert(props) {
   return (
     <Alert severity="warning">{props.RoomName} = {props.ComfortLevel}</Alert>
   );
 }
 
+// This function creates a warning that displays the floor name and the comfort level of the floor
 function FloorComfortAlert(props) {
   return (
     <Alert severity="warning">{props.FloorName} = {props.ComfortLevel}</Alert>
@@ -297,6 +297,7 @@ function FloorComfortAlert(props) {
 }
 
 async function updateRoom(buildingId, floorId, roomId, temperature, humidity, co2) {
+  // Sends a POST request to the Backend function to update the temperature, humidity, and CO2 levels of the room
   await axios.post(`${config.crudApiUrl}/building/${buildingId}/floor/${floorId}/room/${roomId}/sensor/temp`, { value: temperature });
   await delay(200);
   await axios.post(`${config.crudApiUrl}/building/${buildingId}/floor/${floorId}/room/${roomId}/sensor/humidity`, { value: humidity });

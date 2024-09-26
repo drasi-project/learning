@@ -49,7 +49,7 @@ async function GetAllFloors(context, bid, includeRooms = false) {
             id: node.id,
             buildingId: bid,
             name: node.properties?.name[0]?.value ?? "",
-            comfortLevel: node.properties?.comfortLevel[0]?.value ?? "",
+            comfortLevel: "10",
             rooms: includeRooms ? await GetAllRoomsForFloor(context, bid, node.id) : undefined
           };
           floors.push(v);

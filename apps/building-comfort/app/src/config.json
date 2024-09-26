@@ -1,6 +1,6 @@
 {
   "crudApiUrl": "http://localhost:7071",
-  "signalRUrl": "http://localhost:5001/hub",
+  "signalRUrl": "http://localhost:5001/hub",  
   "avgFloorQueryId": "building-comfort-level-calc",
   "uiQueryId": "building-comfort-ui",
   "avgRoomQueryId": "floor-comfort-level-calc",

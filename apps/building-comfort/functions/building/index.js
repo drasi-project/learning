@@ -123,7 +123,7 @@ module.exports = async function (context, req) {
     case "GET":
       const includeFloors = "includeFloors" in req.query && req.query.includeFloors != "false";
       const includeRooms = "includeRooms" in req.query && req.query.includeRooms != "false";
-      if (req.params.bid) {        
+      if (req.params.bid) {      
         result = await GetBuildingById(context, req.params.bid, includeFloors, includeRooms);
       } else {
         result = await GetAllBuildings(context, includeFloors, includeRooms);

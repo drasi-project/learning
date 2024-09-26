@@ -21,6 +21,11 @@ async function GetRoomById(context, bid, fid, rid) {
   const res = await client.submit(`g.V(bid).hasLabel("Building").in("PART_OF").hasLabel("Floor").hasId(fid).in("PART_OF").hasLabel("Room").hasId(rid)`,  { bid, fid, rid });
   const node = res.first();
 
+  let roomName = node.properties?.name[0]?.value ?? "";
+  let temp = node.properties?.temp[0]?.value ?? "";
+  let humidity = node.properties?.humidity[0]?.value ?? "";
+  let co2 = node.properties?.co2[0]?.value ?? "";
+  let comfortLevel = Math.floor(50 + (temp - 72) + (humidity - 42) + (co2 > 500 ? (co2 - 500) / 25 : 0));
   if (node) {
     return {
       body: {
@@ -31,7 +36,7 @@ async function GetRoomById(context, bid, fid, rid) {
         temp: node.properties?.temp[0]?.value ?? "",
         humidity: node.properties?.humidity[0]?.value ?? "",
         co2: node.properties?.co2[0]?.value ?? "",
-        comfortLevel: node.properties?.comfortLevel[0]?.value ?? ""
+        comfortLevel: comfortLevel
       }
     };
   } else {

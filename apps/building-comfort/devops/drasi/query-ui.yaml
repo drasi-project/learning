@@ -1,3 +1,6 @@
+# This yaml file contains one continuous query with the name 'building-comfort-ui'
+# It retrieves the relevant properties and calculates the comfort level of each room
+# This information will be used in the frontend React app
 kind: ContinuousQuery
 apiVersion: v1
 name: building-comfort-ui
@@ -9,6 +12,11 @@ spec:
   query: > 
     MATCH 
       (r:Room)-[:PART_OF]->(f:Floor)-[:PART_OF]->(b:Building) 
+    WITH 
+      r,
+      f,
+      b,
+      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS ComfortLevel
     RETURN 
       elementId(r) AS RoomId,
       r.name AS RoomName,
@@ -19,4 +27,4 @@ spec:
       r.temp AS Temperature, 
       r.humidity AS Humidity, 
       r.co2 AS CO2, 
-      r.comfortLevel AS ComfortLevel
+      ComfortLevel
