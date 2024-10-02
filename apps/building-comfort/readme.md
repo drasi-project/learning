@@ -42,6 +42,16 @@ This folder contains the following sub-folders:
 - [functions](./functions/) - contains Azure Functions used by the app and simulator to read and write to the source Cosmos database.
 
 ## Deploy Building Comfort Demo
+Prerequisites:
+* Drasi CLI
+* A dev environment with Node.js 18.
+* Python 3.8 or higher.
+* An Azure Subscription with permissions to create resources.
+* Azure CLI 2.40 or higher.
+* Azure Functions Core Tools 4.0 or higher.
+* A Kubernetes cluster Project Drasi deployed.
+* A clone of the Drasi Git repository on your local machine.
+
 
 ### 1. Deploy the Azure resources
 
