@@ -1,10 +1,34 @@
 # Building Comfort Demo Setup
 
-This README describes how to deploy the Building Comfort Demo for an Azure-hosted experience.
+This README describes how to deploy the Building Comfort Demo for an Azure-hosted experience. Before proceeding with this doc, it is recommended that you first be familiar with the overview of the Building Comfort Demo, its architecture, and how to self-host it in your cluster.
 
-Before proceeding with this doc, it is recommended that you first be familiar with the overview of the Building Comfort Demo, its architecture, and how to self-host it in your cluster as described at:
+## Overview
+This application illustrates the use of Drasi for a hypothetical building management scenario, including:
 
-> https://drasi-docs.azurewebsites.net/administrator/sample-app-deployment/building-comfort/
+* The use of Continuous Queries over a Cosmos DB Gremlin database.
+* Continuous Queries that include aggregations across hierarchical graph data.
+* The use of the Gremlin Reaction to update a Gremlin database based on the output of a Continuous Query.
+* The use of the SignalR Reaction to integrate Continuous Query output with a React JS Application.
+
+In this sample, Continuous Queries are used to calculate a comfort level metric for building management, calculated measurement that combines the physical measurements in a room such as temperature, humidity, and CO2 levels . For the purposes of this sample, the comfort level will be calculated dynamically for a room from the physical measurements using the simplified formula:
+
+`
+comfortLevel = trunc(50+(temp-72) + (humidity-42) + if( CO2 > 500,(CO2 - 500)/25,0))
+`
+
+A range of 40 to 50 is considered acceptable: a value below 40 indicates that temperature and/or humidity is too low, while a value above 50 indicates that temperature, humidity, and/or CO2 levels are too high.
+
+The app will provide a dashboard frontend to visualize the comfort levels of rooms and floors, as well as a way to change the environment measurements in the database to simulate changes in the building environment. The dashboard will also show alerts for rooms, floors, and the building when the comfort level is out of range, where the aggregated comfort levels for the floors and building are calculated from the average comfort levels of the rooms and floors respectively by Reactions.
+
+To accomplish we will use:
+
+* A Source getting changes to building environment data from Cosmos DB.
+* Several Continuous Queries that calculate comfort levels and alerts for the rooms, as well as aggregate values for the floors and building as a whole.
+* A Gremlin Reaction that updates the Cosmos DB database with the calculated comfort levels and aggregate values based on changes in the room environment measurements.
+* A SignalR Reaction that receives changes and forwards them to any connected front end clients.
+* An Azure Function App that provides HTTP endpoints for the demo app to directly change the environment values in the database.
+* A React frontend that invokes updates via the Function App and listens for changes via the SignalR reaction.
+
 
 ## Demo Contents
 
