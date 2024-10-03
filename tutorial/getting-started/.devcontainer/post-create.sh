@@ -12,11 +12,7 @@ done
 ## Install Drasi
 drasi init
 
-## Install PostgreSQL CLI
-sudo apt-get update
-sudo apt-get install --no-install-recommends --assume-yes postgresql-client
-
-## Install PostgreSQL on K3d
-kubectl apply -f https://raw.githubusercontent.com/drasi-project/learning/main/tutorial/getting-started/resources/drasi-postgres.yaml
+## Install PostgreSQL
+kubectl apply -f ./resources/drasi-postgres.yaml
 sleep 15
 kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
