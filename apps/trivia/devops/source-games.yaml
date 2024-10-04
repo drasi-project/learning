@@ -3,10 +3,15 @@ apiVersion: v1
 name: games
 spec:
   kind: CosmosGremlin
-  accountEndpoint:
-    kind: Secret
-    name: trivia-creds
-    key: accountEndpoint
-  database: Contoso
-  container: Trivia
-  partitionKey: partition
+  services:
+    reactivator: 
+      properties:
+        partitionKey: partition
+  properties:
+    accountEndpoint:
+      kind: Secret
+      name: trivia-creds
+      key: accountEndpoint
+    database: Contoso
+    container: Trivia
+
