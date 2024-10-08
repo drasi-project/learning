@@ -2,7 +2,7 @@ kind: Reaction
 apiVersion: v1
 name: signalr-trivia
 spec:
-  image: reaction-signalr
+  kind: SignalR
   queries:
     player-scores:
     team-scores:

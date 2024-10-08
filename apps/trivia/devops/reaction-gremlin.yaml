@@ -2,7 +2,7 @@ kind: Reaction
 apiVersion: v1
 name: evict-players
 spec:
-  image: reaction-gremlin
+  kind: Gremlin
   queries:
     players-to-evict: 
   properties: 

@@ -2,7 +2,7 @@ kind: Reaction
 apiVersion: v1
 name: test-debug
 spec:
-  image: reaction-debug
+  kind: Debug
   queries:
     player-scores:
     team-scores:
