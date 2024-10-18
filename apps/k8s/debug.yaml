@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: Reaction
-name: debug1
-spec:
-  kind: Debug
-  queries:
-    demo-query1:
-    risky-containers:
-    my-apps:
