@@ -3,8 +3,9 @@ This repo contains code for a tutorial and a few sample applications that use Dr
 
 ## Getting Started with Drasi
 #### Detect and react to your first database change using Drasi
-[This step-by-step tutorial](https://drasi.io/getting-started/) will help you get Drasi up and running quickly and show you how easy it is to create Sources, Continuous Queries, and Reactions.
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/drasi-project/learning)
+
+[The step-by-step tutorial linked here](https://drasi.io/getting-started/) will help you get Drasi up and running quickly and show you how easy it is to create Sources, Continuous Queries, and Reactions.
 
 ## Sample Applications
 Following sample applications demonstrate usage of Drasi in different scenarios:
