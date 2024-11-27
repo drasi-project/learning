@@ -1,0 +1,46 @@
+{
+	"name": "Building Comfort Sample App",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"onCreateCommand": "sed -i 's/\r$//' ./.devcontainer/post-create.sh && sed -i  's/\r$//' ./.devcontainer/on-create.sh && bash ./.devcontainer/on-create.sh",
+	"postCreateCommand": "bash ./.devcontainer/post-create.sh",
+	"postStartCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
+	"runArgs": [
+	  "--privileged",
+	  "--init"
+	],
+	// Features to add to the dev container. More info: https://containers.dev/features
+	"features": {
+      // Docker in Docker for running K3d
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+	  // K3d for running a local Kubernetes cluster
+	  "ghcr.io/rio/features/k3d:1": {},
+	  // Install the Kubernetes CLI
+	  "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+		"installMinikube": false,
+		"installHelm": false
+	  },
+	  // Install Postgres client
+	  "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {},
+	  "ghcr.io/devcontainers/features/python:1": {}
+	},
+	"remoteEnv": {
+	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+	  "PGHOST": "localhost",
+	  "PGDATABASE": "building-comfort-db",
+	  "PGPORT": "5432",
+	  "PGUSER" : "test",
+	  "PGPASSWORD" : "test"
+	},
+	// Use 'portsAttributes' to set default properties for specific forwarded ports.
+	// More info: https://containers.dev/implementors/json_reference/#port-attributes
+	"portsAttributes": {
+	  "5432": {
+		"label": "postgres",
+		"onAutoForward": "silent"
+	  },
+	  "8081": {
+		"label": "k3s",
+		"onAutoForward": "silent"
+	  }
+	}
+  }

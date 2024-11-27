@@ -1,0 +1,11 @@
+postgres_host="localhost"
+postgres_port="5432"
+postgres_db="building-comfort-db"
+postgres_user="test"
+postgres_password="test"
+buildingCount = 1
+floorCount = 3
+roomCount = 5
+defaultRoomTemp = 70
+defaultRoomHumidity = 40
+defaultRoomCo2 = 10
