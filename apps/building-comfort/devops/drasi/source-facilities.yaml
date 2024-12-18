@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kind: Source
 apiVersion: v1
-name: facilities
+kind: Source
+name: building-facilities
 spec:
-  kind: CosmosGremlin
-  services:
-    reactivator:
-      properties:
-        partitionKey: name
+  kind: PostgreSQL
   properties:
-    accountEndpoint:
-      kind: Secret
-      name: comfy-creds
-      key: accountEndpoint
-    database: Contoso
-    container: Facilities
+    host: postgres.default.svc.cluster.local
+    port: 5432
+    user: test
+    password: test
+    database: building-comfort-db
+    ssl: false
+    tables:
+      - public.Building
+      - public.Floor
+      - public.Room
+
