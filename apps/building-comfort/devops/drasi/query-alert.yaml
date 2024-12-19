@@ -17,21 +17,21 @@
 # Returns the room ID, room name, and comfort level of each room.
 kind: ContinuousQuery
 apiVersion: v1
-name: room-alert 
+name: room-alert
 spec:
   mode: query
   sources:
     subscriptions:
-      - id: facilities
+      - id: building-facilities
   query: >
-    MATCH 
-      (r:Room) 
-    WITH 
-      elementId(r) AS RoomId,
+    MATCH
+      (r:Room)
+    WITH
+      r.id AS RoomId,
       r.name AS RoomName,
-      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS ComfortLevel
-    WHERE ComfortLevel < 40 OR ComfortLevel > 50 
-    RETURN 
+      floor( 50 + (r.temperature - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS ComfortLevel
+    WHERE ComfortLevel < 40 OR ComfortLevel > 50
+    RETURN
       RoomId, RoomName, ComfortLevel
 ---
 # Calculates the average comfort level of all rooms in a floor
@@ -44,25 +44,35 @@ spec:
   mode: query
   sources:
     subscriptions:
-      - id: facilities
+      - id: building-facilities
+        nodes:
+          - sourceLabel: Room
+          - sourceLabel: Floor
+    joins:
+      - id: PART_OF_FLOOR
+        keys:
+          - label: Room
+            property: floor_id
+          - label: Floor
+            property: id
   query: >
-    MATCH 
-      (r:Room)-[:PART_OF]->(f:Floor) 
+    MATCH
+      (r:Room)-[:PART_OF_FLOOR]->(f:Floor)
     WITH
-      f, 
-      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
-    WITH 
-      f, 
+      f,
+      floor( 50 + (r.temperature - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH
+      f,
       avg(RoomComfortLevel) AS ComfortLevel
-    WHERE 
-      ComfortLevel < 40 OR ComfortLevel > 50 
-    RETURN 
-      elementId(f) AS FloorId, 
-      f.name AS FloorName, 
+    WHERE
+      ComfortLevel < 40 OR ComfortLevel > 50
+    RETURN
+      f.id AS FloorId,
+      f.name AS FloorName,
       ComfortLevel
 ---
 # Calculates the average comfort level of all floors in a building
-# Returns the building ID, building Name and the comfort level if 
+# Returns the building ID, building Name and the comfort level if
 # the comfort leve is outside the acceptable range of 40-50
 kind: ContinuousQuery
 apiVersion: v1
@@ -71,25 +81,42 @@ spec:
   mode: query
   sources:
     subscriptions:
-      - id: facilities
+      - id: building-facilities
+        nodes:
+          - sourceLabel: Room
+          - sourceLabel: Floor
+          - sourceLabel: Building
+    joins:
+      - id: PART_OF_FLOOR
+        keys:
+          - label: Room
+            property: floor_id
+          - label: Floor
+            property: id
+      - id: PART_OF_BUILDING
+        keys:
+          - label: Floor
+            property: building_id
+          - label: Building
+            property: id
   query: >
-    MATCH 
-      (r:Room)-[:PART_OF]->(f:Floor)-[:PART_OF]->(b:Building) 
-    WITH 
-      f, 
+    MATCH
+      (r:Room)-[:PART_OF_FLOOR]->(f:Floor)-[:PART_OF_BUILDING]->(b:Building)
+    WITH
+      f,
       b,
-      floor( 50 + (r.temp - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
-    WITH 
-      f, 
+      floor( 50 + (r.temperature - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH
+      f,
       b,
       avg(RoomComfortLevel) AS FloorComfortLevel
-    WITH 
-      b, 
+    WITH
+      b,
       avg(FloorComfortLevel) AS ComfortLevel
-    WHERE 
-      ComfortLevel < 40 OR ComfortLevel > 50 
-    RETURN 
-      elementId(b) AS BuildingId, 
-      b.name AS BuildingName, 
+    WHERE
+      ComfortLevel < 40 OR ComfortLevel > 50
+    RETURN
+      b.id AS BuildingId,
+      b.name AS BuildingName,
       ComfortLevel
  
