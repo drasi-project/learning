@@ -1,3 +1,4 @@
+#!/bin/sh
 # Copyright 2024 The Drasi Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: Reaction
-name: building-signalr-hub
-spec:
-  kind: SignalR
-  queries:
-    building-comfort-level-calc:
-    floor-comfort-level-calc:
-    building-alert:
-    room-alert:
-    floor-alert:
-    building-comfort-ui:
-  endpoint:
-    gateway: 8080
+## Create a k3d cluster
+while ( ! kubectl cluster-info ); do
+  # Docker takes a few seconds to initialize
+  echo "Waiting for Docker to launch..."
+  k3d cluster delete
+  k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0'
+  sleep 1
+done
+
+## Create Postgres service on k3d cluster and forward its port
+kubectl apply -f ./devops/data/postgres.yaml
+sleep 15
+kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
+
+## Install Drasi
+drasi init

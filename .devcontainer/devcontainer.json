@@ -1,7 +1,6 @@
 {
   "name": "Getting started with Drasi",
-  "extends": "./base.devcontainer.json",
-  "workspaceFolder": "/workspaces/learning/tutorial/getting-started", 
+  "workspaceFolder": "/workspaces/learning/tutorial/getting-started",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "onCreateCommand": "bash ./.devcontainer/on-create.sh",
   "postCreateCommand": "bash ./.devcontainer/post-create.sh",

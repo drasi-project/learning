@@ -1,0 +1,9 @@
+{
+  "signalRUrl": "http://localhost:8080/hub",
+  "uiQueryId": "building-comfort-ui",
+  "avgFloorQueryId": "building-comfort-level-calc",
+  "avgRoomQueryId": "floor-comfort-level-calc",
+  "buildingAlertQueryId": "building-alert",
+  "floorAlertQueryId": "floor-alert",
+  "roomAlertQueryId": "room-alert"
+}
