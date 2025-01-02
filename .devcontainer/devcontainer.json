@@ -2,21 +2,18 @@
   "name": "Getting started with Drasi",
   "workspaceFolder": "/workspaces/learning/tutorial/getting-started",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "onCreateCommand": "bash ./.devcontainer/on-create.sh",
-  "postCreateCommand": "bash ./.devcontainer/post-create.sh",
-  "postStartCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
+  "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/on-create.sh && bash ../../.devcontainer/on-create.sh",
+  "postCreateCommand": "bash ../../.devcontainer/post-create.sh",
+  "postAttachCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
 	"runArgs": [
 	  "--privileged",
 	  "--init"
   ],
-  // Features to add to the dev container. More info: https://containers.dev/features
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/rio/features/k3d:1": {}
   },
-  // Configure tool-specific properties.
   "customizations": {
-    // Configure properties specific to VS Code.
     "vscode": {
       "settings": {},
       "extensions": [
@@ -32,8 +29,6 @@
     "PGUSER" : "test",
     "PGPASSWORD" : "test"
   },
-  // Use 'portsAttributes' to set default properties for specific forwarded ports.
-  // More info: https://containers.dev/implementors/json_reference/#port-attributes
   "portsAttributes": {
     "5432": {
     "label": "postgres",
@@ -41,10 +36,6 @@
     },
     "8081": {
     "label": "k3s",
-    "onAutoForward": "silent"
-    },
-    "9083": {
-    "label": "drasi",
     "onAutoForward": "silent"
     }
   }
