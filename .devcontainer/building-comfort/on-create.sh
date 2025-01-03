@@ -14,4 +14,10 @@
 # limitations under the License.
 
 ## Install Drasi CLI
-curl -fsSL https://raw.githubusercontent.com/drasi-project/drasi-platform/main/cli/installers/install-drasi-cli.sh | /bin/bash 
+curl -fsSL https://raw.githubusercontent.com/drasi-project/drasi-platform/main/cli/installers/install-drasi-cli.sh | /bin/bash
+
+## Setting up locale since `node:18-bookworm` does not have it configured
+apt-get update
+apt-get install -y locales
+sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen
+locale-gen

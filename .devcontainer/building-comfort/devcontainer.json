@@ -36,6 +36,12 @@
 	  // Install Python
 	  "ghcr.io/devcontainers/features/python:1": {}
 	},
+	// Configure environment variables
+    "containerEnv": {
+        "LANG": "en_US.UTF-8",
+        "LANGUAGE": "en_US:en",
+        "LC_ALL": "en_US.UTF-8"
+    },
 	"remoteEnv": {
 	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
 	  "PGHOST": "localhost",
@@ -45,8 +51,6 @@
 	  "PGPASSWORD" : "test"
 
 	},
-	// Use 'portsAttributes' to set default properties for specific forwarded ports.
-	// More info: https://containers.dev/implementors/json_reference/#port-attributes
 	"portsAttributes": {
 	  "5432": {
 		"label": "postgres",
