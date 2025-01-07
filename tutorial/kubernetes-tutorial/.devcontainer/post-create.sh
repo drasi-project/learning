@@ -31,7 +31,17 @@ kubectl apply -f ./resources/postgres.yaml
 sleep 5
 kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
 
+## Install My App
+kubectl apply -f ./resources/my-app.yaml
+kubectl wait --for=condition=ready pod/my-app-1 --timeout=60s
+kubectl wait --for=condition=ready pod/my-app-2 --timeout=60s
+
+## Pre Pull Image to speed up the experience
+docker pull drasidemo.azurecr.io/my-app:0.3
+
+## Create a secret for the k8s context
 k3d kubeconfig get k3s-default | sed 's/0.0.0.0.*/kubernetes.default.svc/g' | kubectl create secret generic k8s-context --from-file=context=/dev/stdin -n drasi-system
 
+## Create the sources
 drasi apply -f ./resources/sources.yaml
 drasi wait -f ./resources/sources.yaml
