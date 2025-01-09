@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Reaction
+name: hello-world-signalr
+spec:
+  kind: SignalR
+  queries:
+    hello-world-from:
