@@ -1,0 +1,56 @@
+{
+	"name": "Risky Containers with Drasi",
+	"image": "node:18-bookworm",
+	"workspaceFolder": "/workspaces/learning/tutorial/risky-containers",
+	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/risky-containers/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/risky-containers/on-create.sh && bash ../../.devcontainer/risky-containers/on-create.sh",
+	"postCreateCommand": "bash ../../.devcontainer/risky-containers/post-create.sh",
+	"postAttachCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
+	"runArgs": [
+	  "--privileged",
+	  "--init"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-dapr",
+				"ms-azuretools.vscode-docker",
+				"GitHub.copilot",
+				"ckolkman.vscode-postgres",
+				"DrasiProject.drasi"
+			]
+		}
+	},
+	// Features to add to the dev container. More info: https://containers.dev/features
+	"features": {
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+	  "ghcr.io/rio/features/k3d:1": {},
+	  "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
+		"version": "15"
+	  }
+	},
+	// Configure environment variables
+    "containerEnv": {
+        "LANG": "en_US.UTF-8",
+        "LANGUAGE": "en_US:en",
+        "LC_ALL": "en_US.UTF-8"
+    },
+	"remoteEnv": {
+	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+	  "PGHOST": "localhost",
+	  "PGDATABASE": "tutorial",
+	  "PGPORT": "5432",
+	  "PGUSER" : "test",
+	  "PGPASSWORD" : "test"
+
+	},
+	"portsAttributes": {
+	  "5432": {
+		"label": "postgres",
+		"onAutoForward": "silent"
+	  },
+	  "8081": {
+		"label": "k3s",
+		"onAutoForward": "silent"
+	  }
+	}
+  }

@@ -1,5 +1,5 @@
 {
-	"name": "Drasi Dev Container",
+	"name": "Sub directory test",
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 	"onCreateCommand": "sed -i 's/\r$//' ./.devcontainer/post-create.sh && sed -i  's/\r$//' ./.devcontainer/on-create.sh && bash ./.devcontainer/on-create.sh",
 	"postCreateCommand": "bash ./.devcontainer/post-create.sh",
@@ -31,7 +31,7 @@
 	"remoteEnv": {
 	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
 	  "PGHOST": "localhost",
-	  "PGDATABASE": "hello-world",
+	  "PGDATABASE": "tutorial",
 	  "PGPORT": "5432",
 	  "PGUSER" : "test",
 	  "PGPASSWORD" : "test"
