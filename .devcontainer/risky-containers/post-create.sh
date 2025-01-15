@@ -30,6 +30,10 @@ kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
 ## Install Drasi
 drasi init
 
-## Pre Pull Image to speed up the experience
+## Pre Pull Images to speed up the experience
+docker pull drasidemo.azurecr.io/my-app:0.1
+docker pull drasidemo.azurecr.io/my-app:0.2
 docker pull drasidemo.azurecr.io/my-app:0.3
+k3d image import drasidemo.azurecr.io/my-app:0.1
+k3d image import drasidemo.azurecr.io/my-app:0.2
 k3d image import drasidemo.azurecr.io/my-app:0.3
