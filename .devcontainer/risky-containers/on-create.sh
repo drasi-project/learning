@@ -29,28 +29,3 @@ sudo apt-get install --no-install-recommends --assume-yes postgresql-client
 
 ## Install Drasi CLI
 curl -fsSL https://raw.githubusercontent.com/drasi-project/drasi-platform/main/cli/installers/install-drasi-cli.sh | /bin/bash 
-
-## Create a k3d cluster
-while ( ! kubectl cluster-info ); do
-  # Docker takes a few seconds to initialize
-  echo "Waiting for Docker to launch..."
-  k3d cluster delete
-  k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0'
-  sleep 1
-done
-
-## Create Postgres service on k3d cluster and forward its port
-kubectl apply -f ./resources/postgres.yaml
-sleep 5
-kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
-
-## Install Drasi
-drasi init
-
-## Pre Pull Images to speed up the experience
-docker pull drasidemo.azurecr.io/my-app:0.1
-docker pull drasidemo.azurecr.io/my-app:0.2
-docker pull drasidemo.azurecr.io/my-app:0.3
-k3d image import drasidemo.azurecr.io/my-app:0.1
-k3d image import drasidemo.azurecr.io/my-app:0.2
-k3d image import drasidemo.azurecr.io/my-app:0.3
