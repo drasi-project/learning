@@ -6,7 +6,6 @@ spec:
   containers:
     - name: app
       image: "drasidemo.azurecr.io/my-app:0.1"
-      imagePullPolicy: Always
 ---
 apiVersion: v1
 kind: Pod
@@ -16,4 +15,3 @@ spec:
   containers:
     - name: app
       image: "drasidemo.azurecr.io/my-app:0.2"
-      imagePullPolicy: Always
