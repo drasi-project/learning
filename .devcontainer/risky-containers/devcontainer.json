@@ -1,7 +1,7 @@
 {
 	"name": "Risky Containers with Drasi",
 	"image": "node:18-bookworm",
-	"workspaceFolder": "/workspaces/learning/tutorial/risky-containers",
+	"workspaceFolder": "/workspaces/drasi-learning/tutorial/risky-containers",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/risky-containers/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/risky-containers/on-create.sh && bash ../../.devcontainer/risky-containers/on-create.sh",
 	"postCreateCommand": "bash ../../.devcontainer/risky-containers/post-create.sh",
 	"postAttachCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
