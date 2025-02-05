@@ -27,5 +27,5 @@ spec:
       name: trivia-creds
       key: accountEndpoint
     database: Contoso
-    container: Trivia
+    container: Trivia2
 
