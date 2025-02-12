@@ -20,15 +20,14 @@ spec:
   queries:
     players-to-evict: 
   properties: 
-    AddedResultCommand: g.V('@PlayerId').union(g.V('@PlayerId'), __.in(), outE(), inE()).drop()
-    DatabaseHost:
+    addedResultCommand: g.V(@PlayerId).union(g.V(@PlayerId), __.in(), outE(), inE()).drop()
+    gremlinHost:
       kind: Secret
       name: trivia-creds
       key: gremlinHost
-    DatabasePrimaryKey:
+    gremlinPassword:
       kind: Secret
       name: trivia-creds
       key: gremlinKey
-    DatabaseName: Contoso
-    DatabaseContainerName: Trivia
-    DatabasePort: "443"
+    gremlinUsername: /dbs/Contoso/colls/Trivia2
+    gremlinPort: 443
