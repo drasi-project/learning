@@ -1,0 +1,51 @@
+{
+	"name": "Curbside Pickup with Drasi",
+	"image": "node:18-bookworm",
+	"workspaceFolder": "/workspaces/learning/apps/curbside-pickup",
+	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/curbside-pickup/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/curbside-pickup/on-create.sh && sed -i  's/\r$//' ../../.devcontainer/curbside-pickup/post-start.sh && bash ../../.devcontainer/curbside-pickup/on-create.sh",
+	"postCreateCommand": "bash ../../.devcontainer/curbside-pickup/post-create.sh",
+    "postStartCommand": "bash ../../.devcontainer/curbside-pickup/post-start.sh",
+	"runArgs": [
+	  "--privileged",
+	  "--init"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ritwickdey.LiveServer",
+				"ms-python.python", 
+				"ms-python.vscode-pylance",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	},
+	// Features to add to the dev container. More info: https://containers.dev/features
+	"features": {
+      // Docker in Docker for running K3d
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+	  // K3d for running a local Kubernetes cluster
+	  "ghcr.io/rio/features/k3d:1": {},
+	  // Install the Kubernetes CLI
+	  "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+		"installMinikube": false,
+		"installHelm": false
+	  },
+	  // Install Python
+	  "ghcr.io/devcontainers/features/python:1": {}
+	},
+	// Configure environment variables
+    "containerEnv": {
+        "LANG": "en_US.UTF-8",
+        "LANGUAGE": "en_US:en",
+        "LC_ALL": "en_US.UTF-8"
+    },
+	"remoteEnv": {
+	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+	},
+	"portsAttributes": {
+	  "8081": {
+		"label": "k3s",
+		"onAutoForward": "silent"
+	  }
+	}
+  }
