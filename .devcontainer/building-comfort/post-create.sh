@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-## Create a k3d cluster
+echo "Creating a k3d cluster..."
 while ( ! kubectl cluster-info ); do
   # Docker takes a few seconds to initialize
   echo "Waiting for Docker to launch..."
@@ -22,10 +22,13 @@ while ( ! kubectl cluster-info ); do
   sleep 1
 done
 
-## Create Postgres service on k3d cluster and forward its port
+echo "Creating Postgres service on k3d cluster..."
 kubectl apply -f ./devops/data/postgres.yaml
-sleep 15
-kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
+
+echo "Waiting for PostgreSQL to become ready..."
+kubectl wait --for=condition=ready pod -l app=postgres --timeout=300s
 
 ## Install Drasi
 drasi init
+
+echo "Setup complete. You can now run your application."
