@@ -20,7 +20,8 @@ import ConnectionStatus from './ConnectionStatus.vue';
 import DelayedOrder from './DelayedOrder.vue';
 import { ResultSet } from '@drasi/signalr-vue';
 
-const signalrUrl = import.meta.env.VITE_SIGNALR_URL;
+const rawSignalrUrl = import.meta.env.VITE_SIGNALR_URL;
+const signalrUrl = computed(() => rawSignalrUrl ? rawSignalrUrl.replace(/\/+$/, '') : '');
 const queryId = import.meta.env.VITE_QUERY_ID;
 const connected = ref(true); // You might want to implement actual connection status logic
 </script>
