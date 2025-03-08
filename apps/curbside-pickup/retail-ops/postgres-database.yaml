@@ -1,0 +1,99 @@
+# Copyright 2025 The Drasi Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: setup-retail-schema
+data:
+  01-create-tables.sql: |
+    -- Create orders table
+    CREATE TABLE orders (
+        id SERIAL PRIMARY KEY,
+        customer_name VARCHAR(255) NOT NULL,
+        driver_name VARCHAR(255) NOT NULL,
+        plate VARCHAR(50) NOT NULL,
+        status VARCHAR(50) DEFAULT 'preparing' NOT NULL
+    );
+
+  02-add-constraints.sql: |
+    -- Add a check constraint for the status column to enforce enum values
+    ALTER TABLE orders
+    ADD CONSTRAINT chk_status CHECK (status IN ('preparing', 'ready'));
+
+  03-seed-data.sql: |
+    -- Insert seed data into orders table
+    INSERT INTO orders (customer_name, driver_name, plate, status) VALUES
+    ('Sophia Carter', 'Elijah Brooks', 'A1234', 'preparing'),
+    ('Mason Rivera', 'Isabella Reed', 'B5678', 'preparing'),
+    ('Ava Mitchell', 'Liam Bennett', 'C9876', 'preparing');
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: RetailOperations
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          args: ["-c", "wal_level=logical"]
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: init
+              mountPath: "/docker-entrypoint-initdb.d"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+      volumes:
+        - name: init
+          configMap:
+            name: setup-retail-schema
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
