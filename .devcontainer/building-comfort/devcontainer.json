@@ -4,7 +4,7 @@
 	"workspaceFolder": "/workspaces/learning/apps/building-comfort",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/building-comfort/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/building-comfort/on-create.sh && bash ../../.devcontainer/building-comfort/on-create.sh",
 	"postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
-	"postStartCommand": "bash ../../.devcontainer/building-comfort/post-start.sh",
+	"postAttachCommand": "nohup bash -c 'kubectl port-forward svc/postgres 5432:5432 &'",
 	"runArgs": [
 	  "--privileged",
 	  "--init"
@@ -12,7 +12,7 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ritwickdey.LiveServer"
+				"ritwickdey.LiveServer",
 			]
 		}
 	},
