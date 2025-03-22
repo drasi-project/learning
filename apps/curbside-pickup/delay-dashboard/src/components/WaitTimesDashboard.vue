@@ -15,7 +15,7 @@ limitations under the License.
 -->
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import DelayedOrder from './DelayedOrder.vue';
 import { ResultSet } from '@drasi/signalr-vue';

@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue()],
     server: {
-      port: Number(env.VITE_PORT) || 3000
+      port: Number(env.VITE_PORT) || 3002
     }
   };
 });

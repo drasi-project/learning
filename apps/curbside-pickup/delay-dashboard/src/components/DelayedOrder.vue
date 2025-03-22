@@ -15,7 +15,7 @@ limitations under the License.
 -->
 
 <script setup>
-import { ref, onMounted, onUnmounted, defineProps } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   order: Object

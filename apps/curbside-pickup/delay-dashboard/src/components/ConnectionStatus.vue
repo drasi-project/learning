@@ -15,7 +15,6 @@ limitations under the License.
 -->
 
 <script setup>
-import { defineProps } from 'vue';
 import { Wifi, WifiOff } from 'lucide-vue-next';
 
 defineProps({

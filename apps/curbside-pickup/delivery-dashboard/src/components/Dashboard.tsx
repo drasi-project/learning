@@ -20,9 +20,9 @@ import OrderCard from './OrderCard';
 import ConnectionStatus from './ConnectionStatus';
 
 const Dashboard: React.FC = () => {
-    const signalRUrl = process.env.REACT_APP_SIGNALR_URL ? 
-        process.env.REACT_APP_SIGNALR_URL.replace(/\/+$/, '') : undefined;
-    const queryId = process.env.REACT_APP_QUERY_ID;
+    const signalRUrl = import.meta.env.VITE_SIGNALR_URL ? 
+    import.meta.env.VITE_SIGNALR_URL.replace(/\/+$/, '') : undefined;
+    const queryId = import.meta.env.VITE_QUERY_ID;
 
     if (!signalRUrl || !queryId) {
         return (
