@@ -15,9 +15,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ParkingSquare, ShoppingBag, PlusCircle } from 'lucide-react';
 import { vehicleApi } from './services/vehicleApi';
-import Alert from './components/Alert';
-import VehicleCard from './components/VehicleCard';
-import VehicleForm from './components/VehicleForm';
+import Alert from './components/Alert.jsx';
+import VehicleCard from './components/VehicleCard.jsx';
+import VehicleForm from './components/VehicleForm.jsx';
 
 const App = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);

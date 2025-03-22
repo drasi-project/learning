@@ -24,8 +24,13 @@ export default defineConfig(({ mode }) => {
       port: Number(env.VITE_PORT) || 3004
     },
     optimizeDeps: {
-      noDiscovery: true,
-      include: []
+      include: [
+        'react',
+        'react-dom', 
+        'axios', 
+        'lucide-react',
+        '@headlessui/react'
+      ]
     }
   };
 });
