@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions andls
 # limitations under the License.
 
-## Create a k3d cluster
+echo "Create a k3d cluster..."
 while ( ! kubectl cluster-info ); do
   # Docker takes a few seconds to initialize
   echo "Waiting for Docker to launch..."
