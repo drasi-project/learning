@@ -4,7 +4,7 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:dev-22",
   "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/on-create.sh && bash ../../.devcontainer/on-create.sh",
   "postCreateCommand": "bash ../../.devcontainer/post-create.sh",
-  "postStartCommand": "bash ../../.devcontainer/curbside-pickup/post-start.sh",
+  "postStartCommand": "bash ../../.devcontainer/post-start.sh",
 	"runArgs": [
 	  "--privileged",
 	  "--init"
