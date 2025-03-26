@@ -23,11 +23,13 @@ while ( ! kubectl cluster-info ); do
   sleep 1
 done
 
-## Install Drasi
-sleep 30
-drasi init
-
-# Install PostgreSQL
+echo "Setting up PostgreSQL database with seed data..."
 kubectl apply -f ./resources/drasi-postgres.yaml
 sleep 15
 kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
+
+echo "Installing Drasi..."
+sleep 30
+drasi init
+
+echo "Setup complete. You can now run your application."

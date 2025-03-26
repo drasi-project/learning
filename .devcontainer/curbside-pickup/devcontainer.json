@@ -1,7 +1,7 @@
 {
 	"name": "Curbside Pickup with Drasi",
 	"image": "node:18-bookworm",
-	"workspaceFolder": "/workspaces/learning/apps/curbside-pickup",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/apps/curbside-pickup",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/curbside-pickup/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/curbside-pickup/on-create.sh && sed -i  's/\r$//' ../../.devcontainer/curbside-pickup/post-start.sh && bash ../../.devcontainer/curbside-pickup/on-create.sh",
 	"postCreateCommand": "bash ../../.devcontainer/curbside-pickup/post-create.sh",
     "postStartCommand": "bash ../../.devcontainer/curbside-pickup/post-start.sh",
