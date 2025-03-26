@@ -4,7 +4,7 @@
 	"workspaceFolder": "/workspaces/learning/apps/building-comfort",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/building-comfort/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/building-comfort/on-create.sh && bash ../../.devcontainer/building-comfort/on-create.sh",
 	"postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
-    "postStartCommand": "bash ../../.devcontainer/curbside-pickup/post-start.sh",
+    "postStartCommand": "bash ../../.devcontainer/building-comfort/post-start.sh",
 	"runArgs": [
 	  "--privileged",
 	  "--init"

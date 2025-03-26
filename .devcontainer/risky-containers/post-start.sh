@@ -29,7 +29,6 @@ mkdir -p "$LOG_DIR" || echo "Warning: Could not create $LOG_DIR"
 
 # Clean up any existing port-forward processes
 pkill -f "kubectl port-forward svc/postgres" 2>/dev/null || echo "No prior postgres port-forward process found."
-pkill -f "kubectl port-forward svc/mysql" 2>/dev/null || echo "No prior mysql port-forward process found."
 
 # Verify cluster connectivity
 echo "Checking cluster connectivity..."
@@ -41,8 +40,6 @@ fi
 # Verify services exist
 echo "Checking for svc/postgres..."
 kubectl get svc/postgres || echo "Warning: svc/postgres not found."
-echo "Checking for svc/mysql..."
-kubectl get svc/mysql || echo "Warning: svc/mysql not found."
 
 # Forward PostgreSQL port
 if check_port 5432; then
