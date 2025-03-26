@@ -1,7 +1,7 @@
 {
 	"name": "Building Comfort with Drasi",
 	"image": "node:18-bookworm",
-	"workspaceFolder": "/workspaces/learning/apps/building-comfort",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/apps/building-comfort",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/building-comfort/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/building-comfort/on-create.sh && bash ../../.devcontainer/building-comfort/on-create.sh",
 	"postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
     "postStartCommand": "bash ../../.devcontainer/building-comfort/post-start.sh",

@@ -1,6 +1,6 @@
 {
   "name": "Getting started with Drasi",
-  "workspaceFolder": "/workspaces/learning/tutorial/getting-started",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/getting-started",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:dev-22",
   "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/on-create.sh && bash ../../.devcontainer/on-create.sh",
   "postCreateCommand": "bash ../../.devcontainer/post-create.sh",
