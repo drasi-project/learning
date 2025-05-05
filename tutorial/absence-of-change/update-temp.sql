@@ -1,0 +1,1 @@
+UPDATE "Freezer" SET temp = 38 WHERE id = 1;
