@@ -1,6 +1,9 @@
 {
 	"name": "Absence of Change with Drasi",
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"hostRequirements": {
+		"cpus": 4
+	},
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/absence-of-change",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/absence-of-change/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/absence-of-change/on-create.sh && bash ../../.devcontainer/absence-of-change/on-create.sh",
   	"postCreateCommand": "bash ../../.devcontainer/absence-of-change/post-create.sh",
