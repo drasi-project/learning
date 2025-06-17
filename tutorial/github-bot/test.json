@@ -11,12 +11,14 @@
   "parameters": {
     "eventHubName": {
       "type": "string",
+      "defaultValue": "github",
       "metadata": {
         "description": "Name of the Event Hub"
       }
     },
     "functionAppName": {
       "type": "string",
+      "defaultValue": "github-bot",
       "metadata": {
         "description": "Name of the Function App"
       }
@@ -45,7 +47,7 @@
   },
   "variables": {
     "eventHubNamespaceName": "[format('{0}-ns', parameters('eventHubName'))]",
-    "storageAccountName": "[format('{0}storage{1}', parameters('functionAppName'), uniqueString(resourceGroup().id))]",
+    "storageAccountName": "[format('{0}storage', uniqueString(resourceGroup().id))]",
     "appServicePlanName": "[format('{0}-plan', parameters('functionAppName'))]",
     "applicationInsightsName": "[format('{0}-insights', parameters('functionAppName'))]"
   },
