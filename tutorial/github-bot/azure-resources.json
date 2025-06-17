@@ -1,13 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.13.1.58284",
-      "templateHash": "17369482535761581614"
-    }
-  },
+  "contentVersion": "1.0.0.0",  
   "parameters": {
     "functionAppName": {
       "type": "string",
@@ -144,7 +137,7 @@
             },
             {
               "name": "WEBSITE_NODE_DEFAULT_VERSION",
-              "value": "~18"
+              "value": "~20"
             },
             {
               "name": "FUNCTIONS_WORKER_RUNTIME",
