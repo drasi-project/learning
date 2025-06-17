@@ -184,7 +184,7 @@
         "config": {
           "bindings": [
             {
-              "authLevel": "function",
+              "authLevel": "anonymous",
               "type": "httpTrigger",
               "direction": "in",
               "name": "req",
@@ -227,7 +227,7 @@
     },
     "functionUrl": {
       "type": "string",
-      "value": "[format('https://{0}/api/HttpTriggerEventHub', reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2023-01-01').defaultHostName)]",
+      "value": "[format('https://{0}/api/webhook', reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')), '2023-01-01').defaultHostName)]",
       "metadata": {
         "description": "Function App URL"
       }
