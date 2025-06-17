@@ -9,16 +9,9 @@
     }
   },
   "parameters": {
-    "eventHubName": {
-      "type": "string",
-      "defaultValue": "github",
-      "metadata": {
-        "description": "Name of the Event Hub"
-      }
-    },
     "functionAppName": {
       "type": "string",
-      "defaultValue": "github-bot",
+      "defaultValue": "[format('github-bot-{0}', uniqueString(resourceGroup().id))]",
       "metadata": {
         "description": "Name of the Function App"
       }
@@ -32,7 +25,7 @@
     },
     "eventHubSku": {
       "type": "string",
-      "defaultValue": "Standard",
+      "defaultValue": "Basic",
       "metadata": {
         "description": "SKU for the Event Hub namespace"
       }
@@ -46,7 +39,8 @@
     }
   },
   "variables": {
-    "eventHubNamespaceName": "[format('{0}-ns', parameters('eventHubName'))]",
+    "eventHubName": "github",
+    "eventHubNamespaceName": "[format('{0}-ns', uniqueString(resourceGroup().id))]",
     "storageAccountName": "[format('{0}storage', uniqueString(resourceGroup().id))]",
     "appServicePlanName": "[format('{0}-plan', parameters('functionAppName'))]",
     "applicationInsightsName": "[format('{0}-insights', parameters('functionAppName'))]"
@@ -107,7 +101,7 @@
     {
       "type": "Microsoft.EventHub/namespaces/eventhubs",
       "apiVersion": "2023-01-01-preview",
-      "name": "[format('{0}/{1}', variables('eventHubNamespaceName'), parameters('eventHubName'))]",
+      "name": "[format('{0}/{1}', variables('eventHubNamespaceName'), variables('eventHubName'))]",
       "properties": {
         "messageRetentionInDays": 1,
         "partitionCount": 1
@@ -178,7 +172,7 @@
             },
             {
               "name": "EventHubName",
-              "value": "[parameters('eventHubName')]"
+              "value": "[variables('eventHubName')]"
             }
           ],
           "use32BitWorkerProcess": false,
@@ -220,7 +214,7 @@
               "type": "eventHub",
               "direction": "out",
               "name": "outputEventHubMessage",
-              "eventHubName": "[parameters('eventHubName')]",
+              "eventHubName": "[variables('eventHubName')]",
               "connection": "EventHubConnectionString"
             }
           ]
