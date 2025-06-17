@@ -42,8 +42,7 @@
     "eventHubName": "github",
     "eventHubNamespaceName": "[format('{0}-ns', uniqueString(resourceGroup().id))]",
     "storageAccountName": "[format('{0}storage', uniqueString(resourceGroup().id))]",
-    "appServicePlanName": "[format('{0}-plan', parameters('functionAppName'))]",
-    "applicationInsightsName": "[format('{0}-insights', parameters('functionAppName'))]"
+    "appServicePlanName": "[format('{0}-plan', parameters('functionAppName'))]"
   },
   "resources": [
     {
@@ -70,18 +69,7 @@
       },
       "kind": "functionapp",
       "properties": {}
-    },
-    {
-      "type": "Microsoft.Insights/components",
-      "apiVersion": "2020-02-02",
-      "name": "[variables('applicationInsightsName')]",
-      "location": "[parameters('location')]",
-      "kind": "web",
-      "properties": {
-        "Application_Type": "web",
-        "Request_Source": "rest"
-      }
-    },
+    },    
     {
       "type": "Microsoft.EventHub/namespaces",
       "apiVersion": "2023-01-01-preview",
@@ -159,10 +147,6 @@
               "value": "~18"
             },
             {
-              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-              "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
-            },
-            {
               "name": "FUNCTIONS_WORKER_RUNTIME",
               "value": "node"
             },
@@ -177,12 +161,16 @@
           ],
           "use32BitWorkerProcess": false,
           "ftpsState": "FtpsOnly",
-          "minTlsVersion": "1.2"
+          "minTlsVersion": "1.2",
+          "cors": {
+            "allowedOrigins": [
+              "*"
+            ]
+          }
         },
         "httpsOnly": true
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
         "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]",
         "[resourceId('Microsoft.EventHub/namespaces/authorizationRules', variables('eventHubNamespaceName'), 'RootManageSharedAccessKey')]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
@@ -191,7 +179,7 @@
     {
       "type": "Microsoft.Web/sites/functions",
       "apiVersion": "2023-01-01",
-      "name": "[format('{0}/{1}', parameters('functionAppName'), 'HttpTriggerEventHub')]",
+      "name": "[format('{0}/{1}', parameters('functionAppName'), 'webhook')]",
       "properties": {
         "config": {
           "bindings": [
