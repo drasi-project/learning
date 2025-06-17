@@ -1,6 +1,9 @@
 {
 	"name": "Risky Containers with Drasi",
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"hostRequirements": {
+		"cpus": 4
+	},
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/risky-containers",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/risky-containers/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/risky-containers/on-create.sh && bash ../../.devcontainer/risky-containers/on-create.sh",
   	"postCreateCommand": "bash ../../.devcontainer/risky-containers/post-create.sh",
