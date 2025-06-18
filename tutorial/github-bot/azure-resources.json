@@ -201,7 +201,7 @@
           ]
         },
         "files": {
-          "index.js": "module.exports = async function (context, req) {\n      context.bindings.outputEventHubMessage = req.body;\n};\n",
+          "index.js": "module.exports = async function (context, req) {\n      context.bindings.outputEventHubMessage = req.body;\n context.bindings.outputEventHubMessage.event = req.headers['x-github-event'];\n };\n",
           "package.json": "{\n  \"name\": \"http-eventhub-forwarder\",\n  \"version\": \"1.0.0\",\n  \"description\": \"HTTP to Event Hub forwarder function\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"start\": \"func start\"\n  }\n}\n"
         }
       },
