@@ -1,0 +1,39 @@
+{
+  "name": "Tutorial: Curbside Pickup",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/curbside-pickup",
+  "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/tutorial-curbside-pickup/post-create.sh && sed -i 's/\r$//' ../../.devcontainer/tutorial-curbside-pickup/on-create.sh && bash ../../.devcontainer/tutorial-curbside-pickup/on-create.sh",
+  "postCreateCommand": "bash ../../.devcontainer/tutorial-curbside-pickup/post-create.sh",
+  "runArgs": [
+    "--privileged",
+    "--init"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "DrasiProject.drasi"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/rio/features/k3d:1": {}
+  },
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "portsAttributes": {
+    "80": {
+      "label": "Curbside Pickup Apps",
+      "onAutoForward": "silent"
+    }
+  }
+}

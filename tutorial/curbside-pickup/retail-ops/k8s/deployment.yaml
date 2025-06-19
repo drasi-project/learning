@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: retail-ops
+  labels:
+    app: retail-ops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: retail-ops
+  template:
+    metadata:
+      labels:
+        app: retail-ops
+    spec:
+      containers:
+      - name: retail-ops
+        image: ghcr.io/drasi-project/learning/curbside-pickup/retail-ops:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://test:test@postgres:5432/RetailOperations"
+        - name: ROOT_PATH
+          value: "/retail-ops"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: retail-ops
+  labels:
+    app: retail-ops
+spec:
+  type: ClusterIP
+  selector:
+    app: retail-ops
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: retail-ops-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+    - /retail-ops
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: retail-ops
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-retail-ops-stripprefix@kubernetescrd
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /retail-ops
+        pathType: Prefix
+        backend:
+          service:
+            name: retail-ops
+            port:
+              number: 80

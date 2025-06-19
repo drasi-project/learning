@@ -1,0 +1,180 @@
+# Copyright 2025 The Drasi Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# ConfigMap for MySQL CDC configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-cdc-config
+  labels:
+    app: mysql
+data:
+  my.cnf: |
+    [mysqld]
+    gtid-mode = ON
+    enforce-gtid-consistency = ON
+    server-id=1
+    log-bin=/var/lib/mysql/mysql-bin.log
+    binlog-format=ROW
+    binlog-row-image=FULL
+    expire-logs-days=1
+---
+# ConfigMap for MySQL environment variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+  labels:
+    app: mysql
+data:
+  MYSQL_DATABASE: PhysicalOperations
+  MYSQL_USER: test
+  MYSQL_PASSWORD: test
+  MYSQL_ROOT_PASSWORD: rootpassword
+---
+# ConfigMap for database and table creation (01_init.sql)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init
+  labels:
+    app: mysql
+data:
+  01_init.sql: |
+    CREATE DATABASE IF NOT EXISTS PhysicalOperations;
+    USE PhysicalOperations;
+
+    CREATE TABLE vehicles (
+        plate VARCHAR(10) PRIMARY KEY,
+        driver_name VARCHAR(50) NOT NULL,
+        customer_name VARCHAR(50) NOT NULL,
+        make VARCHAR(50) NOT NULL,
+        model VARCHAR(50) NOT NULL,
+        color VARCHAR(30) NOT NULL,
+        location ENUM('Parking', 'Curbside') NOT NULL DEFAULT 'Parking'
+    );
+---
+# ConfigMap for granting privileges (02_permissions.sql)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-permissions
+  labels:
+    app: mysql
+data:
+  02_permissions.sql: |
+    USE PhysicalOperations;
+
+    -- Ensure the 'test' user exists
+    CREATE USER IF NOT EXISTS 'test'@'%' IDENTIFIED BY 'test';
+
+    -- Grant replication privileges
+    GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'test'@'%';
+
+    -- Grant SELECT privilege so Debezium can read table schemas
+    GRANT ALL PRIVILEGES ON PhysicalOperations.* TO 'test'@'%';
+
+    -- Apply changes
+    FLUSH PRIVILEGES;
+---
+# ConfigMap for seeding initial data (03_seed_data.sql)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-seed-data
+  labels:
+    app: mysql
+data:
+  03_seed_data.sql: |
+    USE PhysicalOperations;
+
+    -- Insert data for 3 vehicles
+    INSERT INTO vehicles (plate, driver_name, customer_name, make, model, color, location) VALUES
+    ('A1234', 'Elijah Brooks', 'Sophia Carter', 'Toyota', 'Camry', 'Blue', 'Parking'),
+    ('B5678', 'Isabella Reed', 'Mason Rivera', 'Ford', 'F-150', 'Red', 'Parking'),
+    ('C9876', 'Liam Bennett', 'Ava Mitchell', 'Honda', 'Civic', 'Black', 'Parking');
+---
+# Deployment for MySQL
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          args: ["--default-authentication-plugin=mysql_native_password"]
+          volumeMounts:
+            - name: mysql-init
+              mountPath: /docker-entrypoint-initdb.d/01_init.sql
+              subPath: 01_init.sql
+            - name: mysql-permissions
+              mountPath: /docker-entrypoint-initdb.d/02_permissions.sql
+              subPath: 02_permissions.sql
+            - name: mysql-seed-data
+              mountPath: /docker-entrypoint-initdb.d/03_seed_data.sql
+              subPath: 03_seed_data.sql
+            - name: mysql-cdc-config
+              mountPath: /etc/mysql/conf.d
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: mysql-config
+      volumes:
+        - name: mysql-init
+          configMap:
+            name: mysql-init
+        - name: mysql-permissions
+          configMap:
+            name: mysql-permissions
+        - name: mysql-seed-data
+          configMap:
+            name: mysql-seed-data
+        - name: mysql-cdc-config
+          configMap:
+            name: mysql-cdc-config
+---
+# Service for MySQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: mysql
