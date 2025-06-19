@@ -37,13 +37,10 @@ const getSignalRUrl = () => {
   }
 };
 
-const signalrUrl = ref('');
+// Initialize with the URL immediately, not in onMounted
+const signalrUrl = ref(getSignalRUrl());
 const queryId = import.meta.env.VITE_QUERY_ID;
 const connected = ref(true); // You might want to implement actual connection status logic
-
-onMounted(() => {
-  signalrUrl.value = getSignalRUrl();
-});
 </script>
 
 <template>
