@@ -15,15 +15,35 @@ limitations under the License.
 -->
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import DelayedOrder from './DelayedOrder.vue';
 import { ResultSet } from '@drasi/signalr-vue';
 
-const rawSignalrUrl = import.meta.env.VITE_SIGNALR_URL;
-const signalrUrl = computed(() => rawSignalrUrl ? rawSignalrUrl.replace(/\/+$/, '') : '');
+// Dynamic SignalR URL detection for Codespaces compatibility
+const getSignalRUrl = () => {
+  const hostname = window.location.hostname;
+  
+  // Check if we're in GitHub Codespaces
+  if (hostname.includes('.github.dev') || hostname.includes('.app.github.dev')) {
+    // Extract base URL and construct port-specific URL for port 8080
+    const parts = hostname.split('-');
+    const portIndex = parts.length - 1;
+    const baseUrl = parts.slice(0, portIndex).join('-');
+    return `https://${baseUrl}-8080.app.github.dev/hub`;
+  } else {
+    // Local environment (DevContainer, Kind, etc.)
+    return 'http://localhost:8080/hub';
+  }
+};
+
+const signalrUrl = ref('');
 const queryId = import.meta.env.VITE_QUERY_ID;
 const connected = ref(true); // You might want to implement actual connection status logic
+
+onMounted(() => {
+  signalrUrl.value = getSignalRUrl();
+});
 </script>
 
 <template>

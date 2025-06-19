@@ -26,18 +26,6 @@ spec:
     prefixes:
     - /signalr
 ---
-# Service that points to SignalR gateway in drasi-system namespace
-apiVersion: v1
-kind: Service
-metadata:
-  name: signalr-proxy
-spec:
-  type: ExternalName
-  externalName: signalr-gateway.drasi-system.svc.cluster.local
-  ports:
-  - port: 8080
-    targetPort: 8080
----
 # Ingress to route /signalr to the SignalR gateway
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -53,6 +41,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: signalr-proxy
+            name: signalr-gateway
+            namespace: drasi-system
             port:
               number: 8080

@@ -51,7 +51,7 @@ spec:
   - http:
       paths:
       - path: /
-        pathType: Prefix
+        pathType: Exact
         backend:
           service:
             name: demo

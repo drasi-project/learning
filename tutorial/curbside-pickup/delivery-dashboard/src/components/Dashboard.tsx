@@ -20,14 +20,30 @@ import OrderCard from './OrderCard';
 import ConnectionStatus from './ConnectionStatus';
 
 const Dashboard: React.FC = () => {
-    const signalRUrl = import.meta.env.VITE_SIGNALR_URL ? 
-    import.meta.env.VITE_SIGNALR_URL.replace(/\/+$/, '') : undefined;
+    // Dynamic SignalR URL detection for Codespaces compatibility
+    const getSignalRUrl = () => {
+        const hostname = window.location.hostname;
+        
+        // Check if we're in GitHub Codespaces
+        if (hostname.includes('.github.dev') || hostname.includes('.app.github.dev')) {
+            // Extract base URL and construct port-specific URL for port 8080
+            const parts = hostname.split('-');
+            const portIndex = parts.length - 1;
+            const baseUrl = parts.slice(0, portIndex).join('-');
+            return `https://${baseUrl}-8080.app.github.dev/hub`;
+        } else {
+            // Local environment (DevContainer, Kind, etc.)
+            return 'http://localhost:8080/hub';
+        }
+    };
+
+    const signalRUrl = getSignalRUrl();
     const queryId = import.meta.env.VITE_QUERY_ID;
 
-    if (!signalRUrl || !queryId) {
+    if (!queryId) {
         return (
             <div className="text-red-600 p-4">
-                Error: Missing environment variables. Please check .env file.
+                Error: Missing VITE_QUERY_ID environment variable.
             </div>
         );
     }
