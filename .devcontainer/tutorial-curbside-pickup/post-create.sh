@@ -40,6 +40,9 @@ kubectl apply -f delivery-dashboard/k8s/deployment.yaml
 kubectl apply -f delay-dashboard/k8s/deployment.yaml
 kubectl apply -f demo/k8s/deployment.yaml
 
+echo "Setting up SignalR proxy for Drasi..."
+kubectl apply -f k8s/signalr-proxy.yaml
+
 echo "Waiting for dashboard deployments to be ready..."
 kubectl wait --for=condition=available deployment/delivery-dashboard deployment/delay-dashboard deployment/demo --timeout=120s
 
