@@ -15,10 +15,10 @@ limitations under the License.
 -->
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import ConnectionStatus from './ConnectionStatus.vue';
 import DelayedOrder from './DelayedOrder.vue';
-import { ResultSet } from '@drasi/signalr-vue';
+import { ResultSet, ReactionListener } from '@drasi/signalr-vue';
 
 // Dynamic SignalR URL detection for Codespaces compatibility
 const getSignalRUrl = () => {
@@ -40,7 +40,81 @@ const getSignalRUrl = () => {
 // Initialize with the URL immediately, not in onMounted
 const signalrUrl = ref(getSignalRUrl());
 const queryId = import.meta.env.VITE_QUERY_ID;
-const connected = ref(true); // You might want to implement actual connection status logic
+const connected = ref(false);
+
+let listener = null;
+let retryInterval = null;
+
+const createConnection = () => {
+  try {
+    // Create a listener to monitor connection status
+    listener = new ReactionListener(
+      signalrUrl.value,
+      'connection-monitor',
+      () => {} // Empty callback since we only care about connection status
+    );
+
+    const hubConnection = listener.sigRConn.connection;
+    
+    hubConnection.onclose(() => {
+      connected.value = false;
+      // Start retry mechanism when connection is closed
+      if (!retryInterval) {
+        retryInterval = setInterval(() => {
+          console.log('Retrying SignalR connection...');
+          createConnection();
+        }, 5000); // Retry every 5 seconds
+      }
+    });
+    
+    hubConnection.onreconnecting(() => connected.value = false);
+    hubConnection.onreconnected(() => {
+      connected.value = true;
+      // Clear retry interval on successful reconnection
+      if (retryInterval) {
+        clearInterval(retryInterval);
+        retryInterval = null;
+      }
+    });
+    
+    // Check initial connection status
+    listener.sigRConn.started
+      .then(() => {
+        connected.value = true;
+        // Clear retry interval on successful connection
+        if (retryInterval) {
+          clearInterval(retryInterval);
+          retryInterval = null;
+        }
+      })
+      .catch(() => {
+        connected.value = false;
+        // Start retry mechanism if initial connection fails
+        if (!retryInterval) {
+          retryInterval = setInterval(() => {
+            console.log('Retrying SignalR connection...');
+            createConnection();
+          }, 5000); // Retry every 5 seconds
+        }
+      });
+  } catch (error) {
+    console.error('Failed to create SignalR connection:', error);
+    connected.value = false;
+  }
+};
+
+onMounted(() => {
+  createConnection();
+});
+
+onUnmounted(() => {
+  if (retryInterval) {
+    clearInterval(retryInterval);
+  }
+  if (listener) {
+    listener.sigRConn.connection.stop();
+  }
+});
 </script>
 
 <template>

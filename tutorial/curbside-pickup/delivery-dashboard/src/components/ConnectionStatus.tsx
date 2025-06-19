@@ -22,27 +22,82 @@ interface ConnectionStatusProps {
 
 const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ url }) => {
     const [isConnected, setIsConnected] = useState(false);
+    const [listener, setListener] = useState<ReactionListener | null>(null);
 
     useEffect(() => {
-        // Create a listener with a dummy query ID just to monitor connection
-        const listener = new ReactionListener(
-            url, 
-            'connection-monitor', 
-            () => {}  // Empty callback since we only care about connection status
-        );
-
-        const hubConnection = listener['sigRConn'].connection;
+        let retryInterval: NodeJS.Timeout | null = null;
         
-        hubConnection.onclose(() => setIsConnected(false));
-        hubConnection.onreconnecting(() => setIsConnected(false));
-        hubConnection.onreconnected(() => setIsConnected(true));
-        
-        // Check initial connection status
-        listener['sigRConn'].started
-            .then(() => setIsConnected(true))
-            .catch(() => setIsConnected(false));
+        const createConnection = () => {
+            try {
+                // Create a listener with a dummy query ID just to monitor connection
+                const newListener = new ReactionListener(
+                    url, 
+                    'connection-monitor', 
+                    () => {}  // Empty callback since we only care about connection status
+                );
 
-        // No cleanup needed as ReactionListener handles connection cleanup
+                const hubConnection = newListener['sigRConn'].connection;
+                
+                hubConnection.onclose(() => {
+                    setIsConnected(false);
+                    // Start retry mechanism when connection is closed
+                    if (!retryInterval) {
+                        retryInterval = setInterval(() => {
+                            console.log('Retrying SignalR connection...');
+                            createConnection();
+                        }, 5000); // Retry every 5 seconds
+                    }
+                });
+                
+                hubConnection.onreconnecting(() => setIsConnected(false));
+                hubConnection.onreconnected(() => {
+                    setIsConnected(true);
+                    // Clear retry interval on successful reconnection
+                    if (retryInterval) {
+                        clearInterval(retryInterval);
+                        retryInterval = null;
+                    }
+                });
+                
+                // Check initial connection status
+                newListener['sigRConn'].started
+                    .then(() => {
+                        setIsConnected(true);
+                        // Clear retry interval on successful connection
+                        if (retryInterval) {
+                            clearInterval(retryInterval);
+                            retryInterval = null;
+                        }
+                    })
+                    .catch(() => {
+                        setIsConnected(false);
+                        // Start retry mechanism if initial connection fails
+                        if (!retryInterval) {
+                            retryInterval = setInterval(() => {
+                                console.log('Retrying SignalR connection...');
+                                createConnection();
+                            }, 5000); // Retry every 5 seconds
+                        }
+                    });
+
+                setListener(newListener);
+            } catch (error) {
+                console.error('Failed to create SignalR connection:', error);
+                setIsConnected(false);
+            }
+        };
+
+        createConnection();
+
+        // Cleanup function
+        return () => {
+            if (retryInterval) {
+                clearInterval(retryInterval);
+            }
+            if (listener) {
+                listener['sigRConn'].connection.stop();
+            }
+        };
     }, [url]);
 
     if (isConnected) {
