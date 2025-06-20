@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+data:
+  init.sql: |
+    -- Create database if not exists
+    SELECT 'CREATE DATABASE "building-comfort-db"'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'building-comfort-db')\gexec
+
+    -- Connect to the database
+    \c building-comfort-db
+
+    -- Create Building table
+    CREATE TABLE IF NOT EXISTS "Building" (
+      id VARCHAR(50) PRIMARY KEY,
+      name VARCHAR(100) NOT NULL
+    );
+
+    -- Create Floor table
+    CREATE TABLE IF NOT EXISTS "Floor" (
+      id VARCHAR(50) PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      building_id VARCHAR(50) NOT NULL,
+      FOREIGN KEY (building_id) REFERENCES "Building"(id) ON DELETE CASCADE
+    );
+
+    -- Create Room table
+    CREATE TABLE IF NOT EXISTS "Room" (
+      id VARCHAR(50) PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      temperature INTEGER,
+      humidity INTEGER,
+      co2 INTEGER,
+      floor_id VARCHAR(50) NOT NULL,
+      FOREIGN KEY (floor_id) REFERENCES "Floor"(id) ON DELETE CASCADE
+    );
+
+    -- Insert seed data: 1 building, 3 floors, 3 rooms per floor
+    INSERT INTO "Building" (id, name) VALUES 
+      ('building_01', 'Building 01')
+    ON CONFLICT (id) DO NOTHING;
+
+    INSERT INTO "Floor" (id, name, building_id) VALUES 
+      ('floor_01_01', 'Floor 01', 'building_01'),
+      ('floor_01_02', 'Floor 02', 'building_01'),
+      ('floor_01_03', 'Floor 03', 'building_01')
+    ON CONFLICT (id) DO NOTHING;
+
+    -- Floor 1 rooms
+    INSERT INTO "Room" (id, name, temperature, humidity, co2, floor_id) VALUES 
+      ('room_01_01_01', 'Room 01', 70, 40, 10, 'floor_01_01'),
+      ('room_01_01_02', 'Room 02', 70, 40, 10, 'floor_01_01'),
+      ('room_01_01_03', 'Room 03', 70, 40, 10, 'floor_01_01')
+    ON CONFLICT (id) DO NOTHING;
+
+    -- Floor 2 rooms
+    INSERT INTO "Room" (id, name, temperature, humidity, co2, floor_id) VALUES 
+      ('room_01_02_01', 'Room 01', 70, 40, 10, 'floor_01_02'),
+      ('room_01_02_02', 'Room 02', 70, 40, 10, 'floor_01_02'),
+      ('room_01_02_03', 'Room 03', 70, 40, 10, 'floor_01_02')
+    ON CONFLICT (id) DO NOTHING;
+
+    -- Floor 3 rooms
+    INSERT INTO "Room" (id, name, temperature, humidity, co2, floor_id) VALUES 
+      ('room_01_03_01', 'Room 01', 70, 40, 10, 'floor_01_03'),
+      ('room_01_03_02', 'Room 02', 70, 40, 10, 'floor_01_03'),
+      ('room_01_03_03', 'Room 03', 70, 40, 10, 'floor_01_03')
+    ON CONFLICT (id) DO NOTHING;
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_DB: building-comfort-db
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        args: ["-c", "wal_level=logical"]
+        # Resource limits removed for better DevContainer performance
+        volumeMounts:
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+      volumes:
+      - name: postgres-init
+        configMap:
+          name: postgres-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

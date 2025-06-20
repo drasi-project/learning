@@ -26,13 +26,7 @@ spec:
           value: "mysql+pymysql://test:test@mysql:3306/PhysicalOperations"
         - name: ROOT_PATH
           value: "/physical-ops"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        # Resource limits removed for better DevContainer performance
         livenessProbe:
           httpGet:
             path: /docs

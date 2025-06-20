@@ -11,10 +11,8 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-azuretools.vscode-docker",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "DrasiProject.drasi"
+        "DrasiProject.drasi",
+        "cweijan.vscode-database-client2"
       ]
     }
   },
@@ -30,10 +28,17 @@
   "remoteEnv": {
     "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
+  "forwardPorts": [80],
   "portsAttributes": {
     "80": {
       "label": "Curbside Pickup Apps",
-      "onAutoForward": "silent"
+      "onAutoForward": "notify"
     }
+  },
+  
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
   }
 }

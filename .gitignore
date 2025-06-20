@@ -5,3 +5,5 @@
 **/node_modules
 **/logs
 **/*.bak
+**/.claude
+**/CLAUDE.md

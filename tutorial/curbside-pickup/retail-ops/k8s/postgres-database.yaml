@@ -68,13 +68,7 @@ spec:
         - name: postgres
           image: postgres:15-alpine
           args: ["-c", "wal_level=logical"]
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "256Mi"
-              cpu: "250m"
+          # Resource limits removed for better DevContainer performance
           volumeMounts:
             - name: init
               mountPath: "/docker-entrypoint-initdb.d"

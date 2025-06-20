@@ -15,6 +15,20 @@
 
 set -e
 
+# Ensure kubectl is available
+if ! command -v kubectl &> /dev/null; then
+    echo "kubectl not found in PATH. Attempting to install..."
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    chmod +x kubectl
+    sudo mv kubectl /usr/local/bin/
+fi
+
+# Verify kubectl is available
+if ! command -v kubectl &> /dev/null; then
+    echo "ERROR: kubectl is still not available. Please check the installation."
+    exit 1
+fi
+
 echo "Creating K3d cluster..."
 # Delete existing cluster if it exists
 k3d cluster delete devcluster 2>/dev/null || true
@@ -51,7 +65,31 @@ echo "Waiting for all deployments to be ready..."
 kubectl wait --for=condition=available deployment --all --timeout=300s
 
 echo "Initializing Drasi..."
-drasi init
+MAX_ATTEMPTS=3
+ATTEMPT=1
+DRASI_INITIALIZED=false
+
+while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
+    echo "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..."
+    
+    if drasi init; then
+        DRASI_INITIALIZED=true
+        echo "Drasi initialized successfully!"
+    else
+        echo "Drasi initialization failed."
+        
+        if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+            echo "Uninstalling Drasi before retry..."
+            drasi uninstall --force -y 2>/dev/null || true
+            sleep 5
+        else
+            echo "ERROR: Failed to initialize Drasi after $MAX_ATTEMPTS attempts."
+            exit 1
+        fi
+    fi
+    
+    ATTEMPT=$((ATTEMPT + 1))
+done
 
 echo "Setup complete! Applications are available at:"
 echo "  Demo (All Apps): http://localhost/"
@@ -59,3 +97,4 @@ echo "  Physical Operations: http://localhost/physical-ops"
 echo "  Retail Operations: http://localhost/retail-ops"
 echo "  Delivery Dashboard: http://localhost/delivery-dashboard"
 echo "  Delay Dashboard: http://localhost/delay-dashboard"
+echo ""

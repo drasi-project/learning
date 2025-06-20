@@ -26,13 +26,7 @@ spec:
           value: "postgresql://test:test@postgres:5432/RetailOperations"
         - name: ROOT_PATH
           value: "/retail-ops"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        # Resource limits removed for better DevContainer performance
         livenessProbe:
           httpGet:
             path: /docs
