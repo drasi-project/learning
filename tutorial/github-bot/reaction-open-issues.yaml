@@ -1,0 +1,27 @@
+kind: Reaction
+apiVersion: v1
+name: my-reaction
+spec:
+  kind: Http
+  properties:
+    baseUrl: "https://api.github.com"
+    token: 
+      kind: Secret
+      name: github
+      key: token
+  queries:
+    open-issues: >
+      added:
+        url: "/repos/{{after.repo}}/issues/{{after.issue_number}}/comments"
+        method: "POST"
+        body: > 
+          {
+            "body": "Hello! @{{after.creator}}, thank you for your contribution!!"
+          }
+      deleted:
+        url: "/repos/{{before.repo}}/issues/{{before.issue_number}}/comments"
+        method: "POST"
+        body: > 
+          {
+            "body": "This issue has now been closed."
+          }

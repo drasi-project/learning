@@ -1,0 +1,23 @@
+kind: Reaction
+apiVersion: v1
+name: stale-reaction
+spec:
+  kind: Http
+  properties:
+    baseUrl: "https://api.github.com"
+    token: 
+      kind: Secret
+      name: github
+      key: token
+  queries:
+    stale-issues2: >
+      added:
+        url: "/repos/{{after.repo}}/issues/{{after.issue_number}}/labels"
+        method: "POST"
+        body: > 
+          {
+            "labels": ["stale"]
+          }
+      deleted:
+        url: "/repos/{{before.repo}}/issues/{{before.issue_number}}/labels/stale"
+        method: "DELETE"
