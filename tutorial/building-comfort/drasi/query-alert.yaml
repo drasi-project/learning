@@ -1,0 +1,122 @@
+# Copyright 2024 The Drasi Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Calculates the comfort level of rooms.
+# Retrieves all rooms that have a comfort level below 40 or above 50.
+# Returns the room ID, room name, and comfort level of each room.
+kind: ContinuousQuery
+apiVersion: v1
+name: room-alert
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: building-facilities
+  query: >
+    MATCH
+      (r:Room)
+    WITH
+      r.id AS RoomId,
+      r.name AS RoomName,
+      floor( 50 + (r.temperature - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS ComfortLevel
+    WHERE ComfortLevel < 40 OR ComfortLevel > 50
+    RETURN
+      RoomId, RoomName, ComfortLevel
+---
+# Calculates the average comfort level of all rooms in a floor
+# Retrieves all floors that have a comfort level below 40 or above 50
+# Returns the floor ID, floor name and comfort level of each floor
+kind: ContinuousQuery
+apiVersion: v1
+name: floor-alert
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: building-facilities
+        nodes:
+          - sourceLabel: Room
+          - sourceLabel: Floor
+    joins:
+      - id: PART_OF_FLOOR
+        keys:
+          - label: Room
+            property: floor_id
+          - label: Floor
+            property: id
+  query: >
+    MATCH
+      (r:Room)-[:PART_OF_FLOOR]->(f:Floor)
+    WITH
+      f,
+      floor( 50 + (r.temperature - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH
+      f,
+      avg(RoomComfortLevel) AS ComfortLevel
+    WHERE
+      ComfortLevel < 40 OR ComfortLevel > 50
+    RETURN
+      f.id AS FloorId,
+      f.name AS FloorName,
+      ComfortLevel
+---
+# Calculates the average comfort level of all floors in a building
+# Returns the building ID, building Name and the comfort level if
+# the comfort leve is outside the acceptable range of 40-50
+kind: ContinuousQuery
+apiVersion: v1
+name: building-alert
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: building-facilities
+        nodes:
+          - sourceLabel: Room
+          - sourceLabel: Floor
+          - sourceLabel: Building
+    joins:
+      - id: PART_OF_FLOOR
+        keys:
+          - label: Room
+            property: floor_id
+          - label: Floor
+            property: id
+      - id: PART_OF_BUILDING
+        keys:
+          - label: Floor
+            property: building_id
+          - label: Building
+            property: id
+  query: >
+    MATCH
+      (r:Room)-[:PART_OF_FLOOR]->(f:Floor)-[:PART_OF_BUILDING]->(b:Building)
+    WITH
+      f,
+      b,
+      floor( 50 + (r.temperature - 72) + (r.humidity - 42) + CASE WHEN r.co2 > 500 THEN (r.co2 - 500) / 25 ELSE 0 END ) AS RoomComfortLevel
+    WITH
+      f,
+      b,
+      avg(RoomComfortLevel) AS FloorComfortLevel
+    WITH
+      b,
+      avg(FloorComfortLevel) AS ComfortLevel
+    WHERE
+      ComfortLevel < 40 OR ComfortLevel > 50
+    RETURN
+      b.id AS BuildingId,
+      b.name AS BuildingName,
+      ComfortLevel
+ 

@@ -1,0 +1,104 @@
+name: Manual Build Tutorial Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      tutorial:
+        description: 'Tutorial to build'
+        required: true
+        type: choice
+        options:
+          - curbside-pickup
+          - building-comfort
+      apps:
+        description: 'Specific apps to build (comma-separated, leave empty for all)'
+        required: false
+        default: ''
+      tag:
+        description: 'Image tag'
+        required: true
+        default: 'latest'
+      push:
+        description: 'Push images to registry'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/drasi-project/learning
+
+jobs:
+  build-selected:
+    name: Build Selected Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+      
+      - name: Log in to GitHub Container Registry
+        if: ${{ github.event.inputs.push == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build images
+        run: |
+          cd tutorial/${{ github.event.inputs.tutorial }}
+          
+          # Determine which apps to build
+          if [[ -z "${{ github.event.inputs.apps }}" ]]; then
+            case "${{ github.event.inputs.tutorial }}" in
+              "curbside-pickup")
+                APPS="demo physical-ops retail-ops delivery-dashboard delay-dashboard"
+                ;;
+              "building-comfort")
+                APPS="control-panel dashboard demo"
+                ;;
+            esac
+          else
+            APPS="${{ github.event.inputs.apps }}"
+            APPS="${APPS//,/ }"  # Replace commas with spaces
+          fi
+          
+          # Build each app
+          PUSH_FLAG=""
+          if [[ "${{ github.event.inputs.push }}" == "true" ]]; then
+            PUSH_FLAG="--push"
+          fi
+          
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tutorial:** ${{ github.event.inputs.tutorial }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** ${{ github.event.inputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Push:** ${{ github.event.inputs.push }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Images:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          for APP in $APPS; do
+            echo "Building $APP..."
+            IMAGE="${{ env.IMAGE_PREFIX }}/${{ github.event.inputs.tutorial }}/$APP:${{ github.event.inputs.tag }}"
+            
+            if docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              -t "$IMAGE" \
+              $PUSH_FLAG \
+              "./$APP"; then
+              echo "- ✅ \`$IMAGE\`" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- ❌ \`$IMAGE\` (failed)" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+          done

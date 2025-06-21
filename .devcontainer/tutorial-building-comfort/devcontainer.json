@@ -1,0 +1,44 @@
+{
+  "name": "Tutorial: Building Comfort",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/building-comfort",
+  "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/tutorial-building-comfort/post-create.sh && sed -i 's/\r$//' ../../.devcontainer/tutorial-building-comfort/on-create.sh && bash ../../.devcontainer/tutorial-building-comfort/on-create.sh",
+  "postCreateCommand": "bash ../../.devcontainer/tutorial-building-comfort/post-create.sh",
+  "runArgs": [
+    "--privileged",
+    "--init"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DrasiProject.drasi",
+        "cweijan.vscode-database-client2"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/rio/features/k3d:1": {}
+  },
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "forwardPorts": [80],
+  "portsAttributes": {
+    "80": {
+      "label": "Building Comfort Apps",
+      "onAutoForward": "notify"
+    }
+  },
+  
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  }
+}

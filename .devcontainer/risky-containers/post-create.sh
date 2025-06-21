@@ -27,8 +27,24 @@ kubectl apply -f ./resources/postgres.yaml
 sleep 5
 kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
 
-## Install Drasi
-drasi init
+## Install Drasi with retry logic (up to 3 attempts)
+max_attempts=3
+attempt=1
+while [ $attempt -le $max_attempts ]; do
+  echo "Installing Drasi (attempt $attempt of $max_attempts)..."
+  if drasi init; then
+    echo "Drasi initialized successfully"
+    break
+  else
+    if [ $attempt -eq $max_attempts ]; then
+      echo "Failed to initialize Drasi after $max_attempts attempts"
+      exit 1
+    fi
+    echo "Drasi init failed, retrying in 5 seconds..."
+    sleep 5
+    attempt=$((attempt + 1))
+  fi
+done
 
 ## Pre Pull Images to speed up the experience
 docker pull drasidemo.azurecr.io/my-app:0.1
