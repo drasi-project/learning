@@ -25,7 +25,8 @@ const OrderList = ({
   bgColor, 
   orders, 
   status,
-  onStatusChange 
+  onStatusChange,
+  onDelete 
 }) => {
   return (
     <div className="bg-white rounded-lg p-6 shadow-lg">
@@ -41,6 +42,7 @@ const OrderList = ({
               order={order}
               status={status}
               onStatusChange={onStatusChange}
+              onDelete={onDelete}
             />
           ))}
           {orders.length === 0 && (
@@ -54,7 +56,7 @@ const OrderList = ({
   );
 };
 
-export const PreparingOrderList = ({ orders, onStatusChange }) => (
+export const PreparingOrderList = ({ orders, onStatusChange, onDelete }) => (
   <OrderList
     title="In Preparation"
     icon={Clock}
@@ -63,10 +65,11 @@ export const PreparingOrderList = ({ orders, onStatusChange }) => (
     orders={orders}
     status="preparing"
     onStatusChange={onStatusChange}
+    onDelete={onDelete}
   />
 );
 
-export const ReadyOrderList = ({ orders, onStatusChange }) => (
+export const ReadyOrderList = ({ orders, onStatusChange, onDelete }) => (
   <OrderList
     title="Ready for Pickup"
     icon={Truck}
@@ -75,6 +78,7 @@ export const ReadyOrderList = ({ orders, onStatusChange }) => (
     orders={orders}
     status="ready"
     onStatusChange={onStatusChange}
+    onDelete={onDelete}
   />
 );
 

@@ -52,6 +52,11 @@ export const getOrder = async (orderId) => {
   return response.data;
 };
 
+export const deleteOrder = async (orderId) => {
+  const response = await api.delete(`/orders/${orderId}`);
+  return response.data;
+};
+
 // Error handler helper
 export const handleApiError = (error) => {
   if (error.response) {

@@ -1,29 +1,53 @@
 #!/bin/bash
+# Development helper script for rebuilding and reloading local images
+# Copyright 2025 The Drasi Authors.
 
-# Hot reload for development
-# Usage: ./dev-reload.sh <app-name>
+set -e
 
-APP_NAME=$1
-
-if [ -z "$APP_NAME" ]; then
+if [ $# -eq 0 ]; then
     echo "Usage: ./dev-reload.sh <app-name>"
     echo "Available apps: control-panel, dashboard, demo"
     exit 1
 fi
 
-echo "Building $APP_NAME locally..."
-docker build -t building-comfort/$APP_NAME:dev $APP_NAME/
+APP=$1
+VALID_APPS=("control-panel" "dashboard" "demo")
 
-echo "Importing to k3d..."
-k3d image import -c devcluster building-comfort/$APP_NAME:dev
+# Check if app name is valid
+if [[ ! " ${VALID_APPS[@]} " =~ " ${APP} " ]]; then
+    echo "Error: Invalid app name '$APP'"
+    echo "Available apps: ${VALID_APPS[@]}"
+    exit 1
+fi
 
-echo "Updating deployment..."
-kubectl set image deployment/$APP_NAME $APP_NAME=building-comfort/$APP_NAME:dev
+# Check if directory exists
+if [ ! -d "$APP" ]; then
+    echo "Error: Directory '$APP' not found"
+    exit 1
+fi
+
+# Build image with consistent naming
+IMAGE_NAME="ghcr.io/drasi-project/learning/building-comfort/$APP:dev"
+
+echo "Building local image for $APP..."
+docker build -t $IMAGE_NAME $APP/
+
+echo "Importing image to k3d cluster..."
+k3d image import $IMAGE_NAME -c devcluster
+
+echo "Updating deployment to use local image..."
+kubectl set image deployment/$APP $APP=$IMAGE_NAME
 
 echo "Setting imagePullPolicy to Never..."
-kubectl patch deployment $APP_NAME -p '{"spec":{"template":{"spec":{"containers":[{"name":"'$APP_NAME'","imagePullPolicy":"Never"}]}}}}'
+kubectl patch deployment $APP -p '{"spec":{"template":{"spec":{"containers":[{"name":"'$APP'","imagePullPolicy":"Never"}]}}}}'
 
 echo "Restarting deployment..."
-kubectl rollout restart deployment/$APP_NAME
+kubectl rollout restart deployment/$APP
 
-echo "Done! Check status with: kubectl rollout status deployment/$APP_NAME"
+echo "Waiting for rollout to complete..."
+kubectl rollout status deployment/$APP
+
+echo "Done! $APP is now running with your local changes."
+echo ""
+echo "To revert to the original image, run:"
+echo "  ./reset-images.sh $APP"

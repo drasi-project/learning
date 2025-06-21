@@ -1,5 +1,8 @@
 #!/bin/bash
 # Development helper script for rebuilding and reloading local images
+# Copyright 2025 The Drasi Authors.
+
+set -e
 
 if [ $# -eq 0 ]; then
     echo "Usage: ./dev-reload.sh <app-name>"
@@ -17,19 +20,23 @@ if [[ ! " ${VALID_APPS[@]} " =~ " ${APP} " ]]; then
     exit 1
 fi
 
-echo "Building local image for $APP..."
-docker build -t $APP:dev $APP/
-
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to build image"
+# Check if directory exists
+if [ ! -d "$APP" ]; then
+    echo "Error: Directory '$APP' not found"
     exit 1
 fi
 
+# Build image with consistent naming
+IMAGE_NAME="ghcr.io/drasi-project/learning/curbside-pickup/$APP:dev"
+
+echo "Building local image for $APP..."
+docker build -t $IMAGE_NAME $APP/
+
 echo "Importing image to k3d cluster..."
-k3d image import $APP:dev -c devcluster
+k3d image import $IMAGE_NAME -c devcluster
 
 echo "Updating deployment to use local image..."
-kubectl set image deployment/$APP $APP=$APP:dev
+kubectl set image deployment/$APP $APP=$IMAGE_NAME
 
 echo "Setting imagePullPolicy to Never..."
 kubectl patch deployment $APP -p '{"spec":{"template":{"spec":{"containers":[{"name":"'$APP'","imagePullPolicy":"Never"}]}}}}'
@@ -41,3 +48,6 @@ echo "Waiting for rollout to complete..."
 kubectl rollout status deployment/$APP
 
 echo "Done! $APP is now running with your local changes."
+echo ""
+echo "To revert to the original image, run:"
+echo "  ./reset-images.sh $APP"

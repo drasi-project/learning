@@ -18,7 +18,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Alert from './components/Alert';
 import { PreparingOrderList, ReadyOrderList } from './components/OrderList';
 import NewOrderDialog from './components/NewOrderDialog';
-import { fetchOrders, updateOrderStatus, createOrder } from './utils/api';
+import { fetchOrders, updateOrderStatus, createOrder, deleteOrder } from './utils/api';
 
 function App() {
   const [orders, setOrders] = useState({ preparing: [], ready: [] });
@@ -78,6 +78,19 @@ function App() {
     }
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      try {
+        await deleteOrder(orderId);
+        showAlert('Order deleted successfully', 'success');
+        loadOrders();
+      } catch (error) {
+        showAlert('Failed to delete order');
+        console.error('Error deleting order:', error);
+      }
+    }
+  };
+
   return (
     <div className="p-6 w-full min-h-screen bg-gray-100">
       <div className="max-w-6xl mx-auto">
@@ -90,10 +103,12 @@ function App() {
           <PreparingOrderList 
             orders={orders.preparing} 
             onStatusChange={handleStatusChange}
+            onDelete={handleDeleteOrder}
           />
           <ReadyOrderList 
             orders={orders.ready} 
             onStatusChange={handleStatusChange}
+            onDelete={handleDeleteOrder}
           />
         </div>
       </div>

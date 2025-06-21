@@ -1,0 +1,139 @@
+name: Build and Push Tutorial Images
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tutorial/curbside-pickup/**'
+      - 'tutorial/building-comfort/**'
+      - '!tutorial/**/*.md'
+      - '!tutorial/**/README.md'
+      - '!tutorial/**/.gitignore'
+      - '.github/workflows/build-tutorial-images.yml'
+  
+  workflow_dispatch:
+    inputs:
+      tutorial:
+        description: 'Tutorial to build'
+        required: true
+        type: choice
+        options:
+          - all
+          - curbside-pickup
+          - building-comfort
+      tag:
+        description: 'Image tag (default: latest)'
+        required: false
+        default: 'latest'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/drasi-project/learning
+
+jobs:
+  detect-changes:
+    name: Detect Changed Tutorials
+    runs-on: ubuntu-latest
+    outputs:
+      curbside-changed: ${{ steps.changes.outputs.curbside }}
+      building-changed: ${{ steps.changes.outputs.building }}
+      tutorials: ${{ steps.set-matrix.outputs.tutorials }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            curbside:
+              - 'tutorial/curbside-pickup/**'
+              - '!tutorial/curbside-pickup/**/*.md'
+            building:
+              - 'tutorial/building-comfort/**'
+              - '!tutorial/building-comfort/**/*.md'
+      
+      - id: set-matrix
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ github.event.inputs.tutorial }}" == "all" ]]; then
+              echo "tutorials=[\"curbside-pickup\",\"building-comfort\"]" >> $GITHUB_OUTPUT
+            else
+              echo "tutorials=[\"${{ github.event.inputs.tutorial }}\"]" >> $GITHUB_OUTPUT
+            fi
+          else
+            # For push events, build only changed tutorials
+            tutorials="[]"
+            if [[ "${{ steps.changes.outputs.curbside }}" == "true" ]]; then
+              tutorials=$(echo $tutorials | jq -c '. + ["curbside-pickup"]')
+            fi
+            if [[ "${{ steps.changes.outputs.building }}" == "true" ]]; then
+              tutorials=$(echo $tutorials | jq -c '. + ["building-comfort"]')
+            fi
+            echo "tutorials=$tutorials" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push:
+    name: Build ${{ matrix.tutorial }}
+    needs: detect-changes
+    if: needs.detect-changes.outputs.tutorials != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tutorial: ${{ fromJson(needs.detect-changes.outputs.tutorials) }}
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Determine tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Build and push images
+        run: |
+          cd scripts
+          chmod +x build-and-push-tutorial.sh
+          ./build-and-push-tutorial.sh ${{ matrix.tutorial }} ${{ steps.tag.outputs.tag }}
+      
+      - name: Generate image list
+        id: images
+        run: |
+          case "${{ matrix.tutorial }}" in
+            "curbside-pickup")
+              apps="demo physical-ops retail-ops delivery-dashboard delay-dashboard"
+              ;;
+            "building-comfort")
+              apps="control-panel dashboard demo"
+              ;;
+          esac
+          
+          echo "## Images Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tutorial: **${{ matrix.tutorial }}**" >> $GITHUB_STEP_SUMMARY
+          echo "Tag: **${{ steps.tag.outputs.tag }}**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          for app in $apps; do
+            echo "- \`${{ env.IMAGE_PREFIX }}/${{ matrix.tutorial }}/$app:${{ steps.tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          done

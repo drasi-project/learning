@@ -15,12 +15,13 @@
  */
 
 import React from 'react';
-import { Package, ShoppingBag } from 'lucide-react';
+import { Package, ShoppingBag, Trash2 } from 'lucide-react';
 
 const OrderCard = ({ 
   order, 
   status, 
-  onStatusChange 
+  onStatusChange,
+  onDelete 
 }) => {
   const isPreparing = status === 'preparing';
   
@@ -40,16 +41,21 @@ const OrderCard = ({
           <div className="text-xs text-gray-500 mt-1">Driver: {order.driver_name}</div>
           <div className="text-xs text-gray-500">Vehicle: {order.plate}</div>
         </div>
-        <div>
+        <div className="flex gap-2">
+          {isPreparing ? (
+            <button 
+              className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded-full"
+              onClick={() => onStatusChange(order.id, 'ready')}
+            >
+              Mark Ready
+            </button>
+          ) : null}
           <button 
-            className={`text-white text-sm px-3 py-1 rounded-full ${
-              isPreparing 
-                ? 'bg-green-500 hover:bg-green-600' 
-                : 'bg-gray-500 hover:bg-gray-600'
-            }`}
-            onClick={() => onStatusChange(order.id, isPreparing ? 'ready' : 'preparing')}
+            className="bg-gray-400 hover:bg-gray-500 text-white text-sm p-2 rounded-full"
+            onClick={() => onDelete(order.id)}
+            title="Delete order"
           >
-            {isPreparing ? 'Mark Ready' : 'Return to Prep'}
+            <Trash2 size={16} />
           </button>
         </div>
       </div>

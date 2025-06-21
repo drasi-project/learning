@@ -22,7 +22,7 @@ from models import Order
 from sqlalchemy.orm import Session
 from database import get_db
 from schemas import OrderCreate, OrderResponse
-from crud import create_order, get_order_by_id, update_order
+from crud import create_order, get_order_by_id, update_order, delete_order
 
 router = APIRouter()
 
@@ -56,3 +56,13 @@ def modify_order_status(order_id: int, status: str, db: Session = Depends(get_db
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
+
+@router.delete("/{order_id}")
+def remove_order(order_id: int, db: Session = Depends(get_db)):
+    """
+    Delete an order by ID.
+    """
+    deleted = delete_order(db, order_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"message": "Order deleted successfully"}
