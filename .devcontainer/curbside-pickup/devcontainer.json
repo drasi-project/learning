@@ -1,55 +1,43 @@
 {
-	"name": "Curbside Pickup with Drasi",
-	"image": "node:18-bookworm",
-	"hostRequirements": {
-		"cpus": 4
-	},
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/apps/curbside-pickup",
-	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/curbside-pickup/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/curbside-pickup/on-create.sh && sed -i  's/\r$//' ../../.devcontainer/curbside-pickup/post-start.sh && bash ../../.devcontainer/curbside-pickup/on-create.sh",
-	"postCreateCommand": "bash ../../.devcontainer/curbside-pickup/post-create.sh",
-    "postStartCommand": "bash ../../.devcontainer/curbside-pickup/post-start.sh",
-	"runArgs": [
-	  "--privileged",
-	  "--init"
-	],
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ritwickdey.LiveServer",
-				"ms-python.python", 
-				"ms-python.vscode-pylance",
-				"ms-azuretools.vscode-docker",
-				"DrasiProject.drasi"
-			]
-		}
-	},
-	// Features to add to the dev container. More info: https://containers.dev/features
-	"features": {
-      // Docker in Docker for running K3d
-	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-	  // K3d for running a local Kubernetes cluster
-	  "ghcr.io/rio/features/k3d:1": {},
-	  // Install the Kubernetes CLI
-	  "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-		"installMinikube": false,
-		"installHelm": false
-	  },
-	  // Install Python
-	  "ghcr.io/devcontainers/features/python:1": {}
-	},
-	// Configure environment variables
-    "containerEnv": {
-        "LANG": "en_US.UTF-8",
-        "LANGUAGE": "en_US:en",
-        "LC_ALL": "en_US.UTF-8"
-    },
-	"remoteEnv": {
-	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
-	},
-	"portsAttributes": {
-	  "8081": {
-		"label": "k3s",
-		"onAutoForward": "silent"
-	  }
-	}
+  "name": "Curbside Pickup",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/curbside-pickup",
+  "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/curbside-pickup/post-create.sh && sed -i 's/\r$//' ../../.devcontainer/curbside-pickup/on-create.sh && bash ../../.devcontainer/curbside-pickup/on-create.sh",
+  "postCreateCommand": "bash ../../.devcontainer/curbside-pickup/post-create.sh",
+  "runArgs": [
+    "--privileged",
+    "--init"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DrasiProject.drasi",
+        "cweijan.vscode-database-client2"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "forwardPorts": [80],
+  "portsAttributes": {
+    "80": {
+      "label": "Curbside Pickup Apps",
+      "onAutoForward": "notify"
+    }
+  },
+  
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
   }
+}
