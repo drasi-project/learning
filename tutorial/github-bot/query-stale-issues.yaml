@@ -1,6 +1,7 @@
+
 kind: ContinuousQuery
 apiVersion: v1
-name: stale-issues2
+name: stale-issues
 spec:
   mode: query
   sources:
@@ -25,38 +26,22 @@ spec:
                 state: $['$selected'].state
                 number: $['$selected'].number
                 repo: $.repository.full_name
-                created_at: $['$selected'].created_at
+                createdAt: $['$selected'].created_at
             - selector: $.comment
               op: Update
-              label: Comment
-              id: $['$selected'].id
+              label: Issue
+              id: $.issue.id
               properties:
-                id: $['$selected'].id
-                created_at: $['$selected'].created_at
-            - selector: $.comment
-              op: Update
-              label: HAS
-              elementType: 
-                Relation:
-                  inNodeId: $.issue.id
-                  outNodeId: $.comment.id           
+                lastCommentAt: $['$selected'].created_at
               
   query: |
     MATCH 
       (i:Issue)
-    OPTIONAL MATCH
-      (i)-[:HAS]->(c:Comment)
     WHERE i.state = 'open'
-    WITH
-      i,
-      max(datetime(coalesce(c.created_at, i.created_at))) AS lastCommentTime
-    
-    WHERE (lastCommentTime + duration({ seconds: 10 })) <= datetime.realtime()  
-    OR drasi.trueLater(
-        (lastCommentTime + duration({ seconds: 10 })) <= datetime.realtime(), 
-        lastCommentTime + duration({ seconds: 10 })
-      )
-    
+    AND drasi.trueNowOrLater(
+          (datetime(coalesce(i.lastCommentAt, i.createdAt)) + duration({ seconds: 10 })) <= datetime.realtime(), 
+          datetime.transaction() + duration({ seconds: 10 })
+        )
     RETURN 
       i.id AS id,       
       i.title AS title,

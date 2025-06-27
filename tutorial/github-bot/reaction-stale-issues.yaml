@@ -10,7 +10,7 @@ spec:
       name: github
       key: token
   queries:
-    stale-issues2: >
+    stale-issues: >
       added:
         url: "/repos/{{after.repo}}/issues/{{after.issue_number}}/labels"
         method: "POST"
