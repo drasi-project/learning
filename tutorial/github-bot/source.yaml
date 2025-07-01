@@ -1,0 +1,12 @@
+kind: Source
+apiVersion: v1
+name: github
+spec:
+  kind: EventHub
+  properties:
+    connectionString: 
+      kind: Secret
+      name: event-hub
+      key: connection-string
+    eventHubs:
+      - github
