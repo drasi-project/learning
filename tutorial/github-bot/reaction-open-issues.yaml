@@ -1,6 +1,6 @@
 kind: Reaction
 apiVersion: v1
-name: my-reaction
+name: open-reaction
 spec:
   kind: Http
   properties:
