@@ -39,8 +39,8 @@ spec:
       (i:Issue)
     WHERE i.state = 'open'
     AND drasi.trueNowOrLater(
-          (datetime(coalesce(i.lastCommentAt, i.createdAt)) + duration({ seconds: 10 })) <= datetime.realtime(), 
-          datetime.transaction() + duration({ seconds: 10 })
+          (datetime(coalesce(i.lastCommentAt, i.createdAt)) + duration({ seconds: 15 })) <= datetime.realtime(), 
+          datetime.transaction() + duration({ seconds: 15 })
         )
     RETURN 
       i.id AS id,       

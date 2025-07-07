@@ -33,9 +33,9 @@
   },
   "variables": {
     "eventHubName": "github",
-    "eventHubNamespaceName": "[format('{0}-ns', uniqueString(resourceGroup().id))]",
-    "storageAccountName": "[format('{0}storage', uniqueString(resourceGroup().id))]",
-    "appServicePlanName": "[format('{0}-plan', parameters('functionAppName'))]"
+    "eventHubNamespaceName": "[format('ns-{0}', uniqueString(resourceGroup().id))]",
+    "storageAccountName": "[format('storage{0}', uniqueString(resourceGroup().id))]",
+    "appServicePlanName": "[format('plan-{0}', parameters('functionAppName'))]"
   },
   "resources": [
     {
