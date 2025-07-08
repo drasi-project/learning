@@ -1,0 +1,42 @@
+{
+	"name": "GitHub Bot with Drasi",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/github-bot",
+	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/github-bot/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/github-bot/on-create.sh && bash ../../.devcontainer/github-bot/on-create.sh",
+  	"postCreateCommand": "bash ../../.devcontainer/github-bot/post-create.sh",
+	"postStartCommand": "bash ../../.devcontainer/github-bot/post-start.sh",
+	"runArgs": [
+	  "--privileged",
+	  "--init"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-dapr",
+				"ms-azuretools.vscode-docker",
+				"GitHub.copilot",
+				"DrasiProject.drasi"
+			]
+		}
+	},
+	// Features to add to the dev container. More info: https://containers.dev/features
+	"features": {
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+	  "ghcr.io/rio/features/k3d:1": {}
+	},
+	// Configure environment variables
+    "containerEnv": {
+        "LANG": "en_US.UTF-8",
+        "LANGUAGE": "en_US:en",
+        "LC_ALL": "en_US.UTF-8"
+    },
+	"remoteEnv": {
+	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+	},
+	"portsAttributes": {
+	  "8081": {
+		"label": "k3s",
+		"onAutoForward": "silent"
+	  }
+	}
+  }
