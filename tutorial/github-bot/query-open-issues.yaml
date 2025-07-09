@@ -1,0 +1,47 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: open-issues
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: github
+        nodes:
+          - sourceLabel: github
+        pipeline:
+          - extract
+    middleware:
+      - name: extract
+        kind: map
+        github:
+          insert:
+            - selector: $.issue
+              condition: $[?(@.event == 'issues' && @.action == 'opened')]
+              op: Update
+              label: Issue
+              id: $['$selected'].id
+              properties:
+                id: $['$selected'].id
+                title: $['$selected'].title
+                body: $['$selected'].body
+                state: $['$selected'].state
+                number: $['$selected'].number
+                creator: $['$selected'].user.login
+                repo: $.repository.full_name
+            - selector: $.issue
+              condition: $[?(@.event == 'issues' && @.action == 'closed')]
+              op: Delete
+              label: Issue
+              id: $['$selected'].id
+              
+  query: |
+    MATCH 
+      (i:Issue)
+    RETURN 
+      i.id AS id, 
+      i.title AS title, 
+      i.body AS body, 
+      i.state AS state, 
+      i.repo AS repo, 
+      i.number AS issue_number, 
+      i.creator AS creator
