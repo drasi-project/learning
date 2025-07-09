@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2025 The Drasi Authors.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Comfort with Drasi</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .connection-status.connected {
+            background-color: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+        
+        .connection-status.disconnected {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .status-dot.connected {
+            background-color: #27ae60;
+            box-shadow: 0 0 4px rgba(39, 174, 96, 0.5);
+        }
+        
+        .status-dot.disconnected {
+            background-color: #e74c3c;
+            box-shadow: 0 0 4px rgba(231, 76, 60, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 4px rgba(39, 174, 96, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 8px rgba(39, 174, 96, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 4px rgba(39, 174, 96, 0.5);
+            }
+        }
+        
+        .status-dot.connected {
+            animation: pulse 2s infinite;
+        }
+        
+        .frames-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        iframe {
+            border: none;
+            width: 100%;
+            overflow: auto;
+        }
+
+        #dashboardFrame {
+            height: 50%;
+            border-bottom: 10px solid #706e6f;
+        }
+
+        #controlPanelFrame {
+            height: 50%;
+        }
+    </style>
+    <!-- Load SignalR from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Building Comfort with Drasi</h1>
+        <div class="connection-status disconnected" id="connectionStatus">
+            <div class="status-dot disconnected" id="statusDot"></div>
+            <span id="statusText">Disconnected</span>
+        </div>
+    </div>
+    
+    <div class="frames-container">
+        <iframe id="dashboardFrame" src="/dashboard" title="Building Comfort Dashboard"></iframe>
+        <iframe id="controlPanelFrame" src="/control-panel" title="Building Comfort Control Panel"></iframe>
+    </div>
+    
+    <script>
+        // Connection status management
+        let connection = null;
+        let reconnectTimeout = null;
+        let retryCount = 0;
+        
+        // Get SignalR URL based on environment
+        function getSignalRUrl() {
+            const hostname = window.location.hostname;
+            
+            // Check if we're in GitHub Codespaces
+            if (hostname.includes('.github.dev') || hostname.includes('.app.github.dev')) {
+                // Extract base URL and construct port-specific URL for port 8080
+                const parts = hostname.split('-');
+                const portIndex = parts.length - 1;
+                const baseUrl = parts.slice(0, portIndex).join('-');
+                return `https://${baseUrl}-8080.app.github.dev/hub`;
+            } else {
+                // Local environment (DevContainer, Kind, etc.)
+                return 'http://localhost:8080/hub';
+            }
+        }
+        
+        function updateConnectionStatus(isConnected) {
+            const statusElement = document.getElementById('connectionStatus');
+            const dotElement = document.getElementById('statusDot');
+            const textElement = document.getElementById('statusText');
+            
+            if (isConnected) {
+                statusElement.classList.remove('disconnected');
+                statusElement.classList.add('connected');
+                dotElement.classList.remove('disconnected');
+                dotElement.classList.add('connected');
+                textElement.textContent = 'Dashboard Live';
+            } else {
+                statusElement.classList.remove('connected');
+                statusElement.classList.add('disconnected');
+                dotElement.classList.remove('connected');
+                dotElement.classList.add('disconnected');
+                textElement.textContent = 'Disconnected';
+            }
+        }
+        
+        function getRetryDelay() {
+            // Exponential backoff: 2s, 4s, 8s, 16s, then every 30s
+            const delays = [2000, 4000, 8000, 16000];
+            if (retryCount < delays.length) {
+                return delays[retryCount];
+            }
+            return 30000; // 30 seconds for subsequent retries
+        }
+        
+        async function createConnection() {
+            try {
+                const url = getSignalRUrl();
+                console.log('Attempting to connect to SignalR at:', url);
+                
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl(url)
+                    .withAutomaticReconnect({
+                        nextRetryDelayInMilliseconds: (retryContext) => {
+                            return getRetryDelay();
+                        }
+                    })
+                    .configureLogging(signalR.LogLevel.Warning)
+                    .build();
+                
+                // Connection event handlers
+                connection.onclose(() => {
+                    console.log('SignalR connection closed');
+                    updateConnectionStatus(false);
+                    scheduleReconnect();
+                });
+                
+                connection.onreconnecting(() => {
+                    console.log('SignalR attempting to reconnect...');
+                    updateConnectionStatus(false);
+                });
+                
+                connection.onreconnected(() => {
+                    console.log('SignalR reconnected');
+                    updateConnectionStatus(true);
+                    retryCount = 0;
+                    clearTimeout(reconnectTimeout);
+                });
+                
+                // Start the connection
+                await connection.start();
+                console.log('SignalR connected successfully');
+                updateConnectionStatus(true);
+                retryCount = 0;
+                clearTimeout(reconnectTimeout);
+                
+            } catch (error) {
+                console.error('Failed to establish SignalR connection:', error);
+                updateConnectionStatus(false);
+                scheduleReconnect();
+            }
+        }
+        
+        function scheduleReconnect() {
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+            }
+            
+            const delay = getRetryDelay();
+            console.log(`Scheduling reconnection attempt in ${delay/1000} seconds...`);
+            
+            reconnectTimeout = setTimeout(async () => {
+                retryCount++;
+                await createConnection();
+            }, delay);
+        }
+        
+        // Initialize connection when page loads
+        window.addEventListener('load', () => {
+            createConnection();
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+            }
+            if (connection) {
+                connection.stop();
+            }
+        });
+    </script>
+</body>
+</html>

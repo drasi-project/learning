@@ -1,67 +1,44 @@
 {
-	"name": "Building Comfort with Drasi",
-	"image": "node:18-bookworm",
-	"hostRequirements": {
-		"cpus": 4
-	},
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/apps/building-comfort",
-	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/building-comfort/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/building-comfort/on-create.sh && bash ../../.devcontainer/building-comfort/on-create.sh",
-	"postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
-    "postStartCommand": "bash ../../.devcontainer/building-comfort/post-start.sh",
-	"runArgs": [
-	  "--privileged",
-	  "--init"
-	],
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ritwickdey.LiveServer"
-			]
-		}
-	},
-	// Features to add to the dev container. More info: https://containers.dev/features
-	"features": {
-      // Docker in Docker for running K3d
-	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-	  // K3d for running a local Kubernetes cluster
-	  "ghcr.io/rio/features/k3d:1": {},
-	  // Install the Kubernetes CLI
-	  "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-		"installMinikube": false,
-		"installHelm": false
-	  },
-	  // Install Postgres client
-	  "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
-
-		"version": "15"
-
-	  },
-	  // Install Python
-	  "ghcr.io/devcontainers/features/python:1": {}
-	},
-	// Configure environment variables
-    "containerEnv": {
-        "LANG": "en_US.UTF-8",
-        "LANGUAGE": "en_US:en",
-        "LC_ALL": "en_US.UTF-8"
-    },
-	"remoteEnv": {
-	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
-	  "PGHOST": "localhost",
-	  "PGDATABASE": "building-comfort-db",
-	  "PGPORT": "5432",
-	  "PGUSER" : "test",
-	  "PGPASSWORD" : "test"
-
-	},
-	"portsAttributes": {
-	  "5432": {
-		"label": "postgres",
-		"onAutoForward": "silent"
-	  },
-	  "8081": {
-		"label": "k3s",
-		"onAutoForward": "silent"
-	  }
-	}
+  "name": "Building Comfort with Drasi",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/building-comfort",
+  "onCreateCommand": "bash ../../.devcontainer/building-comfort/on-create.sh",
+  "postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
+  "runArgs": [
+    "--privileged",
+    "--init"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DrasiProject.drasi",
+        "cweijan.vscode-database-client2"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "forwardPorts": [8123],
+  "portsAttributes": {
+    "8123": {
+      "label": "Building Comfort Apps",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  },
+  
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
   }
+}
