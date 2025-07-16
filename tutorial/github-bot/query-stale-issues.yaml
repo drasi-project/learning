@@ -1,0 +1,49 @@
+
+kind: ContinuousQuery
+apiVersion: v1
+name: stale-issues
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: github
+        nodes:
+          - sourceLabel: github
+        pipeline:
+          - extract
+    middleware:
+      - name: extract
+        kind: map
+        github:
+          insert:
+            - selector: $.issue
+              op: Update
+              label: Issue
+              id: $['$selected'].id
+              properties:
+                id: $['$selected'].id
+                title: $['$selected'].title
+                state: $['$selected'].state
+                number: $['$selected'].number
+                repo: $.repository.full_name
+                createdAt: $['$selected'].created_at
+            - selector: $.comment
+              op: Update
+              label: Issue
+              id: $.issue.id
+              properties:
+                lastCommentAt: $['$selected'].created_at
+              
+  query: |
+    MATCH 
+      (i:Issue)
+    WHERE i.state = 'open'
+    AND drasi.trueNowOrLater(
+          (datetime(coalesce(i.lastCommentAt, i.createdAt)) + duration({ seconds: 15 })) <= datetime.realtime(), 
+          datetime.transaction() + duration({ seconds: 15 })
+        )
+    RETURN 
+      i.id AS id,       
+      i.title AS title,
+      i.repo AS repo,
+      i.number AS issue_number
