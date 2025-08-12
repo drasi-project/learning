@@ -32,15 +32,17 @@ kind: ContinuousQuery
 name: message-count
 spec:
   mode: query
-  sources:    
+  queryLanguage: GQL
+  sources:
     subscriptions:
       - id: hello-world
-  query: > 
-    MATCH 
+  query: >
+    MATCH
       (m:Message)
-    RETURN 
-      m.Message AS Message,
-      count(m.Message) AS Frequency
+    LET Message = m.Message
+    RETURN
+      Message,
+      count(Message) AS Frequency
 ---
 apiVersion: v1
 kind: ContinuousQuery
