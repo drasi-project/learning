@@ -25,7 +25,7 @@ set -e
 # Validate arguments
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <tutorial-name> [tag]"
-    echo "Available tutorials: curbside-pickup, building-comfort"
+    echo "Available tutorials: curbside-pickup, building-comfort, dapr"
     echo "Default tag: latest"
     exit 1
 fi
@@ -39,7 +39,7 @@ PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Validate tutorial name
 case $TUTORIAL in
-    "curbside-pickup"|"building-comfort")
+    "curbside-pickup"|"building-comfort"|"dapr")
         TUTORIAL_DIR="$PROJECT_ROOT/tutorial/$TUTORIAL"
         if [ ! -d "$TUTORIAL_DIR" ]; then
             echo "Error: Tutorial directory not found: $TUTORIAL_DIR"
@@ -48,7 +48,7 @@ case $TUTORIAL in
         ;;
     *)
         echo "Error: Invalid tutorial name '$TUTORIAL'"
-        echo "Available tutorials: curbside-pickup, building-comfort"
+        echo "Available tutorials: curbside-pickup, building-comfort, dapr"
         exit 1
         ;;
 esac
@@ -123,8 +123,36 @@ case $TUTORIAL in
         build_and_push "dashboard" "./dashboard"
         build_and_push "demo" "./demo"
         ;;
+        
+    "dapr")
+        # Check for missing package-lock.json files for frontend services
+        check_npm_lock "./services/catalogue"
+        check_npm_lock "./services/dashboard"
+        check_npm_lock "./services/notifications/ui"
+        
+        # Build all dapr tutorial images
+        build_and_push "products-service" "./services/products"
+        build_and_push "customers-service" "./services/customers"
+        build_and_push "orders-service" "./services/orders"
+        build_and_push "reviews-service" "./services/reviews"
+        build_and_push "catalogue-service" "./services/catalogue"
+        build_and_push "dashboard-service" "./services/dashboard"
+        build_and_push "notifications-service" "./services/notifications"
+        ;;
 esac
 
 echo ""
 echo "All images for $TUTORIAL tutorial have been built and pushed with tag: $TAG"
-echo "Total images built: $([ "$TUTORIAL" = "curbside-pickup" ] && echo "5" || echo "3")"
+
+# Count images based on tutorial
+case $TUTORIAL in
+    "curbside-pickup")
+        echo "Total images built: 5"
+        ;;
+    "building-comfort")
+        echo "Total images built: 3"
+        ;;
+    "dapr")
+        echo "Total images built: 7"
+        ;;
+esac

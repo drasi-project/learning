@@ -1,0 +1,44 @@
+{
+  "name": "Drasi For Dapr",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/dapr",
+  "onCreateCommand": "bash ../../.devcontainer/dapr/on-create.sh",
+  "postCreateCommand": "bash ../../.devcontainer/dapr/post-create.sh",
+  "runArgs": [
+    "--privileged",
+    "--init"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "DrasiProject.drasi",
+        "cweijan.vscode-database-client2"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "containerEnv": {
+    "LANG": "en_US.UTF-8",
+    "LANGUAGE": "en_US:en",
+    "LC_ALL": "en_US.UTF-8"
+  },
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "forwardPorts": [8123],
+  "portsAttributes": {
+    "8123": {
+      "label": "Dapr + Drasi Apps",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  },
+  
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  }
+}
