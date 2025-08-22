@@ -14,3 +14,4 @@ Following sample applications demonstrate usage of Drasi in different scenarios:
 3. [Fleet POC](https://github.com/drasi-project/learning/tree/main/apps/fleet-poc)- Drasi for an efficient solution to translate vehicle telemetery into actionable insights for Connected Fleet scenarios
 5. [Non-events](https://github.com/drasi-project/learning/tree/main/apps/non-events) - An app to demonstrate Drasi's abilities to trigger alerts when events do not occur within a stipulated time window.
 6. [Trivia](https://github.com/drasi-project/learning/tree/main/apps/trivia)- A trivia game app with dashboards that are updated directly by Drasi when team and player scores change or when players are inactive for a period of time.
+7. [Dapr](https://github.com/drasi-project/learning/tree/main/apps/dapr) - A set of dapr applications that demonstrate Drasi's abilities within a dapr microservice ecosystem.
