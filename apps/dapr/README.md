@@ -133,6 +133,7 @@ k3d exposes port 80 → Traefik Ingress
 
 - **Docker** (for building service images)
 - **kubectl** (Kubernetes CLI)
+- **Make** (Optional: for automated setup with the provided Makefile)
 - **k3d** v5.x (lightweight Kubernetes)
 - **Drasi CLI** v0.5.x or above ([Installation Guide](https://drasi.io/getting-started/install))
 
