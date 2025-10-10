@@ -1,1 +1,1 @@
-kubectl set image pod/my-app-2 app=drasidemo.azurecr.io/my-app:0.3
+kubectl set image pod/my-app-2 app=ghcr.io/drasi-project/my-app:0.3
