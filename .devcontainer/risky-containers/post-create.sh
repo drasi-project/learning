@@ -55,9 +55,9 @@ while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
 done
 
 ## Pre Pull Images to speed up the experience
-docker pull drasidemo.azurecr.io/my-app:0.1
-docker pull drasidemo.azurecr.io/my-app:0.2
-docker pull drasidemo.azurecr.io/my-app:0.3
-k3d image import drasidemo.azurecr.io/my-app:0.1
-k3d image import drasidemo.azurecr.io/my-app:0.2
-k3d image import drasidemo.azurecr.io/my-app:0.3
+docker pull ghcr.io/drasi-project/my-app:0.1
+docker pull ghcr.io/drasi-project/my-app:0.2
+docker pull ghcr.io/drasi-project/my-app:0.3
+k3d image import ghcr.io/drasi-project/my-app:0.1
+k3d image import ghcr.io/drasi-project/my-app:0.2
+k3d image import ghcr.io/drasi-project/my-app:0.3
