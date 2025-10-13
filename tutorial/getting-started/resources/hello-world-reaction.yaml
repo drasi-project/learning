@@ -21,3 +21,9 @@ spec:
     hello-world-from:
     message-count:
     inactive-people:
+  services:
+    reaction:
+      endpoints:
+        service:
+          setting: external
+          target: "8080"
