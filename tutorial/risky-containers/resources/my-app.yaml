@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: app
-      image: "drasidemo.azurecr.io/my-app:0.1"
+      image: "ghcr.io/drasi-project/my-app:0.1"
 ---
 apiVersion: v1
 kind: Pod
@@ -14,4 +14,4 @@ metadata:
 spec:
   containers:
     - name: app
-      image: "drasidemo.azurecr.io/my-app:0.2"
+      image: "ghcr.io/drasi-project/my-app:0.2"
