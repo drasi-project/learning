@@ -55,22 +55,22 @@ else
   echo "PostgreSQL port-forward skipped due to port conflict."
 fi
 
-# Check for Contour Envoy service
-echo "Checking for svc/contour-envoy in projectcontour namespace..."
-kubectl get svc/contour-envoy -n projectcontour || echo "Warning: svc/contour-envoy not found in projectcontour namespace."
+# Check for Traefik service
+echo "Checking for Traefik in kube-system namespace..."
+kubectl get svc -n kube-system -l app.kubernetes.io/name=traefik || echo "Warning: Traefik service not found in kube-system namespace."
 
-# Forward Contour Envoy port (for ingress access)
+# Forward Traefik port (for ingress access)
 if check_port 8080; then
-  echo "Starting port-forward for Contour Envoy..."
-  nohup kubectl port-forward -n projectcontour svc/contour-envoy 8080:80 > "$LOG_DIR/envoy-port-forward.log" 2>&1 &
+  echo "Starting port-forward for Traefik..."
+  nohup kubectl port-forward -n kube-system svc/traefik 8080:80 > "$LOG_DIR/traefik-port-forward.log" 2>&1 &
   sleep 1  # Give it a moment to start
-  if ps aux | grep -q "[k]ubectl port-forward -n projectcontour svc/contour-envoy"; then
-    echo "Contour Envoy port-forward started (logs at $LOG_DIR/envoy-port-forward.log)."
+  if ps aux | grep -q "[k]ubectl port-forward -n kube-system svc/traefik"; then
+    echo "Traefik port-forward started (logs at $LOG_DIR/traefik-port-forward.log)."
   else
-    echo "Error: Contour Envoy port-forward failed to start. Check $LOG_DIR/envoy-port-forward.log."
+    echo "Error: Traefik port-forward failed to start. Check $LOG_DIR/traefik-port-forward.log."
   fi
 else
-  echo "Contour Envoy port-forward skipped due to port conflict."
+  echo "Traefik port-forward skipped due to port conflict."
 fi
 
 # Final check

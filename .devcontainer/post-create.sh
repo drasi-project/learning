@@ -19,7 +19,7 @@ while ( ! kubectl cluster-info ); do
   # Docker takes a few seconds to initialize
   echo "Waiting for Docker to launch..."
   k3d cluster delete
-  k3d cluster create -p '8081:30080@server:0' --k3s-arg '--disable=traefik@server:0'
+  k3d cluster create -p '8081:30080@server:0'
   sleep 1
 done
 
@@ -31,6 +31,7 @@ kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
 echo "Installing Drasi..."
 sleep 30
 drasi init
-drasi ingress init --local-cluster --ingress-annotation "projectcontour.io/websocket-routes=/"
+drasi ingress init --use-existing --ingress-class-name traefik --ingress-ip-address 127.0.0.1
+# drasi ingress init --local-cluster --ingress-annotation "projectcontour.io/websocket-routes=/"
 
 echo "Setup complete. You can now run your application."
