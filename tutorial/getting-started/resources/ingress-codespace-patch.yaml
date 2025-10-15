@@ -1,7 +1,6 @@
 - op: add
   path: /spec/rules/-
   value:
-    host: "*.app.github.dev"
     http:
       paths:
       - path: /
