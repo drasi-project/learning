@@ -56,15 +56,15 @@ else
 fi
 
 # Check for Contour Envoy service
-echo "Checking for svc/envoy in projectcontour namespace..."
-kubectl get svc/envoy -n projectcontour || echo "Warning: svc/envoy not found in projectcontour namespace."
+echo "Checking for svc/contour-envoy in projectcontour namespace..."
+kubectl get svc/contour-envoy -n projectcontour || echo "Warning: svc/contour-envoy not found in projectcontour namespace."
 
 # Forward Contour Envoy port (for ingress access)
 if check_port 8080; then
   echo "Starting port-forward for Contour Envoy..."
-  nohup kubectl port-forward -n projectcontour svc/envoy 8080:80 > "$LOG_DIR/envoy-port-forward.log" 2>&1 &
+  nohup kubectl port-forward -n projectcontour svc/contour-envoy 8080:80 > "$LOG_DIR/envoy-port-forward.log" 2>&1 &
   sleep 1  # Give it a moment to start
-  if ps aux | grep -q "[k]ubectl port-forward -n projectcontour svc/envoy"; then
+  if ps aux | grep -q "[k]ubectl port-forward -n projectcontour svc/contour-envoy"; then
     echo "Contour Envoy port-forward started (logs at $LOG_DIR/envoy-port-forward.log)."
   else
     echo "Error: Contour Envoy port-forward failed to start. Check $LOG_DIR/envoy-port-forward.log."
