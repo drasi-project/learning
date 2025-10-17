@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Source
+name: products-source
+spec:
+  kind: PostgreSQL
+  properties:
+    host: postgres-products.default.svc.cluster.local
+    port: 5432
+    user: postgres
+    password: postgres123
+    database: products_db
+    ssl: false
+    tables:
+      - public.products
+---
+apiVersion: v1
+kind: Source
+name: reviews-source
+spec:
+  kind: MySQL
+  properties:
+    host: mysql-reviews.default.svc.cluster.local
+    port: 3306
+    user: root
+    password: mysql123
+    database: feedback_db
+    ssl: false
+    tables:
+      - feedback_db.reviews

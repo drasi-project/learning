@@ -1,0 +1,31 @@
+kind: ContinuousQuery
+apiVersion: v1
+name: enriched-products
+spec:
+  mode: query
+  sources:
+    subscriptions:
+      - id: products-source
+        nodes:
+          - sourceLabel: products
+      - id: reviews-source
+        nodes:
+          - sourceLabel: reviews
+    joins:
+      - id: HAS_REVIEW
+        keys:
+          - label: products
+            property: id
+          - label: reviews
+            property: product_id
+  query: |
+    MATCH (p:products)-[:HAS_REVIEW]->(r:reviews)
+    RETURN 
+      p.id as product_id,
+      p.name as product_name,
+      p.category as category,
+      p.description as description,
+      p.specifications as specs,
+      p.price as price,
+      avg(r.rating) as avg_rating,
+      count(r) as review_count

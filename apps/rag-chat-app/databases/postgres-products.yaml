@@ -1,0 +1,153 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: default
+data:
+  init.sql: |
+    -- Products database is created via POSTGRES_DB env var
+    -- Just create the table in the default database
+    
+    -- Create products table
+    CREATE TABLE IF NOT EXISTS products (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(200) NOT NULL,
+        category VARCHAR(100),
+        description TEXT,
+        specifications JSONB,
+        price DECIMAL(10,2),
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    -- Insert initial product data (12 products across 4 categories)
+    INSERT INTO products (id, name, category, description, specifications, price) VALUES 
+    -- Laptops Category
+    ('LAPTOP-001', 'TechPro X1', 'Laptops', 
+     'High-performance professional laptop', 
+     '{"cpu": "Intel i7-13700H", "ram": "16GB DDR5", "storage": "512GB NVMe SSD", "display": "14-inch 4K OLED", "weight": "1.4kg"}',
+     1299.99),
+    ('LAPTOP-002', 'UltraBook Air', 'Laptops',
+     'Ultra-lightweight laptop for travelers',
+     '{"cpu": "Intel i5-1340P", "ram": "8GB LPDDR5", "storage": "256GB SSD", "display": "13.3-inch FHD", "weight": "0.99kg"}',
+     999.99),
+    
+    -- Smartphones Category
+    ('PHONE-001', 'SmartPhone Pro', 'Smartphones',
+     'Flagship smartphone with AI features',
+     '{"screen": "6.5-inch OLED 120Hz", "camera": "108MP + 12MP + 8MP", "battery": "5000mAh", "5G": true, "storage": "256GB"}',
+     899.99),
+    ('PHONE-002', 'BudgetPhone Plus', 'Smartphones',
+     'Affordable mid-range smartphone',
+     '{"screen": "6.2-inch LCD 90Hz", "camera": "48MP + 8MP", "battery": "4500mAh", "5G": true, "storage": "128GB"}',
+     399.99),
+    ('PHONE-003', 'CompactPhone Mini', 'Smartphones',
+     'Compact premium smartphone',
+     '{"screen": "5.4-inch OLED", "camera": "64MP + 12MP", "battery": "3500mAh", "5G": true, "storage": "128GB"}',
+     599.99),
+    
+    -- Audio Category
+    ('AUDIO-001', 'AudioMax Pro', 'Audio',
+     'Premium noise-cancelling headphones',
+     '{"type": "Over-ear", "anc": true, "battery": "30 hours", "bluetooth": "5.3", "drivers": "40mm"}',
+     349.99),
+    ('AUDIO-002', 'BassBoom Speaker', 'Audio',
+     'Portable waterproof Bluetooth speaker',
+     '{"type": "Portable", "battery": "24 hours", "waterproof": "IPX7", "bluetooth": "5.2", "power": "30W"}',
+     199.99),
+    ('AUDIO-003', 'StudioMic Pro', 'Audio',
+     'Professional USB condenser microphone',
+     '{"type": "Condenser", "pattern": "Cardioid", "sample_rate": "192kHz", "bit_depth": "24-bit", "usb": "USB-C"}',
+     249.99),
+    
+    -- Tablets Category
+    ('TABLET-001', 'WorkPad Pro', 'Tablets',
+     'Professional tablet for creative work',
+     '{"display": "12.9-inch 120Hz", "processor": "M2", "storage": "256GB", "stylus": "included", "battery": "10 hours"}',
+     799.99),
+    ('TABLET-002', 'MediaPad Plus', 'Tablets',
+     'Entertainment-focused Android tablet',
+     '{"display": "11-inch OLED", "processor": "Snapdragon 8 Gen 2", "storage": "128GB", "speakers": "Quad", "battery": "12 hours"}',
+     499.99),
+    ('TABLET-003', 'StudyPad Lite', 'Tablets',
+     'Affordable tablet for students',
+     '{"display": "10.2-inch LCD", "processor": "A14 Bionic", "storage": "64GB", "stylus": "compatible", "battery": "10 hours"}',
+     299.99);
+     
+    -- Enable logical replication
+    ALTER SYSTEM SET wal_level = logical;
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: default
+type: Opaque
+stringData:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres123
+  POSTGRES_DB: products_db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-products
+  namespace: default
+spec:
+  serviceName: postgres-products
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-products
+  template:
+    metadata:
+      labels:
+        app: postgres-products
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          name: postgres
+        envFrom:
+        - secretRef:
+            name: postgres-secret
+        args:
+        - -c
+        - wal_level=logical
+        - -c
+        - max_replication_slots=10
+        - -c
+        - max_wal_senders=10
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
+      - name: init-script
+        configMap:
+          name: postgres-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-products
+  namespace: default
+spec:
+  selector:
+    app: postgres-products
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP

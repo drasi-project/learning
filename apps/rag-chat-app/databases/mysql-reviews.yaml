@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+  namespace: default
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS feedback_db;
+    USE feedback_db;
+    
+    CREATE TABLE IF NOT EXISTS reviews (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        product_id VARCHAR(50),
+        customer_name VARCHAR(100),
+        rating INT,
+        review_text TEXT,
+        common_questions TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    -- Insert sparse initial review data (just a few reviews to start)
+    INSERT INTO reviews (product_id, customer_name, rating, review_text, common_questions) VALUES
+    -- Laptop reviews (only 2 for LAPTOP-001, 1 for LAPTOP-002, none for LAPTOP-003)
+    ('LAPTOP-001', 'John Doe', 5, 
+     'Excellent laptop for development work. The 4K OLED screen is absolutely stunning.',
+     'Q: How is the battery life? A: Gets me through a full workday, about 8-10 hours'),
+    ('LAPTOP-001', 'Jane Smith', 4,
+     'Great performance but gets warm under load. Build quality is premium.',
+     'Q: Is it good for video editing? A: Yes, handles 4K editing smoothly'),
+    ('LAPTOP-002', 'Mike Chen', 4,
+     'Perfect travel companion. Incredibly light and battery lasts forever.',
+     'Q: How portable is it really? A: Under 1kg, fits in any bag easily'),
+    
+    -- Smartphone reviews (sparse coverage)
+    ('PHONE-001', 'Sarah Wilson', 5,
+     'Best camera I have used on a phone. Night mode is incredible.',
+     'Q: How is the camera in low light? A: Excellent with night mode'),
+    ('PHONE-001', 'Tom Anderson', 4,
+     'Great flagship but pricey. The 120Hz screen is buttery smooth.',
+     'Q: Is the high refresh rate noticeable? A: Very much so, especially scrolling'),
+    ('PHONE-001', 'Lisa Park', 5,
+     'AI features actually work! Battery easily lasts all day.',
+     'Q: Does it support fast charging? A: Yes, 65W fast charging included'),
+    ('PHONE-001', 'David Kim', 4,
+     'Solid phone but expected more at this price. Camera is fantastic though.',
+     'Q: How many cameras does it have? A: Three - main, ultrawide, and telephoto'),
+    ('PHONE-002', 'Emily Brown', 4,
+     'Amazing value for money. Does everything I need without breaking the bank.',
+     'Q: Is it good for gaming? A: Handles most games well at medium settings'),
+    
+    -- Audio reviews (selective)
+    ('AUDIO-002', 'Alex Turner', 5,
+     'Incredible bass for the size. Pool parties will never be the same!',
+     'Q: Is it really waterproof? A: Yes, survived multiple pool sessions'),
+    ('AUDIO-002', 'Nina Patel', 4,
+     'Great sound, impressive battery life. A bit heavy but worth it.',
+     'Q: How loud does it get? A: Very loud, easily fills a large room'),
+    ('AUDIO-002', 'Carlos Rodriguez', 4,
+     'Solid speaker with punchy bass. App control is a nice touch.',
+     'Q: Can you pair two together? A: Yes, supports stereo pairing'),
+    ('AUDIO-002', 'Rachel Green', 5,
+     'Beach trips are so much better now. Sound quality exceeded expectations.',
+     'Q: How is the battery life? A: Full day of music, as advertised'),
+    ('AUDIO-002', 'James Liu', 4,
+     'Good value portable speaker. Bass could be deeper but overall satisfied.',
+     'Q: Does it have a microphone? A: Yes, works for calls too'),
+    ('AUDIO-003', 'Mark Studio', 5,
+     'Professional quality at consumer price. My podcasts sound amazing now.',
+     'Q: Good for podcasting? A: Absolutely, broadcast quality'),
+    ('AUDIO-003', 'Sophie Martin', 5,
+     'Crystal clear recordings. The USB-C connection is convenient.',
+     'Q: Does it need phantom power? A: No, USB powered'),
+    ('AUDIO-003', 'Ryan Walsh', 4,
+     'Great mic for the price. Picks up some background noise but manageable.',
+     'Q: How is it for streaming? A: Perfect for Twitch/YouTube'),
+    
+    -- Tablet reviews (minimal)
+    ('TABLET-001', 'Amanda Foster', 5,
+     'Perfect for digital art. The M2 chip handles everything I throw at it.',
+     'Q: How is the stylus? A: Very responsive, virtually no lag'),
+    ('TABLET-001', 'Brian Lee', 4,
+     'Expensive but worth it for creative work. Screen quality is unmatched.',
+     'Q: Can it replace a laptop? A: For creative work, absolutely'),
+    ('TABLET-003', 'Student User', 4,
+     'Great for note-taking and studying. Price is right for students.',
+     'Q: Good for college? A: Perfect for notes and textbooks'),
+    ('TABLET-003', 'Parent Buyer', 5,
+     'Bought for my daughter, she loves it. Educational apps run great.',
+     'Q: Is it durable? A: Yes, survived several drops already'),
+    ('TABLET-003', 'Teacher Review', 4,
+     'Using in classroom, students engaged. Good budget option for schools.',
+     'Q: Does it support multitasking? A: Yes, split screen works well'),
+    ('TABLET-003', 'Young Artist', 4,
+     'Learning to draw digitally, this tablet is perfect for beginners.',
+     'Q: Does stylus cost extra? A: Yes, but affordable third-party options exist'),
+    ('TABLET-003', 'Remote Worker', 5,
+     'Great secondary screen for work. Zoom calls work perfectly.',
+     'Q: How is video calling? A: Clear video and audio quality'),
+    ('TABLET-003', 'Casual Gamer', 4,
+     'Plays most games smoothly. Good entertainment device for the price.',
+     'Q: Can it run games? A: Yes, handles casual games very well'),
+    ('TABLET-002', 'Media Lover', 5,
+     'OLED screen is gorgeous for movies. Quad speakers sound amazing.',
+     'Q: How are the speakers? A: Best I have heard on a tablet'),
+    ('TABLET-002', 'Content Creator', 4,
+     'Good for content consumption and light editing. Android apps work well.',
+     'Q: Can you edit videos? A: Yes, but better for consumption than creation'),
+    ('TABLET-002', 'Netflix Binger', 5,
+     'Perfect for streaming. The screen and speakers make it a portable cinema.',
+     'Q: How is Netflix quality? A: Supports 4K HDR, looks incredible');
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: default
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: mysql123
+  MYSQL_DATABASE: feedback_db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-reviews
+  namespace: default
+spec:
+  serviceName: mysql-reviews
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-reviews
+  template:
+    metadata:
+      labels:
+        app: mysql-reviews
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+          name: mysql
+        envFrom:
+        - secretRef:
+            name: mysql-secret
+        args:
+        - --default-authentication-plugin=mysql_native_password
+        - --binlog_format=ROW
+        - --log-bin=mysql-bin
+        - --server-id=1
+        - --binlog-row-image=FULL
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: mysql-storage
+        emptyDir: {}
+      - name: init-script
+        configMap:
+          name: mysql-init-script
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-reviews
+  namespace: default
+spec:
+  selector:
+    app: mysql-reviews
+  ports:
+  - port: 3306
+    targetPort: 3306
+  type: ClusterIP
