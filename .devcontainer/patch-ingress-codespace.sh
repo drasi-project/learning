@@ -24,8 +24,8 @@ fi
 
 INGRESS_NAME="hello-world-debug-reaction-ingress"
 NAMESPACE="drasi-system"
-PATCH_FILE="${LOCAL_WORKSPACE_FOLDER}/tutorial/getting-started/resources/ingress-codespace-patch.yaml"
-MAX_WAIT=300  # Wait up to 5 minutes
+PATCH_FILE="${LOCAL_WORKSPACE_FOLDER}/resources/ingress-codespace-patch.yaml"
+MAX_WAIT=1200
 INTERVAL=5    # Check every 5 seconds
 
 echo "GitHub Codespace detected. Watching for ingress resource: $INGRESS_NAME in namespace: $NAMESPACE"
