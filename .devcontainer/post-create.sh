@@ -19,7 +19,7 @@ while ( ! kubectl cluster-info ); do
   # Docker takes a few seconds to initialize
   echo "Waiting for Docker to launch..."
   k3d cluster delete
-  k3d cluster create -p '8081:30080@server:0'
+  k3d cluster create
   sleep 1
 done
 
