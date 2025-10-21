@@ -33,12 +33,4 @@ sleep 30
 drasi init
 drasi ingress init --use-existing --ingress-class-name traefik --ingress-ip-address 127.0.0.1
 
-# # Start ingress patcher in background only for GitHub Codespaces
-# if [ -n "$CODESPACE_NAME" ]; then
-#   echo "GitHub Codespace detected. Starting ingress watcher..."
-#   bash ../../.devcontainer/patch-ingress-codespace.sh > /tmp/ingress-patch.log 2>&1 &
-#   echo "Ingress watcher started. Logs available at: /tmp/ingress-patch.log"
-#   echo "You can check progress with: tail -f /tmp/ingress-patch.log"
-# fi
-
 echo "Setup complete. You can now run your application."
