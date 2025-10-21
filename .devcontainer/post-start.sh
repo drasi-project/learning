@@ -73,21 +73,41 @@ else
   echo "Traefik port-forward skipped due to port conflict."
 fi
 
+# Auto-patch ingress for GitHub Codespaces
+if [ -n "$CODESPACE_NAME" ]; then
+  echo "GitHub Codespace detected. Starting ingress watcher..."
+  nohup bash -c '
+    INGRESS_NAME="hello-world-debug-reaction-ingress"
+    NAMESPACE="drasi-system"
+    PATCH_FILE="${LOCAL_WORKSPACE_FOLDER}/tutorial/getting-started/resources/ingress-codespace-patch.yaml"
+    MAX_WAIT=1200
+    INTERVAL=5
+
+    echo "===== Ingress Patcher Started ====="
+    echo "Watching for: $INGRESS_NAME in namespace $NAMESPACE"
+    echo "Patch file: $PATCH_FILE"
+
+    elapsed=0
+    while [ $elapsed -lt $MAX_WAIT ]; do
+      if kubectl get ingress "$INGRESS_NAME" -n "$NAMESPACE" &> /dev/null; then
+        echo "Ingress found. Applying Codespace patch..."
+        if kubectl patch ingress "$INGRESS_NAME" -n "$NAMESPACE" --type=json --patch-file="$PATCH_FILE" 2>&1; then
+          echo "Successfully patched ingress for GitHub Codespaces at $(date)"
+          exit 0
+        else
+          echo "Error: Failed to patch. Run manually: kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
+          exit 1
+        fi
+      fi
+      sleep $INTERVAL
+      elapsed=$((elapsed + INTERVAL))
+    done
+    echo "Timeout: Ingress not found within ${MAX_WAIT}s"
+  ' > "$LOG_DIR/ingress-patch.log" 2>&1 &
+  echo "Ingress watcher started (logs at $LOG_DIR/ingress-patch.log)."
+fi
+
+
 # Final check
 echo "Running processes:"
 ps aux | grep "[k]ubectl port-forward" || echo "No kubectl port-forward processes found."
-
-# Start ingress patcher in background only for GitHub Codespaces
-if [ -n "$CODESPACE_NAME" ]; then
-  echo "GitHub Codespace detected. Starting ingress watcher..."
-  SCRIPT_PATH="${LOCAL_WORKSPACE_FOLDER}/.devcontainer/patch-ingress-codespace.sh"
-
-  if [ -f "$SCRIPT_PATH" ]; then
-    bash "$SCRIPT_PATH" > /tmp/ingress-patch.log 2>&1 &
-    echo "Ingress watcher started. Logs available at: /tmp/ingress-patch.log"
-    echo "You can check progress with: tail -f /tmp/ingress-patch.log"
-  else
-    echo "Warning: Ingress patcher script not found at: $SCRIPT_PATH"
-    echo "Skipping ingress auto-patch. You may need to patch manually."
-  fi
-fi

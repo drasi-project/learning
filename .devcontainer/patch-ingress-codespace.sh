@@ -37,13 +37,13 @@ echo "GitHub Codespace detected. Watching for ingress resource: $INGRESS_NAME in
 echo "Patch file: $PATCH_FILE"
 echo "Checking if patch file exists..."
 if [ ! -f "$PATCH_FILE" ]; then
-  echo "ERROR: Patch file not found at: $PATCH_FILE"
+  echo "WARNING: Patch file not found at: $PATCH_FILE"
   echo "Current directory: $(pwd)"
-  echo "Listing files in resources/:"
-  ls -la ./resources/ 2>&1 || echo "resources/ directory not found"
-  exit 1
+  echo "Will wait for ingress but patching may fail without the patch file."
+  echo "Expected patch file location: $PATCH_FILE"
+else
+  echo "Patch file found. Starting watch loop..."
 fi
-echo "Patch file found. Starting watch loop..."
 
 elapsed=0
 while [ $elapsed -lt $MAX_WAIT ]; do
