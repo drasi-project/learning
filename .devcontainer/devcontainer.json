@@ -7,10 +7,7 @@
 	},
   "onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/on-create.sh && bash ../../.devcontainer/on-create.sh",
   "postCreateCommand": "bash ../../.devcontainer/post-create.sh",
-  "postStartCommand": [
-    "bash ../../.devcontainer/post-start.sh",
-    "if [ -n \"$CODESPACE_NAME\" ]; then echo 'GitHub Codespace detected. Waiting for ingress hello-world-debug-reaction-ingress...'; MAX_WAIT=1200; INTERVAL=5; ELAPSED=0; while [ $ELAPSED -lt $MAX_WAIT ]; do if kubectl get ingress hello-world-debug-reaction-ingress -n drasi-system &> /dev/null; then echo 'Ingress found, applying patch...'; if kubectl patch ingress hello-world-debug-reaction-ingress -n drasi-system --type=json --patch-file=./resources/ingress-codespace-patch.yaml; then echo 'Patch applied successfully'; kubectl get ingress hello-world-debug-reaction-ingress -n drasi-system -o yaml >> /tmp/ingress-patch.log 2>&1; exit 0; else echo 'Patch failed'; exit 1; fi; fi; echo \"Waiting for ingress [$ELAPSED/$MAX_WAIT]\"; sleep $INTERVAL; ELAPSED=$((ELAPSED + INTERVAL)); done; echo 'Timeout: Ingress not created after ${MAX_WAIT}s'; exit 1; fi"
-  ],
+  "postStartCommand": "bash ../../.devcontainer/post-start.sh",
 	"runArgs": [
 	  "--privileged",
 	  "--init"
