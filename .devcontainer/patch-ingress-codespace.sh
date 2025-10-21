@@ -1,0 +1,57 @@
+#!/bin/bash
+# Copyright 2025 The Drasi Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This script watches for the hello-world-debug-reaction ingress resource
+# and automatically patches it for GitHub Codespaces compatibility
+
+# Only run in GitHub Codespaces
+if [ -z "$CODESPACE_NAME" ]; then
+  echo "Not running in GitHub Codespace, skipping ingress patch."
+  exit 0
+fi
+
+INGRESS_NAME="hello-world-debug-reaction-ingress"
+NAMESPACE="drasi-system"
+PATCH_FILE="${LOCAL_WORKSPACE_FOLDER}/tutorial/getting-started/resources/ingress-codespace-patch.yaml"
+MAX_WAIT=300  # Wait up to 5 minutes
+INTERVAL=5    # Check every 5 seconds
+
+echo "GitHub Codespace detected. Watching for ingress resource: $INGRESS_NAME in namespace: $NAMESPACE"
+
+elapsed=0
+while [ $elapsed -lt $MAX_WAIT ]; do
+  # Check if the ingress exists
+  if kubectl get ingress "$INGRESS_NAME" -n "$NAMESPACE" &> /dev/null; then
+    echo "Ingress $INGRESS_NAME found in namespace $NAMESPACE. Applying Codespace patch..."
+
+    # Apply the patch
+    if kubectl patch ingress "$INGRESS_NAME" -n "$NAMESPACE" --type=json --patch-file="$PATCH_FILE"; then
+      echo "Successfully patched ingress $INGRESS_NAME for GitHub Codespaces."
+      exit 0
+    else
+      echo "Error: Failed to patch ingress. Please run manually:"
+      echo "  kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
+      exit 1
+    fi
+  fi
+
+  sleep $INTERVAL
+  elapsed=$((elapsed + INTERVAL))
+done
+
+echo "Timeout: Ingress $INGRESS_NAME was not created within ${MAX_WAIT}s."
+echo "If you need to patch it manually later, run:"
+echo "  kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
+exit 0
