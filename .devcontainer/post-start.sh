@@ -76,3 +76,11 @@ fi
 # Final check
 echo "Running processes:"
 ps aux | grep "[k]ubectl port-forward" || echo "No kubectl port-forward processes found."
+
+# Start ingress patcher in background only for GitHub Codespaces
+if [ -n "$CODESPACE_NAME" ]; then
+  echo "GitHub Codespace detected. Starting ingress watcher..."
+  bash ${LOCAL_WORKSPACE_FOLDER}/.devcontainer/patch-ingress-codespace.sh > /tmp/ingress-patch.log 2>&1 &
+  echo "Ingress watcher started. Logs available at: /tmp/ingress-patch.log"
+  echo "You can check progress with: tail -f /tmp/ingress-patch.log"
+fi
