@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Reaction
+name: qdrant-product-sync
+spec:
+  kind: SyncVectorStore
+  queries:
+    enriched-products: |
+      {
+        "collectionName": "product_knowledge",
+        "keyField": "product_id",
+        "documentTemplate": "Product: {{product_name}}\nCategory: {{category}}\nPrice: ${{price}}\nAverage Rating: {{avg_rating}}/5 ({{review_count}} reviews)\n\nDescription: {{description}}\n\nSpecifications: {{specs}}",
+        "titleTemplate": "{{product_name}}",
+        "createCollection": true,
+        "collectionConfig": {
+          "dimensions": 3072,
+          "distance": "Cosine"
+        }
+      }
+  properties:
+    vectorStoreType: "Qdrant"
+    connectionString: "Endpoint=qdrant.default.svc.cluster.local:6334"
+    embeddingServiceType: "AzureOpenAI"
+    embeddingEndpoint:
+      kind: Secret
+      name: azure-openai-credentials
+      key: AZURE_OPENAI_ENDPOINT
+    embeddingApiKey:
+      kind: Secret
+      name: azure-openai-credentials
+      key: AZURE_OPENAI_API_KEY
+    embeddingModel: "text-embedding-3-large"
+    embeddingDimensions: 3072
+    batchSize: 10
+    maxRetries: 3
+    retryDelayMs: 1000
