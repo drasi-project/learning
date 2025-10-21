@@ -80,7 +80,14 @@ ps aux | grep "[k]ubectl port-forward" || echo "No kubectl port-forward processe
 # Start ingress patcher in background only for GitHub Codespaces
 if [ -n "$CODESPACE_NAME" ]; then
   echo "GitHub Codespace detected. Starting ingress watcher..."
-  bash ${LOCAL_WORKSPACE_FOLDER}/.devcontainer/patch-ingress-codespace.sh > /tmp/ingress-patch.log 2>&1 &
-  echo "Ingress watcher started. Logs available at: /tmp/ingress-patch.log"
-  echo "You can check progress with: tail -f /tmp/ingress-patch.log"
+  SCRIPT_PATH="${LOCAL_WORKSPACE_FOLDER}/.devcontainer/patch-ingress-codespace.sh"
+
+  if [ -f "$SCRIPT_PATH" ]; then
+    bash "$SCRIPT_PATH" > /tmp/ingress-patch.log 2>&1 &
+    echo "Ingress watcher started. Logs available at: /tmp/ingress-patch.log"
+    echo "You can check progress with: tail -f /tmp/ingress-patch.log"
+  else
+    echo "Warning: Ingress patcher script not found at: $SCRIPT_PATH"
+    echo "Skipping ingress auto-patch. You may need to patch manually."
+  fi
 fi
