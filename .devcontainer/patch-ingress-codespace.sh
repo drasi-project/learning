@@ -16,6 +16,11 @@
 # This script watches for the hello-world-debug-reaction ingress resource
 # and automatically patches it for GitHub Codespaces compatibility
 
+echo "===== Ingress Patcher Script Started ====="
+echo "Timestamp: $(date)"
+echo "Working directory: $(pwd)"
+echo "CODESPACE_NAME: $CODESPACE_NAME"
+
 # Only run in GitHub Codespaces
 if [ -z "$CODESPACE_NAME" ]; then
   echo "Not running in GitHub Codespace, skipping ingress patch."
@@ -24,24 +29,40 @@ fi
 
 INGRESS_NAME="hello-world-debug-reaction-ingress"
 NAMESPACE="drasi-system"
-PATCH_FILE="${LOCAL_WORKSPACE_FOLDER}/resources/ingress-codespace-patch.yaml"
+PATCH_FILE="./resources/ingress-codespace-patch.yaml"
 MAX_WAIT=1200
 INTERVAL=5    # Check every 5 seconds
 
 echo "GitHub Codespace detected. Watching for ingress resource: $INGRESS_NAME in namespace: $NAMESPACE"
+echo "Patch file: $PATCH_FILE"
+echo "Checking if patch file exists..."
+if [ ! -f "$PATCH_FILE" ]; then
+  echo "ERROR: Patch file not found at: $PATCH_FILE"
+  echo "Current directory: $(pwd)"
+  echo "Listing files in resources/:"
+  ls -la ./resources/ 2>&1 || echo "resources/ directory not found"
+  exit 1
+fi
+echo "Patch file found. Starting watch loop..."
 
 elapsed=0
 while [ $elapsed -lt $MAX_WAIT ]; do
+  echo "[${elapsed}s] Checking for ingress $INGRESS_NAME in namespace $NAMESPACE..."
+
   # Check if the ingress exists
   if kubectl get ingress "$INGRESS_NAME" -n "$NAMESPACE" &> /dev/null; then
     echo "Ingress $INGRESS_NAME found in namespace $NAMESPACE. Applying Codespace patch..."
+    echo "Patch command: kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
 
-    # Apply the patch
-    if kubectl patch ingress "$INGRESS_NAME" -n "$NAMESPACE" --type=json --patch-file="$PATCH_FILE"; then
+    # Apply the patch with verbose output
+    if kubectl patch ingress "$INGRESS_NAME" -n "$NAMESPACE" --type=json --patch-file="$PATCH_FILE" 2>&1; then
       echo "Successfully patched ingress $INGRESS_NAME for GitHub Codespaces."
+      echo "Verification - Current ingress state:"
+      kubectl get ingress "$INGRESS_NAME" -n "$NAMESPACE" -o yaml
       exit 0
     else
-      echo "Error: Failed to patch ingress. Please run manually:"
+      echo "Error: Failed to patch ingress. Exit code: $?"
+      echo "Please run manually:"
       echo "  kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
       exit 1
     fi
