@@ -93,7 +93,6 @@ if [ -n "$CODESPACE_NAME" ]; then
         echo "Ingress found. Applying Codespace patch..."
         if kubectl patch ingress "$INGRESS_NAME" -n "$NAMESPACE" --type=json --patch-file="$PATCH_FILE" 2>&1; then
           echo "Successfully patched ingress for GitHub Codespaces at $(date)"
-          exit 0
         else
           echo "Error: Failed to patch. Run manually: kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
           exit 1
