@@ -79,7 +79,7 @@ if [ -n "$CODESPACE_NAME" ]; then
   nohup bash -c '
     INGRESS_NAME="hello-world-debug-reaction-ingress"
     NAMESPACE="drasi-system"
-    PATCH_FILE="./resources/ingress-codespace-patch.yaml"
+    PATCH_FILE="../../.devcontainer/resources/ingress-codespace-patch.yaml"
     MAX_WAIT=1200
     INTERVAL=5
 
