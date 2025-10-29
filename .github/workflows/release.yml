@@ -1,11 +1,15 @@
 name: Draft Release
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       tag:
         description: 'Version Tag'
-        required: true        
+        required: true
+        default: 'default'      
 
 jobs:
   getting_started:
@@ -26,4 +30,5 @@ jobs:
       
       - name: Create GitHub Release
         run: |
-          gh release create ${{ inputs.tag }} quickstart-dev-container.zip  --draft --title ${{ inputs.tag }}
+          VERSION="${{ inputs.tag || 'latest' }}"
+          gh release create $VERSION quickstart-dev-container.zip  --draft --title $VERSION

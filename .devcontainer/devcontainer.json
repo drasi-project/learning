@@ -1,7 +1,7 @@
 {
   "name": "Getting started with Drasi",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/getting-started",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:dev-22",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "hostRequirements": {
 		"cpus": 4
 	},
