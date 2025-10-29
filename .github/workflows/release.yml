@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
+      - ingress-getting-started-tutorial
   workflow_dispatch:
     inputs:
       tag:
         description: 'Version Tag'
         required: true
-        default: '0.1.1'        
+        default: 'default'      
 
 jobs:
   getting_started:
@@ -30,5 +31,5 @@ jobs:
       
       - name: Create GitHub Release
         run: |
-          VERSION="${{ inputs.tag || '0.1.1' }}"
+          VERSION="${{ inputs.tag || 'latest' }}"
           gh release create $VERSION quickstart-dev-container.zip  --draft --title $VERSION
