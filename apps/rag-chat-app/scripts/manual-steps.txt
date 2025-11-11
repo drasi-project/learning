@@ -1,49 +1,76 @@
+# Create KIND Cluster
 kind create cluster
 
+# Install Drasi
 drasi init
 
 # INSIDE DRASI-PLATFORM REPO
 cd reactions/sync-vectorstore
 IMAGE_PREFIX='ghcr.io/drasi-project' DOCKER_TAG_VERSION=0.9.1 make docker-build && IMAGE_PREFIX='ghcr.io/drasi-project' DOCKER_TAG_VERSION=0.9.1 make kind-load 
 
+# Command to connect to Postgres in a terminal
 kubectl exec -it postgres-products-0 -- psql -h localhost -U postgres -d postgres_db
 
+# Command to connect to MySQL in a terminal
 kubectl exec -it mysql-reviews-0 -- mysql -h localhost -P 3306 -u root feedback_db -p
 
+# password for mysql
 mysql123
 
+# CURL command for vector store
 curl -Ss http://localhost:6333/collections/product_knowledge | jq
 
+# NOTE: Following commands assume your base working directory is learning/apps/rag-chat-app
+
+# Open watch script
 code scripts/watch-qdrant.sh
 
+# Run the watch script in a terminal
 ./scripts/watch-qdrant.sh
 
+# Navigate to Drasi dir
 cd drasi
 
+# Open sources YAML file
 code sources.yaml
 
+# Apply sources YAML file
 drasi apply -f sources.yaml
 
+# Wait for sources to be ready
+drasi wait -f sources.yaml
+
+# List sources
+drasi list source
+
+# Open query YAML file
 code query.yaml
 
+# Apply query
 drasi apply -f query.yaml
 
+# List query
 drasi list query
 
+# Wait for query to come online
 drasi wait -f query.yaml
 
+# List query
 drasi list query
 
-CTRL+L
-
+# Watch live result set of query
 drasi watch enriched-products
 
+# open reaction YAML
 code reaction.yaml
 
+# Apply reaction YAML
 drasi apply -f reaction.yaml
 
+# WAIT For reaction to come online
 drasi wait -f reaction.yaml
 
+# SQL to insert new laptop into postgres terminal (inside PSQL session)
 INSERT INTO products (id, name, category, description, specifications, price)
 VALUES (
   'LAPTOP-005',
@@ -54,11 +81,13 @@ VALUES (
   2499.99
 );
 
+# SQL to insert REVIEWS for new laptop into postgres terminal (inside mysql session)
 INSERT INTO reviews (product_id, customer_name, rating, review_text)
 VALUES
   ('LAPTOP-005', 'ProGamer', 5, 'Best gaming laptop ever! Runs everything at max settings.'),
   ('LAPTOP-005', 'TechEnthusiast', 5, 'Worth every penny. The 240Hz display is incredible!');
 
+# SQL to Add 2 more  REVIEWS for new laptop into postgres terminal (inside mysql session)
 INSERT INTO reviews (product_id, customer_name, rating, review_text)
 VALUES 
   ('LAPTOP-005', 'BudgetBuyer', 3, 'Great performance but too expensive.'),
