@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 DB_DIR="$PROJECT_ROOT/databases"
-DEVOPS_DIR="$PROJECT_ROOT/devops"
+DEVOPS_DIR="$PROJECT_ROOT/drasi"
 APP_DIR="$PROJECT_ROOT/app"
 
 # Color codes for output

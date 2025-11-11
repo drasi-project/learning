@@ -8,7 +8,7 @@ spec:
     port: 5432
     user: postgres
     password: postgres123
-    database: products_db
+    database: postgres_db
     ssl: false
     tables:
       - public.products
@@ -23,7 +23,7 @@ spec:
     port: 3306
     user: root
     password: mysql123
-    database: feedback_db
+    database: mysql_db
     ssl: false
     tables:
-      - feedback_db.reviews
+      - mysql_db.reviews

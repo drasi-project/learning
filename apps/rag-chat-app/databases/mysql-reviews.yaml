@@ -5,9 +5,9 @@ metadata:
   namespace: default
 data:
   init.sql: |
-    CREATE DATABASE IF NOT EXISTS feedback_db;
-    USE feedback_db;
-    
+    CREATE DATABASE IF NOT EXISTS mysql_db;
+    USE mysql_db;
+
     CREATE TABLE IF NOT EXISTS reviews (
         id INT PRIMARY KEY AUTO_INCREMENT,
         product_id VARCHAR(50),
@@ -117,7 +117,7 @@ metadata:
 type: Opaque
 stringData:
   MYSQL_ROOT_PASSWORD: mysql123
-  MYSQL_DATABASE: feedback_db
+  MYSQL_DATABASE: mysql_db
 ---
 apiVersion: apps/v1
 kind: StatefulSet

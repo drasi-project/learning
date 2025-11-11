@@ -112,7 +112,7 @@ VALUES ('LAPTOP-001', 'New User', 5,
 
 **Update a product (PostgreSQL):**
 ```sql
-psql -h localhost -U postgres -d products_db
+psql -h localhost -U postgres -d postgres_db
 
 UPDATE products 
 SET price = 1199.99, 

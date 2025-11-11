@@ -1,0 +1,65 @@
+kind create cluster
+
+drasi init
+
+# INSIDE DRASI-PLATFORM REPO
+cd reactions/sync-vectorstore
+IMAGE_PREFIX='ghcr.io/drasi-project' DOCKER_TAG_VERSION=0.9.1 make docker-build && IMAGE_PREFIX='ghcr.io/drasi-project' DOCKER_TAG_VERSION=0.9.1 make kind-load 
+
+kubectl exec -it postgres-products-0 -- psql -h localhost -U postgres -d postgres_db
+
+kubectl exec -it mysql-reviews-0 -- mysql -h localhost -P 3306 -u root feedback_db -p
+
+mysql123
+
+curl -Ss http://localhost:6333/collections/product_knowledge | jq
+
+code scripts/watch-qdrant.sh
+
+./scripts/watch-qdrant.sh
+
+cd drasi
+
+code sources.yaml
+
+drasi apply -f sources.yaml
+
+code query.yaml
+
+drasi apply -f query.yaml
+
+drasi list query
+
+drasi wait -f query.yaml
+
+drasi list query
+
+CTRL+L
+
+drasi watch enriched-products
+
+code reaction.yaml
+
+drasi apply -f reaction.yaml
+
+drasi wait -f reaction.yaml
+
+INSERT INTO products (id, name, category, description, specifications, price)
+VALUES (
+  'LAPTOP-005',
+  'GamerX Elite',
+  'Laptops',
+  'Ultimate gaming laptop with RTX 4080',
+  '{"cpu": "Intel i9-14900HX", "gpu": "RTX 4080", "ram": "32GB DDR5", "display": "17.3-inch QHD 240Hz"}',
+  2499.99
+);
+
+INSERT INTO reviews (product_id, customer_name, rating, review_text)
+VALUES
+  ('LAPTOP-005', 'ProGamer', 5, 'Best gaming laptop ever! Runs everything at max settings.'),
+  ('LAPTOP-005', 'TechEnthusiast', 5, 'Worth every penny. The 240Hz display is incredible!');
+
+INSERT INTO reviews (product_id, customer_name, rating, review_text)
+VALUES 
+  ('LAPTOP-005', 'BudgetBuyer', 3, 'Great performance but too expensive.'),
+  ('LAPTOP-005', 'CasualUser', 4, 'Excellent but overkill for my needs.');

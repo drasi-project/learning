@@ -90,7 +90,7 @@ if ! curl -s http://localhost:6333/collections &>/dev/null; then
     exit 1
 fi
 
-if ! kubectl exec postgres-products-0 -- psql -U postgres -d products_db -c "SELECT 1" &>/dev/null; then
+if ! kubectl exec postgres-products-0 -- psql -U postgres -d postgres_db -c "SELECT 1" &>/dev/null; then
     print_error "PostgreSQL is not accessible"
     echo "Please run the deployment script first: ../scripts/deploy.sh"
     exit 1
@@ -139,7 +139,7 @@ print_query "        '{\"cpu\": \"Intel i9-14900HX\", \"gpu\": \"RTX 4080\", \"r
 print_query "        2499.99);"
 echo ""
 
-kubectl exec -it postgres-products-0 -- psql -U postgres -d products_db -c "
+kubectl exec -it postgres-products-0 -- psql -U postgres -d postgres_db -c "
 INSERT INTO products (id, name, category, description, specifications, price) 
 VALUES ('LAPTOP-005', 'GamerX Elite', 'Laptops', 
         'Ultimate gaming laptop with RTX 4080', 
@@ -228,7 +228,7 @@ echo ""
 print_query "SELECT p.id, p.name, p.price FROM products p WHERE category = 'Tablets';"
 echo ""
 
-kubectl exec -it postgres-products-0 -- psql -U postgres -d products_db -c "
+kubectl exec -it postgres-products-0 -- psql -U postgres -d postgres_db -c "
 SELECT p.id, p.name, p.price
 FROM products p 
 WHERE category = 'Tablets'

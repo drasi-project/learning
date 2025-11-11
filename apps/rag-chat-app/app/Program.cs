@@ -30,14 +30,43 @@ var qdrantHost = configuration["QDRANT_HOST"] ?? "localhost";
 var qdrantPort = int.Parse(configuration["QDRANT_PORT"] ?? "6334");
 var collectionName = configuration["QDRANT_COLLECTION"] ?? "product_knowledge";
 
+// Theme configuration
+var terminalTheme = configuration["TERMINAL_THEME"]?.ToLower() ?? "dark";
+bool isLightTheme = terminalTheme == "light";
+
+// Define theme-aware colors
+var primaryColor = isLightTheme ? "darkblue" : "blue";
+var secondaryColor = isLightTheme ? "navy" : "blue";
+var warningColor = isLightTheme ? "darkorange" : "yellow";
+var successColor = isLightTheme ? "darkgreen" : "green";
+var errorColor = isLightTheme ? "darkred" : "red";
+var infoColor = isLightTheme ? "darkblue" : "cyan";
+var mutedColor = isLightTheme ? "grey" : "dim";
+var titleColor = isLightTheme ? "bold darkblue" : "bold yellow";
+
+// Helper function to get Color enum from string
+Color GetColorEnum(string colorName)
+{
+    return colorName.ToLower() switch
+    {
+        "darkblue" => Color.DarkBlue,
+        "navy" => Color.Navy,
+        "blue" => Color.Blue,
+        "darkgreen" => Color.Green4,
+        "green" => Color.Green,
+        _ => Color.Blue
+    };
+}
+
 // Display startup banner
 AnsiConsole.Write(
     new FigletText("Drasi RAG Demo")
         .Centered()
-        .Color(Color.Blue));
+        .Color(GetColorEnum(secondaryColor)));
 
-AnsiConsole.MarkupLine("[bold yellow]Product Knowledge Assistant powered by Drasi + Semantic Kernel[/]");
-AnsiConsole.MarkupLine("[dim]Real-time vector store synchronization with multi-source data[/]");
+AnsiConsole.MarkupLine($"[{titleColor}]Product Knowledge Assistant powered by Drasi[/]");
+AnsiConsole.MarkupLine($"[{mutedColor}]Real-time vector store synchronization with multi-source data[/]");
+
 AnsiConsole.WriteLine();
 
 // Initialize Azure OpenAI client
@@ -53,19 +82,19 @@ try
 {
     AnsiConsole.Status()
         .Spinner(Spinner.Known.Star)
-        .SpinnerStyle(Style.Parse("blue"))
+        .SpinnerStyle(Style.Parse(primaryColor))
         .Start("Connecting to Qdrant...", ctx =>
         {
             var collections = qdrantClient.ListCollectionsAsync().Result;
             ctx.Status($"Connected to Qdrant at {qdrantHost}:{qdrantPort}");
         });
     
-    AnsiConsole.MarkupLine($"[green]✓[/] Connected to Qdrant at [cyan]{qdrantHost}:{qdrantPort}[/]");
+    AnsiConsole.MarkupLine($"[{successColor}]✓[/] Connected to Qdrant at [{infoColor}]{qdrantHost}:{qdrantPort}[/]");
 }
 catch (Exception ex)
 {
-    AnsiConsole.MarkupLine("[red]✗[/] Failed to connect to Qdrant: {0}", ex.Message);
-    AnsiConsole.MarkupLine("[yellow]Make sure Qdrant is running and accessible[/]");
+    AnsiConsole.MarkupLine($"[{errorColor}]✗[/] Failed to connect to Qdrant: {{0}}", ex.Message);
+    AnsiConsole.MarkupLine($"[{warningColor}]Make sure Qdrant is running and accessible[/]");
     return;
 }
 
@@ -80,7 +109,7 @@ async Task<List<(string text, float score, Dictionary<string, object> metadata)>
         var collections = await qdrantClient.ListCollectionsAsync();
         if (!collections.Contains(collectionName))
         {
-            AnsiConsole.MarkupLine($"[yellow]Collection '{collectionName}' does not exist yet. Data may still be syncing.[/]");
+            AnsiConsole.MarkupLine($"[{warningColor}]Collection '{collectionName}' does not exist yet. Data may still be syncing.[/]");
             return results;
         }
         
@@ -113,7 +142,7 @@ async Task<List<(string text, float score, Dictionary<string, object> metadata)>
     }
     catch (Exception ex)
     {
-        AnsiConsole.MarkupLine("[red]Error searching Qdrant:[/] {0}", ex.Message);
+        AnsiConsole.MarkupLine($"[{errorColor}]Error searching Qdrant:[/] {{0}}", ex.Message);
     }
     
     return results;
@@ -160,7 +189,7 @@ Answer:";
         
         // Display sources
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Based on {0} relevant sources (relevance scores: {1})[/]", 
+        AnsiConsole.MarkupLine($"[{mutedColor}]Based on {{0}} relevant sources (relevance scores: {{1}})[/]", 
             searchResults.Count,
             string.Join(", ", searchResults.Select(s => $"{s.score:F2}")));
         
@@ -189,7 +218,7 @@ var sampleQuestions = new[]
 
 // Main interaction loop
 AnsiConsole.WriteLine();
-AnsiConsole.Write(new Rule("[blue]Ready to Answer Questions[/]"));
+AnsiConsole.Write(new Rule($"[{primaryColor}]Ready to Answer Questions[/]"));
 AnsiConsole.WriteLine();
 
 while (true)
@@ -197,7 +226,7 @@ while (true)
     // Show menu
     var choice = AnsiConsole.Prompt(
         new SelectionPrompt<string>()
-            .Title("[green]What would you like to do?[/]")
+            .Title($"[{successColor}]What would you like to do?[/]")
             .AddChoices(new[] { 
                 "Ask a custom question",
                 "Use a sample question",
@@ -214,20 +243,20 @@ while (true)
     
     if (choice == "Ask a custom question")
     {
-        question = AnsiConsole.Ask<string>("[cyan]Your question:[/]");
+        question = AnsiConsole.Ask<string>($"[{infoColor}]Your question:[/]");
     }
     else if (choice == "Use a sample question")
     {
         question = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("[green]Select a sample question:[/]")
+                .Title($"[{successColor}]Select a sample question:[/]")
                 .AddChoices(sampleQuestions));
     }
     else if (choice == "Check vector store status")
     {
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Star)
-            .SpinnerStyle(Style.Parse("blue"))
+            .SpinnerStyle(Style.Parse(primaryColor))
             .StartAsync("Checking vector store...", async ctx =>
             {
                 try
@@ -237,27 +266,27 @@ while (true)
                     
                     AnsiConsole.WriteLine();
                     AnsiConsole.MarkupLine("[bold]Vector Store Status:[/]");
-                    AnsiConsole.MarkupLine($"  Host: [cyan]{qdrantHost}:{qdrantPort}[/]");
-                    AnsiConsole.MarkupLine($"  Collections: [green]{collections.Count()}[/]");
+                    AnsiConsole.MarkupLine($"  Host: [{infoColor}]{qdrantHost}:{qdrantPort}[/]");
+                    AnsiConsole.MarkupLine($"  Collections: [{successColor}]{collections.Count()}[/]");
                     
                     if (collections.Contains(collectionName))
                     {
-                        AnsiConsole.MarkupLine($"  Target collection '[cyan]{collectionName}[/]': [green]EXISTS[/]");
+                        AnsiConsole.MarkupLine($"  Target collection '[{infoColor}]{collectionName}[/]': [{successColor}]EXISTS[/]");
                         
                         // Get collection info
                         var collectionInfo = await qdrantClient.GetCollectionInfoAsync(collectionName);
-                        AnsiConsole.MarkupLine($"  Points count: [green]{collectionInfo.PointsCount}[/]");
-                        AnsiConsole.MarkupLine($"  Vectors count: [green]{collectionInfo.IndexedVectorsCount}[/]");
+                        AnsiConsole.MarkupLine($"  Points count: [{successColor}]{collectionInfo.PointsCount}[/]");
+                        AnsiConsole.MarkupLine($"  Vectors count: [{successColor}]{collectionInfo.IndexedVectorsCount}[/]");
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"  Target collection '[cyan]{collectionName}[/]': [yellow]NOT FOUND[/]");
-                        AnsiConsole.MarkupLine("  [dim]The collection will be created when Drasi syncs data[/]");
+                        AnsiConsole.MarkupLine($"  Target collection '[{infoColor}]{collectionName}[/]': [{warningColor}]NOT FOUND[/]");
+                        AnsiConsole.MarkupLine($"  [{mutedColor}]The collection will be created when Drasi syncs data[/]");
                     }
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.MarkupLine("[red]Error checking status:[/] {0}", ex.Message);
+                    AnsiConsole.MarkupLine($"[{errorColor}]Error checking status:[/] {{0}}", ex.Message);
                 }
             });
         
@@ -273,7 +302,7 @@ while (true)
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Star)
-            .SpinnerStyle(Style.Parse("blue"))
+            .SpinnerStyle(Style.Parse(primaryColor))
             .StartAsync("Searching knowledge base...", async ctx =>
             {
                 var answer = await AskAboutProducts(question);
@@ -283,7 +312,7 @@ while (true)
                 {
                     Header = new PanelHeader(" Answer ", Justify.Center),
                     Border = BoxBorder.Rounded,
-                    BorderStyle = new Style(Color.Green),
+                    BorderStyle = new Style(isLightTheme ? Color.Green4 : Color.Green),
                     Padding = new Padding(2, 1)
                 };
                 AnsiConsole.Write(panel);
@@ -297,10 +326,10 @@ while (true)
 
 // Farewell
 AnsiConsole.WriteLine();
-var goodbye = new Panel("[bold yellow]Thank you for using Drasi RAG Demo![/]\n[dim]Real-time knowledge powered by continuous queries[/]")
+var goodbye = new Panel($"[{titleColor}]Thank you for using Drasi RAG Demo![/]\n[{mutedColor}]Real-time knowledge powered by continuous queries[/]")
 {
     Border = BoxBorder.Double,
-    BorderStyle = new Style(Color.Blue),
+    BorderStyle = new Style(GetColorEnum(secondaryColor)),
     Padding = new Padding(2, 1)
 };
 AnsiConsole.Write(goodbye);
