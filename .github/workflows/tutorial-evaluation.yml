@@ -1,0 +1,168 @@
+name: Agentic Tutorial Evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      tutorial:
+        description: 'Tutorial to evaluate'
+        type: choice
+        options:
+          - getting-started
+          - curbside-pickup
+          - building-comfort
+          - dapr
+          - absence-of-change
+          - risky-containers
+        default: 'getting-started'
+      docs_repo_branch:
+        description: 'Branch from docs repo to use'
+        default: 'main'
+      model:
+        description: 'AI model to use for evaluation'
+        default: 'gemini-3-pro-preview'
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.config.outputs.runner }}
+      devcontainer: ${{ steps.config.outputs.devcontainer }}
+      docs_path: ${{ steps.config.outputs.docs_path }}
+      learning_path: ${{ steps.config.outputs.learning_path }}
+    steps:
+      - name: Set tutorial config
+        id: config
+        run: |
+          # Default runner
+          RUNNER="ubuntu-latest"
+
+          case "${{ inputs.tutorial }}" in
+            getting-started)
+              echo "devcontainer=.devcontainer/devcontainer.json" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/getting-started" >> $GITHUB_OUTPUT
+              echo "learning_path=tutorial/getting-started" >> $GITHUB_OUTPUT
+              ;;
+            curbside-pickup)
+              echo "devcontainer=.devcontainer/curbside-pickup/devcontainer.json" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/tutorials/curbside-pickup" >> $GITHUB_OUTPUT
+              echo "learning_path=tutorial/curbside-pickup" >> $GITHUB_OUTPUT
+              ;;
+            building-comfort)
+              echo "devcontainer=.devcontainer/building-comfort/devcontainer.json" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/tutorials/building-comfort" >> $GITHUB_OUTPUT
+              echo "learning_path=tutorial/building-comfort" >> $GITHUB_OUTPUT
+              ;;
+            dapr)
+              echo "devcontainer=.devcontainer/dapr/devcontainer.json" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/tutorials/drasi-for-dapr" >> $GITHUB_OUTPUT
+              echo "learning_path=tutorial/dapr" >> $GITHUB_OUTPUT
+              RUNNER="ubuntu-latest-4-core"
+              ;;
+            absence-of-change)
+              echo "devcontainer=.devcontainer/absence-of-change/devcontainer.json" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/tutorials/absence-of-change" >> $GITHUB_OUTPUT
+              echo "learning_path=tutorial/absence-of-change" >> $GITHUB_OUTPUT
+              ;;
+            risky-containers)
+              echo "devcontainer=.devcontainer/risky-containers/devcontainer.json" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/tutorials/risky-containers" >> $GITHUB_OUTPUT
+              echo "learning_path=tutorial/risky-containers" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "::error::Unknown tutorial: ${{ inputs.tutorial }}"
+              exit 1
+              ;;
+          esac
+
+          echo "runner=$RUNNER" >> $GITHUB_OUTPUT
+
+  evaluate:
+    needs: setup
+    runs-on: ${{ needs.setup.outputs.runner }}
+    environment: tutorial-evaluation
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+        with:
+          repository: drasi-project/docs
+          ref: ${{ inputs.docs_repo_branch }}
+          path: drasi-docs
+
+      - name: Copy tutorial docs and prompt into the workspace
+        run: |
+          mkdir -p ${{ needs.setup.outputs.learning_path }}/tutorial-docs
+          cp -r drasi-docs/${{ needs.setup.outputs.docs_path }}/* ${{ needs.setup.outputs.learning_path }}/tutorial-docs
+          cp .github/prompts/tutorial-evaluation.md ${{ needs.setup.outputs.learning_path }}/prompt.md
+
+      - name: Copilot-CLI inside Devcontainer
+        uses: devcontainers/ci@v0.3
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_TOKEN }}
+          DRASI_TUTORIAL_EVALUATION: "true"
+        with:
+          configFile: ${{ needs.setup.outputs.devcontainer }}
+          push: never
+          runCmd: |
+            copilot -p "$(cat prompt.md)" \
+              --allow-all-tools \
+              --allow-all-paths \
+              --deny-tool 'fetch' \
+              --deny-tool 'websearch' \
+              --deny-tool 'githubRepo' \
+              --deny-tool 'shell(curl *)' \
+              --deny-tool 'shell(wget *)' \
+              --deny-tool 'shell(nc *)' \
+              --deny-tool 'shell(ssh *)' \
+              --deny-tool 'shell(scp *)' \
+              --deny-tool 'shell(telnet *)' \
+              --deny-tool 'shell(ftp *)' \
+              --deny-tool 'shell(rm -rf /*)' \
+              --deny-tool 'shell(dd *)' \
+              --allow-url localhost \
+              --allow-url 127.0.0.1 \
+              --model ${{ inputs.model }}
+
+      - name: Check evaluation status
+        if: always()
+        run: |
+          REPORT=$(find ${{ needs.setup.outputs.learning_path }} -name "report.md" -path "*/evaluation-*/*" | head -1)
+
+          if [ -z "$REPORT" ]; then
+            echo "::error::No report.md found in evaluation directory"
+            exit 1
+          fi
+
+          echo "Found report: $REPORT"
+          echo "--- Report Contents ---"
+          cat "$REPORT"
+          echo "--- End Report ---"
+
+          # Remove potential BOM and normalize line endings
+          sed -i '1s/^\xEF\xBB\xBF//' "$REPORT"
+          sed -i 's/\r$//' "$REPORT"
+
+          if grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
+            echo "::notice::Tutorial evaluation PASSED"
+            exit 0
+          elif grep -qiE "^##\s*STATUS:\s*FAILURE" "$REPORT"; then
+            echo "::error::Tutorial evaluation FAILED"
+            exit 1
+          else
+            echo "::error::No STATUS found in report.md"
+            echo "First 5 lines of report:"
+            head -5 "$REPORT" | cat -A
+            exit 1
+          fi
+
+      - name: Upload evaluation results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-results-${{ inputs.tutorial }}
+          path: |
+            ${{ needs.setup.outputs.learning_path }}/evaluation-*/
+            ${{ needs.setup.outputs.learning_path }}/tutorial-docs/
+            ${{ needs.setup.outputs.learning_path }}/prompt.md

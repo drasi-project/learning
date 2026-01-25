@@ -10,7 +10,8 @@
 	"postStartCommand": "bash ../../.devcontainer/risky-containers/post-start.sh",
 	"runArgs": [
 	  "--privileged",
-	  "--init"
+	  "--init",
+      "--ipc=host"
 	],
 	"customizations": {
 		"vscode": {
@@ -25,7 +26,13 @@
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features
 	"features": {
-	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+      "ghcr.io/devcontainers/features/docker-in-docker:2": {
+        "version": "27",
+        "moby": "false"
+      },
+	  "ghcr.io/devcontainers/features/node:1": {
+		"version": "22"
+	  },
 	  "ghcr.io/rio/features/k3d:1": {},
 	  "ghcr.io/robbert229/devcontainer-features/postgresql-client:1": {
 		"version": "15"
@@ -39,12 +46,13 @@
     },
 	"remoteEnv": {
 	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+	  "GITHUB_ACTIONS": "${localEnv:GITHUB_ACTIONS}",
+	  "COPILOT_GITHUB_TOKEN": "${localEnv:COPILOT_GITHUB_TOKEN}",
 	  "PGHOST": "localhost",
 	  "PGDATABASE": "tutorial",
 	  "PGPORT": "5432",
 	  "PGUSER" : "test",
 	  "PGPASSWORD" : "test"
-
 	},
 	"portsAttributes": {
 	  "5432": {

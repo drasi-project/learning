@@ -26,17 +26,15 @@ spec:
         Pod:
           - selector: $.status.containerStatuses[*]
             label: Container
-            key: $.containerID
+            key: $.name
             relation: OWNS
-
   query: > 
     MATCH 
       (p:Pod)-[:OWNS]->(c:Container)-[:HAS_IMAGE]->(i:RiskyImage)    
     RETURN
-      p.name as pod,
+      p.metadata.name as pod,
+      p.metadata.namespace as namespace,
       c.image as image,
       c.name as name,
-      c.ready as ready,
-      c.started as started,
-      c.restartCount as restartCount,
-      i.Reason as reason
+      i.Reason as reason,
+      i.Mitigation as mitigation
