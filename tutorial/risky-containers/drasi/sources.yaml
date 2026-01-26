@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Source
+name: devops
+spec:
+  kind: PostgreSQL
+  properties:
+    host: postgres.default.svc.cluster.local
+    user: test
+    port: 5432
+    ssl: false
+    password: test
+    database: tutorial
+    tables:
+      - public.RiskyImage
+---
+apiVersion: v1
+kind: Source
+name: k8s
+spec:
+  kind: Kubernetes 
+  properties:
+    kubeConfig: 
+      kind: Secret
+      name: k8s-context
+      key: context

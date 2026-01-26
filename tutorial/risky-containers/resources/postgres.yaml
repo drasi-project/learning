@@ -23,11 +23,12 @@ data:
         "Id" integer NOT NULL,
         "Image" character varying(100) COLLATE pg_catalog."default" NOT NULL,
         "Reason" character varying(100) COLLATE pg_catalog."default",
+        "Mitigation" character varying(100) COLLATE pg_catalog."default",
         CONSTRAINT "RiskyImage_pkey" PRIMARY KEY ("Id")
     );
 
-    insert into "RiskyImage" ("Id", "Image", "Reason") values (1, 'ghcr.io/drasi-project/my-app:0.1', 'Security Risk');
-    insert into "RiskyImage" ("Id", "Image", "Reason") values (2, 'docker.io/library/redis:6.2.3-alpine', 'Compliance Issue');
+    insert into "RiskyImage" ("Id", "Image", "Reason", "Mitigation") values (1, 'ghcr.io/drasi-project/my-app:0.1', 'Security Risk', 'Update to latest version');
+    insert into "RiskyImage" ("Id", "Image", "Reason", "Mitigation") values (2, 'docker.io/library/redis:6.2.3-alpine', 'Compliance Issue', 'Use official image');
 ---
 apiVersion: v1
 kind: ConfigMap

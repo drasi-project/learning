@@ -1,0 +1,215 @@
+name: Scheduled Tutorial Evaluation
+
+on:
+  schedule:
+    - cron: '0 13 * * 5'  # Friday 5am PST / 6am PDT (13:00 UTC)
+  workflow_dispatch: {}   # Manual trigger for testing/re-runs
+  pull_request_target:    # PR evaluation (requires approval)
+    types: [opened, synchronize, reopened]
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'schedule' && 'tutorial-evaluation-scheduled' || 'tutorial-evaluation' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        tutorial: [getting-started, curbside-pickup, building-comfort, absence-of-change, risky-containers]
+        include:
+          - tutorial: getting-started
+            devcontainer: .devcontainer/devcontainer.json
+            docs_path: docs/content/getting-started
+            learning_path: tutorial/getting-started
+          - tutorial: curbside-pickup
+            devcontainer: .devcontainer/curbside-pickup/devcontainer.json
+            docs_path: docs/content/tutorials/curbside-pickup
+            learning_path: tutorial/curbside-pickup
+          - tutorial: building-comfort
+            devcontainer: .devcontainer/building-comfort/devcontainer.json
+            docs_path: docs/content/tutorials/building-comfort
+            learning_path: tutorial/building-comfort
+          - tutorial: absence-of-change
+            devcontainer: .devcontainer/absence-of-change/devcontainer.json
+            docs_path: docs/content/tutorials/absence-of-change
+            learning_path: tutorial/absence-of-change
+          - tutorial: risky-containers
+            devcontainer: .devcontainer/risky-containers/devcontainer.json
+            docs_path: docs/content/tutorials/risky-containers
+            learning_path: tutorial/risky-containers
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+        with:
+          repository: drasi-project/docs
+          ref: main
+          path: drasi-docs
+
+      - name: Copy tutorial docs and prompt
+        run: |
+          mkdir -p ${{ matrix.learning_path }}/tutorial-docs
+          cp -r drasi-docs/${{ matrix.docs_path }}/* ${{ matrix.learning_path }}/tutorial-docs
+          cp .github/prompts/tutorial-evaluation.md ${{ matrix.learning_path }}/prompt.md
+
+      - name: Run evaluation (attempt 1)
+        id: attempt1
+        continue-on-error: true
+        uses: devcontainers/ci@v0.3
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_TOKEN }}
+          DRASI_TUTORIAL_EVALUATION: "true"
+        with:
+          configFile: ${{ matrix.devcontainer }}
+          push: never
+          runCmd: |
+            copilot -p "$(cat prompt.md)" \
+              --allow-all-tools \
+              --allow-all-paths \
+              --deny-tool 'fetch' \
+              --deny-tool 'websearch' \
+              --deny-tool 'githubRepo' \
+              --deny-tool 'shell(curl *)' \
+              --deny-tool 'shell(wget *)' \
+              --deny-tool 'shell(nc *)' \
+              --deny-tool 'shell(ssh *)' \
+              --deny-tool 'shell(scp *)' \
+              --deny-tool 'shell(telnet *)' \
+              --deny-tool 'shell(ftp *)' \
+              --deny-tool 'shell(rm -rf /*)' \
+              --deny-tool 'shell(dd *)' \
+              --allow-url localhost \
+              --allow-url 127.0.0.1 \
+              --model gemini-3-pro-preview
+
+      - name: Wait before retry
+        if: steps.attempt1.outcome == 'failure'
+        run: |
+          echo "Attempt 1 failed. Waiting 60 seconds before retry..."
+          sleep 60
+
+      - name: Run evaluation (attempt 2)
+        id: attempt2
+        if: steps.attempt1.outcome == 'failure'
+        uses: devcontainers/ci@v0.3
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_TOKEN }}
+          DRASI_TUTORIAL_EVALUATION: "true"
+        with:
+          configFile: ${{ matrix.devcontainer }}
+          push: never
+          runCmd: |
+            copilot -p "$(cat prompt.md)" \
+              --allow-all-tools \
+              --allow-all-paths \
+              --deny-tool 'fetch' \
+              --deny-tool 'websearch' \
+              --deny-tool 'githubRepo' \
+              --deny-tool 'shell(curl *)' \
+              --deny-tool 'shell(wget *)' \
+              --deny-tool 'shell(nc *)' \
+              --deny-tool 'shell(ssh *)' \
+              --deny-tool 'shell(scp *)' \
+              --deny-tool 'shell(telnet *)' \
+              --deny-tool 'shell(ftp *)' \
+              --deny-tool 'shell(rm -rf /*)' \
+              --deny-tool 'shell(dd *)' \
+              --allow-url localhost \
+              --allow-url 127.0.0.1 \
+              --model gemini-3-pro-preview
+
+      - name: Check evaluation status
+        if: always()
+        run: |
+          REPORT=$(find ${{ matrix.learning_path }} -name "report.md" -path "*/evaluation-*/*" | head -1)
+
+          if [ -z "$REPORT" ]; then
+            echo "::error::No report.md found in evaluation directory"
+            exit 1
+          fi
+
+          echo "Found report: $REPORT"
+          echo "--- Report Contents ---"
+          cat "$REPORT"
+          echo "--- End Report ---"
+
+          sed -i '1s/^\xEF\xBB\xBF//' "$REPORT"
+          sed -i 's/\r$//' "$REPORT"
+
+          if grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
+            echo "::notice::Tutorial evaluation PASSED"
+            exit 0
+          elif grep -qiE "^##\s*STATUS:\s*FAILURE" "$REPORT"; then
+            echo "::error::Tutorial evaluation FAILED"
+            exit 1
+          else
+            echo "::error::No STATUS found in report.md"
+            echo "First 5 lines of report:"
+            head -5 "$REPORT" | cat -A
+            exit 1
+          fi
+
+      - name: Upload evaluation results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-results-${{ matrix.tutorial }}-${{ github.event.pull_request.number || github.run_id }}
+          path: |
+            ${{ matrix.learning_path }}/evaluation-*/
+            ${{ matrix.learning_path }}/tutorial-docs/
+            ${{ matrix.learning_path }}/prompt.md
+
+  create-issue-on-failure:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    if: failure() && github.event_name != 'pull_request_target'
+    steps:
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const artifactsUrl = `${runUrl}#artifacts`;
+
+            // Get job results to identify which tutorials failed
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+
+            const failedTutorials = jobs.data.jobs
+              .filter(job => job.name.startsWith('evaluate') && job.conclusion === 'failure')
+              .map(job => {
+                // Extract tutorial name from job name like "evaluate (getting-started)"
+                const match = job.name.match(/\(([^)]+)\)/);
+                return match ? match[1] : job.name;
+              });
+
+            const failedList = failedTutorials.length > 0
+              ? failedTutorials.map(t => `- \`${t}\``).join('\n')
+              : '- Unable to determine specific failures';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Scheduled tutorial evaluation failed - ${new Date().toISOString().split('T')[0]}`,
+              body: `## Scheduled Tutorial Evaluation Failed
+
+            **Failed Tutorials:**
+            ${failedList}
+
+            **Links:**
+            - [Workflow Run](${runUrl})
+            - [Download Artifacts](${artifactsUrl})
+
+            Please review the workflow logs and artifacts to identify the issue.
+
+            ---
+            *This issue was automatically created by the scheduled tutorial evaluation workflow.*`,
+              labels: ['tutorial-failure', 'automated']
+            });

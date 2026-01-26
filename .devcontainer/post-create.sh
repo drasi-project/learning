@@ -33,4 +33,7 @@ sleep 30
 drasi init
 drasi ingress init --use-existing --ingress-class-name traefik --ingress-ip-address 127.0.0.1
 
+# Install evaluation tools if running in tutorial evaluation workflow
+source "$(dirname "$0")/scripts/install-evaluation-tools.sh"
+
 echo "Setup complete. You can now run your application."

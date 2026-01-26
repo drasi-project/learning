@@ -50,6 +50,9 @@ echo "Running setup script..."
 # The working directory is already set by workspaceFolder in devcontainer.json
 bash scripts/setup-tutorial.sh
 
+# Install evaluation tools if running in tutorial evaluation workflow
+source "$(dirname "$0")/../scripts/install-evaluation-tools.sh"
+
 echo ""
 echo "Setup complete! Applications are available at:"
 echo "  Catalog UI: http://localhost:8123/catalogue-service"

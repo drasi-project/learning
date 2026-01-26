@@ -61,3 +61,8 @@ docker pull ghcr.io/drasi-project/my-app:0.3
 k3d image import ghcr.io/drasi-project/my-app:0.1
 k3d image import ghcr.io/drasi-project/my-app:0.2
 k3d image import ghcr.io/drasi-project/my-app:0.3
+
+# Install evaluation tools if running in tutorial evaluation workflow
+source "$(dirname "$0")/../scripts/install-evaluation-tools.sh"
+
+echo "Setup complete."

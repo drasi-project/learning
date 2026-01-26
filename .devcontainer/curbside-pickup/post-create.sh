@@ -163,6 +163,9 @@ while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
     ATTEMPT=$((ATTEMPT + 1))
 done
 
+# Install evaluation tools if running in tutorial evaluation workflow
+source "$(dirname "$0")/../scripts/install-evaluation-tools.sh"
+
 echo "Setup complete! Applications are available at:"
 echo "  Demo (All Apps): http://localhost:8123/"
 echo "  Physical Operations: http://localhost:8123/physical-ops"

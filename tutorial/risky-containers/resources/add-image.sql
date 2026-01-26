@@ -1,1 +1,1 @@
-insert into "RiskyImage" ("Id", "Image", "Reason") values (101, 'ghcr.io/drasi-project/my-app:0.2', 'Critical Bug')
+insert into "RiskyImage" ("Id", "Image", "Reason", "Mitigation") values (101, 'ghcr.io/drasi-project/my-app:0.2', 'Critical Bug', 'Update to latest version')

@@ -29,3 +29,8 @@ kubectl wait --for=condition=ready pod -l app=postgres --timeout=60s
 
 ## Install Drasi
 drasi init
+
+# Install evaluation tools if running in tutorial evaluation workflow
+source "$(dirname "$0")/../scripts/install-evaluation-tools.sh"
+
+echo "Setup complete."

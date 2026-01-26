@@ -6,7 +6,8 @@
   "postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
   "runArgs": [
     "--privileged",
-    "--init"
+    "--init",
+    "--ipc=host"
   ],
   "customizations": {
     "vscode": {
@@ -17,7 +18,13 @@
     }
   },
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "27",
+      "moby": "false"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+        "version": "22"
+    }
   },
   "containerEnv": {
     "LANG": "en_US.UTF-8",
@@ -25,7 +32,9 @@
     "LC_ALL": "en_US.UTF-8"
   },
   "remoteEnv": {
-    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+    "GITHUB_ACTIONS": "${localEnv:GITHUB_ACTIONS}",
+    "COPILOT_GITHUB_TOKEN": "${localEnv:COPILOT_GITHUB_TOKEN}"
   },
   "forwardPorts": [8123],
   "portsAttributes": {
