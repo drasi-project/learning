@@ -67,7 +67,7 @@ jobs:
           configFile: ${{ matrix.devcontainer }}
           push: never
           runCmd: |
-            copilot -p "$(cat prompt.md)" \
+            timeout 1200 copilot -p "$(cat prompt.md)" \
               --allow-all-tools \
               --allow-all-paths \
               --deny-tool 'fetch' \
@@ -84,9 +84,13 @@ jobs:
               --deny-tool 'shell(dd *)' \
               --allow-url localhost \
               --allow-url 127.0.0.1 \
-              --model gemini-3-pro-preview
+              --model gemini-3-pro-preview || true
+            REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
+            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:" "$REPORT"; then
+              exit 1
+            fi
 
-      - name: Wait before retry
+      - name: Wait before retry (attempt 2)
         if: steps.attempt1.outcome == 'failure'
         run: |
           echo "Attempt 1 failed. Waiting 60 seconds before retry..."
@@ -94,6 +98,7 @@ jobs:
 
       - name: Run evaluation (attempt 2)
         id: attempt2
+        continue-on-error: true
         if: steps.attempt1.outcome == 'failure'
         uses: devcontainers/ci@v0.3
         env:
@@ -103,7 +108,7 @@ jobs:
           configFile: ${{ matrix.devcontainer }}
           push: never
           runCmd: |
-            copilot -p "$(cat prompt.md)" \
+            timeout 1200 copilot -p "$(cat prompt.md)" \
               --allow-all-tools \
               --allow-all-paths \
               --deny-tool 'fetch' \
@@ -120,12 +125,56 @@ jobs:
               --deny-tool 'shell(dd *)' \
               --allow-url localhost \
               --allow-url 127.0.0.1 \
-              --model gemini-3-pro-preview
+              --model gemini-3-pro-preview || true
+            REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
+            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:" "$REPORT"; then
+              exit 1
+            fi
+
+      - name: Wait before retry (attempt 3)
+        if: steps.attempt2.outcome == 'failure'
+        run: |
+          echo "Attempt 2 failed. Waiting 60 seconds before retry..."
+          sleep 60
+
+      - name: Run evaluation (attempt 3)
+        id: attempt3
+        if: steps.attempt2.outcome == 'failure'
+        uses: devcontainers/ci@v0.3
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_TOKEN }}
+          DRASI_TUTORIAL_EVALUATION: "true"
+        with:
+          configFile: ${{ matrix.devcontainer }}
+          push: never
+          runCmd: |
+            timeout 1200 copilot -p "$(cat prompt.md)" \
+              --allow-all-tools \
+              --allow-all-paths \
+              --deny-tool 'fetch' \
+              --deny-tool 'websearch' \
+              --deny-tool 'githubRepo' \
+              --deny-tool 'shell(curl *)' \
+              --deny-tool 'shell(wget *)' \
+              --deny-tool 'shell(nc *)' \
+              --deny-tool 'shell(ssh *)' \
+              --deny-tool 'shell(scp *)' \
+              --deny-tool 'shell(telnet *)' \
+              --deny-tool 'shell(ftp *)' \
+              --deny-tool 'shell(rm -rf /*)' \
+              --deny-tool 'shell(dd *)' \
+              --allow-url localhost \
+              --allow-url 127.0.0.1 \
+              --model claude-opus-4.6 || true
+            REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
+            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:" "$REPORT"; then
+              exit 1
+            fi
 
       - name: Check evaluation status
         if: always()
         run: |
-          REPORT=$(find ${{ matrix.learning_path }} -name "report.md" -path "*/evaluation-*/*" | head -1)
+          REPORT=$(find ${{ matrix.learning_path }} -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
 
           if [ -z "$REPORT" ]; then
             echo "::error::No report.md found in evaluation directory"
