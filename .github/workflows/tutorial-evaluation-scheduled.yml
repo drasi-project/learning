@@ -86,15 +86,17 @@ jobs:
               --allow-url 127.0.0.1 \
               --model gemini-3-pro-preview || true
             REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
-            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:" "$REPORT"; then
+            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
               exit 1
             fi
 
-      - name: Wait before retry (attempt 2)
+      - name: Clean up before retry (attempt 2)
         if: steps.attempt1.outcome == 'failure'
         run: |
-          echo "Attempt 1 failed. Waiting 60 seconds before retry..."
-          sleep 60
+          echo "Attempt 1 failed. Removing all containers and images to force a fresh devcontainer build..."
+          docker rm -f $(docker ps -aq) 2>/dev/null || true
+          docker system prune -af --volumes 2>/dev/null || true
+          sleep 10
 
       - name: Run evaluation (attempt 2)
         id: attempt2
@@ -127,15 +129,17 @@ jobs:
               --allow-url 127.0.0.1 \
               --model gemini-3-pro-preview || true
             REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
-            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:" "$REPORT"; then
+            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
               exit 1
             fi
 
-      - name: Wait before retry (attempt 3)
+      - name: Clean up before retry (attempt 3)
         if: steps.attempt2.outcome == 'failure'
         run: |
-          echo "Attempt 2 failed. Waiting 60 seconds before retry..."
-          sleep 60
+          echo "Attempt 2 failed. Removing all containers and images to force a fresh devcontainer build..."
+          docker rm -f $(docker ps -aq) 2>/dev/null || true
+          docker system prune -af --volumes 2>/dev/null || true
+          sleep 10
 
       - name: Run evaluation (attempt 3)
         id: attempt3
@@ -167,7 +171,7 @@ jobs:
               --allow-url 127.0.0.1 \
               --model claude-opus-4.6 || true
             REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
-            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:" "$REPORT"; then
+            if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
               exit 1
             fi
 
@@ -224,41 +228,93 @@ jobs:
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const artifactsUrl = `${runUrl}#artifacts`;
 
-            // Get job results to identify which tutorials failed
+            // 1. Get all jobs for this run to analyze failures and retries
             const jobs = await github.rest.actions.listJobsForWorkflowRun({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              run_id: context.runId
+              run_id: context.runId,
+              filter: 'latest', // get the latest attempt of the job if it was re-run from UI
             });
 
-            const failedTutorials = jobs.data.jobs
-              .filter(job => job.name.startsWith('evaluate') && job.conclusion === 'failure')
-              .map(job => {
-                // Extract tutorial name from job name like "evaluate (getting-started)"
-                const match = job.name.match(/\(([^)]+)\)/);
-                return match ? match[1] : job.name;
-              });
+            // 2. Filter for failed 'evaluate' jobs
+            // The job name format is "evaluate ({tutorial}, ...)" due to matrix
+            const evalJobs = jobs.data.jobs.filter(job => job.name.startsWith('evaluate'));
+            const failedJobs = evalJobs.filter(job => job.conclusion === 'failure');
+            
+            if (failedJobs.length === 0) {
+              console.log("No failed jobs found (or they are not 'evaluate' jobs). Skipping issue creation.");
+              return;
+            }
 
-            const failedList = failedTutorials.length > 0
-              ? failedTutorials.map(t => `- \`${t}\``).join('\n')
-              : '- Unable to determine specific failures';
+            // 3. Get artifacts to find download links
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
 
+            // Helper to find artifact URL for a tutorial
+            const findArtifactUrl = (tutorialName) => {
+              // Artifact name pattern: evaluation-results-{tutorial}-{run_id}
+              // We match somewhat loosely to be robust
+              const artifact = artifacts.data.artifacts.find(a => a.name.includes(tutorialName));
+              // We return the generic artifacts page anchor if specific one not found, 
+              // as direct download links often expire or require API auth headers not suitable for markdown.
+              // GitHub UI link is safer:
+              return artifact ? artifactsUrl : artifactsUrl; 
+            };
+
+            // 4. Analyze each failed job to build the report
+            let reportBody = `## Scheduled Tutorial Evaluation Failed\n\n**Run ID**: [${context.runId}](${runUrl})\n**Date**: ${new Date().toISOString().split('T')[0]}\n\n`;
+
+            for (const job of failedJobs) {
+               // Extract tutorial name
+               // Matrix job names look like: "evaluate (getting-started, .devcontainer/devcontainer.json, ...)"
+               // We just want the first part "getting-started"
+               const nameMatch = job.name.match(/\(([^,]+)/);
+               const tutorialName = nameMatch ? nameMatch[1].trim() : "unknown";
+
+               reportBody += `### ❌ Tutorial: ${tutorialName}\n`;
+               
+               // Analyze steps to determine retry count
+               // Steps are: "Run evaluation (attempt 1)", "Run evaluation (attempt 2)", "Run evaluation (attempt 3)"
+               const attempt1 = job.steps.find(s => s.name.includes('attempt 1'));
+               const attempt2 = job.steps.find(s => s.name.includes('attempt 2'));
+               const attempt3 = job.steps.find(s => s.name.includes('attempt 3'));
+
+               let attemptsCount = 0;
+               let lastStatus = "Unknown";
+
+               if (attempt1) {
+                  attemptsCount = 1;
+                  lastStatus = attempt1.conclusion;
+               }
+               if (attempt2 && (attempt2.conclusion !== 'skipped')) {
+                  attemptsCount = 2;
+                  lastStatus = attempt2.conclusion;
+               }
+               if (attempt3 && (attempt3.conclusion !== 'skipped')) {
+                  attemptsCount = 3;
+                  lastStatus = attempt3.conclusion;
+               }
+
+               reportBody += `**Status**: Failed after ${attemptsCount} attempt(s).\n`;
+               reportBody += `**Artifacts**: [Download Results](${findArtifactUrl(tutorialName)})\n\n`;
+               
+               reportBody += `<details><summary>Attempt Details</summary>\n\n`;
+               if (attempt1) reportBody += `- **Attempt 1**: ${attempt1.conclusion ? attempt1.conclusion.toUpperCase() : 'UNKNOWN'}\n`;
+               if (attempt2 && attempt2.conclusion !== 'skipped') reportBody += `- **Attempt 2**: ${attempt2.conclusion ? attempt2.conclusion.toUpperCase() : 'UNKNOWN'}\n`;
+               if (attempt3 && attempt3.conclusion !== 'skipped') reportBody += `- **Attempt 3**: ${attempt3.conclusion ? attempt3.conclusion.toUpperCase() : 'UNKNOWN'}\n`;
+               reportBody += `</details>\n\n---\n`;
+            }
+            
+            reportBody += `\n*This issue was automatically created by the scheduled tutorial evaluation workflow.*`;
+
+            // 5. Create the issue
             await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `Scheduled tutorial evaluation failed - ${new Date().toISOString().split('T')[0]}`,
-              body: `## Scheduled Tutorial Evaluation Failed
-
-            **Failed Tutorials:**
-            ${failedList}
-
-            **Links:**
-            - [Workflow Run](${runUrl})
-            - [Download Artifacts](${artifactsUrl})
-
-            Please review the workflow logs and artifacts to identify the issue.
-
-            ---
-            *This issue was automatically created by the scheduled tutorial evaluation workflow.*`,
+              body: reportBody,
               labels: ['tutorial-failure', 'automated']
             });
