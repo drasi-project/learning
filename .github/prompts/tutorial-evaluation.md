@@ -55,3 +55,8 @@ Constraints:
     - You must not debug failures or Fix anything. Upon hitting any failure, terminate the evaluation immediately and mark it as failed.
     - Do not perform any Drasi or Kubernetes related cleanup steps post completion if mentioned in tutorial docs.
     - Whatever scripts you write or modules you install must remain within the evaluation directory you create at the start of the task.
+
+Final Checklist (complete these before ending):
+    1. Ensure `report.md` exists in the evaluation directory.
+    2. Verify that `report.md` ends with EXACTLY ONE line: `## STATUS: SUCCESS` or `## STATUS: FAILURE`.
+    3. Verify you have NOT written "STATUS: SUCCESS" or "STATUS: FAILURE" anywhere else in the report.

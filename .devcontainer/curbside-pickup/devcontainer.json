@@ -29,7 +29,8 @@
   "containerEnv": {
     "LANG": "en_US.UTF-8",
     "LANGUAGE": "en_US:en",
-    "LC_ALL": "en_US.UTF-8"
+    "LC_ALL": "en_US.UTF-8",
+    "DRASI_TUTORIAL_EVALUATION": "${localEnv:DRASI_TUTORIAL_EVALUATION}"
   },
   "remoteEnv": {
     "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",

@@ -106,7 +106,7 @@ jobs:
           configFile: ${{ needs.setup.outputs.devcontainer }}
           push: never
           runCmd: |
-            copilot -p "$(cat prompt.md)" \
+            timeout 1200 copilot -p "$(cat prompt.md)" \
               --allow-all-tools \
               --allow-all-paths \
               --deny-tool 'fetch' \
@@ -128,7 +128,7 @@ jobs:
       - name: Check evaluation status
         if: always()
         run: |
-          REPORT=$(find ${{ needs.setup.outputs.learning_path }} -name "report.md" -path "*/evaluation-*/*" | head -1)
+          REPORT=$(find ${{ needs.setup.outputs.learning_path }} -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
 
           if [ -z "$REPORT" ]; then
             echo "::error::No report.md found in evaluation directory"

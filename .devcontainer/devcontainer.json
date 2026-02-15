@@ -31,6 +31,9 @@
       ]
     }
   },
+  "containerEnv": {
+    "DRASI_TUTORIAL_EVALUATION": "${localEnv:DRASI_TUTORIAL_EVALUATION}"
+  },
   "remoteEnv": {
     "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
     "GITHUB_ACTIONS": "${localEnv:GITHUB_ACTIONS}",
