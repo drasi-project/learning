@@ -55,55 +55,53 @@ else
   echo "PostgreSQL port-forward skipped due to port conflict."
 fi
 
-# Check for Traefik service
-echo "Checking for Traefik in kube-system namespace..."
-kubectl get svc -n kube-system -l app.kubernetes.io/name=traefik || echo "Warning: Traefik service not found in kube-system namespace."
-
-# Forward Traefik port (for ingress access)
-if check_port 8080; then
-  echo "Starting port-forward for Traefik..."
-  nohup kubectl port-forward -n kube-system svc/traefik 8080:80 > "$LOG_DIR/traefik-port-forward.log" 2>&1 &
-  sleep 1  # Give it a moment to start
-  if ps aux | grep -q "[k]ubectl port-forward -n kube-system svc/traefik"; then
-    echo "Traefik port-forward started (logs at $LOG_DIR/traefik-port-forward.log)."
-  else
-    echo "Error: Traefik port-forward failed to start. Check $LOG_DIR/traefik-port-forward.log."
-  fi
-else
-  echo "Traefik port-forward skipped due to port conflict."
-fi
-
-# Auto-patch ingress for GitHub Codespaces
+# In GitHub Codespaces, port-forward directly to the debug reaction gateway service 
+# to avoid host header mismatch with Traefik (see drasi-project/docs#194).
+# Locally, use Traefik which works fine with nip.io hostnames.
 if [ -n "$CODESPACE_NAME" ]; then
-  echo "GitHub Codespace detected. Starting ingress watcher..."
+  echo "GitHub Codespace detected. Starting gateway service watcher..."
   nohup bash -c '
-    INGRESS_NAME="hello-world-debug-reaction-ingress"
+    SERVICE_NAME="hello-world-debug-gateway"
     NAMESPACE="drasi-system"
-    PATCH_FILE="../../.devcontainer/resources/ingress-codespace-patch.yaml"
     MAX_WAIT=1200
     INTERVAL=5
 
-    echo "===== Ingress Patcher Started ====="
-    echo "Watching for: $INGRESS_NAME in namespace $NAMESPACE"
-    echo "Patch file: $PATCH_FILE"
+    echo "===== Gateway Port-Forward Watcher Started ====="
+    echo "Watching for: $SERVICE_NAME in namespace $NAMESPACE"
 
     elapsed=0
     while [ $elapsed -lt $MAX_WAIT ]; do
-      if kubectl get ingress "$INGRESS_NAME" -n "$NAMESPACE" &> /dev/null; then
-        echo "Ingress found. Applying Codespace patch..."
-        if kubectl patch ingress "$INGRESS_NAME" -n "$NAMESPACE" --type=json --patch-file="$PATCH_FILE" 2>&1; then
-          echo "Successfully patched ingress for GitHub Codespaces at $(date)"
-        else
-          echo "Error: Failed to patch. Run manually: kubectl patch ingress $INGRESS_NAME -n $NAMESPACE --type=json --patch-file=$PATCH_FILE"
-          exit 1
-        fi
+      if kubectl get svc "$SERVICE_NAME" -n "$NAMESPACE" &> /dev/null; then
+        echo "Gateway service found. Starting port-forward..."
+        kubectl port-forward -n "$NAMESPACE" "svc/$SERVICE_NAME" 8080:8080
+        break
       fi
       sleep $INTERVAL
       elapsed=$((elapsed + INTERVAL))
     done
-    echo "Timeout: Ingress not found within ${MAX_WAIT}s"
-  ' > "$LOG_DIR/ingress-patch.log" 2>&1 &
-  echo "Ingress watcher started (logs at $LOG_DIR/ingress-patch.log)."
+    if [ $elapsed -ge $MAX_WAIT ]; then
+      echo "Timeout: Gateway service not found within ${MAX_WAIT}s"
+    fi
+  ' > "$LOG_DIR/gateway-port-forward.log" 2>&1 &
+  echo "Gateway watcher started (logs at $LOG_DIR/gateway-port-forward.log)."
+else
+  # Check for Traefik service
+  echo "Checking for Traefik in kube-system namespace..."
+  kubectl get svc -n kube-system -l app.kubernetes.io/name=traefik || echo "Warning: Traefik service not found in kube-system namespace."
+
+  # Forward Traefik port (for ingress access)
+  if check_port 8080; then
+    echo "Starting port-forward for Traefik..."
+    nohup kubectl port-forward -n kube-system svc/traefik 8080:80 > "$LOG_DIR/traefik-port-forward.log" 2>&1 &
+    sleep 1  # Give it a moment to start
+    if ps aux | grep -q "[k]ubectl port-forward -n kube-system svc/traefik"; then
+      echo "Traefik port-forward started (logs at $LOG_DIR/traefik-port-forward.log)."
+    else
+      echo "Error: Traefik port-forward failed to start. Check $LOG_DIR/traefik-port-forward.log."
+    fi
+  else
+    echo "Traefik port-forward skipped due to port conflict."
+  fi
 fi
 
 
