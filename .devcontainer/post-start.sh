@@ -72,15 +72,18 @@ if [ -n "$CODESPACE_NAME" ]; then
     elapsed=0
     while [ $elapsed -lt $MAX_WAIT ]; do
       if kubectl get svc "$SERVICE_NAME" -n "$NAMESPACE" &> /dev/null; then
-        echo "Gateway service found. Starting port-forward..."
+        echo "Gateway service found. Waiting for pod to be ready..."
+        kubectl wait --for=condition=ready pod -l "drasi/resource=hello-world-debug,drasi/type=reaction" -n "$NAMESPACE" --timeout=300s
+        echo "Pod ready. Starting port-forward..."
         kubectl port-forward -n "$NAMESPACE" "svc/$SERVICE_NAME" 8080:8080
-        break
+        # If port-forward exits (e.g., pod restarts), loop will retry
+        echo "Port-forward exited. Will retry..."
       fi
       sleep $INTERVAL
       elapsed=$((elapsed + INTERVAL))
     done
     if [ $elapsed -ge $MAX_WAIT ]; then
-      echo "Timeout: Gateway service not found within ${MAX_WAIT}s"
+      echo "Timeout: Gateway service not found or port-forward failed within ${MAX_WAIT}s"
     fi
   ' > "$LOG_DIR/gateway-port-forward.log" 2>&1 &
   echo "Gateway watcher started (logs at $LOG_DIR/gateway-port-forward.log)."
