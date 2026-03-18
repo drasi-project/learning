@@ -18,19 +18,19 @@ jobs:
         include:
           - tutorial: getting-started
             devcontainer: .devcontainer/devcontainer.json
-            docs_path: docs/content/getting-started
+            docs_path: docs/content/drasi-kubernetes/getting-started
             learning_path: tutorial/getting-started
           - tutorial: curbside-pickup
             devcontainer: .devcontainer/curbside-pickup/devcontainer.json
-            docs_path: docs/content/tutorials/curbside-pickup
+            docs_path: docs/content/drasi-kubernetes/tutorials/curbside-pickup
             learning_path: tutorial/curbside-pickup
           - tutorial: building-comfort
             devcontainer: .devcontainer/building-comfort/devcontainer.json
-            docs_path: docs/content/tutorials/building-comfort
+            docs_path: docs/content/drasi-kubernetes/tutorials/building-comfort
             learning_path: tutorial/building-comfort
           - tutorial: absence-of-change
             devcontainer: .devcontainer/absence-of-change/devcontainer.json
-            docs_path: docs/content/tutorials/absence-of-change
+            docs_path: docs/content/drasi-kubernetes/tutorials/absence-of-change
             learning_path: tutorial/absence-of-change
           - tutorial: risky-containers
             devcontainer: .devcontainer/risky-containers/devcontainer.json
@@ -278,33 +278,33 @@ jobs:
                
                // Analyze steps to determine retry count
                // Steps are: "Run evaluation (attempt 1)", "Run evaluation (attempt 2)", "Run evaluation (attempt 3)"
-               const attempt1 = job.steps.find(s => s.name.includes('attempt 1'));
-               const attempt2 = job.steps.find(s => s.name.includes('attempt 2'));
-               const attempt3 = job.steps.find(s => s.name.includes('attempt 3'));
+               const attempt1 = job.steps.find(s => s.name.includes('Run evaluation (attempt 1)'));
+               const attempt2 = job.steps.find(s => s.name.includes('Run evaluation (attempt 2)'));
+               const attempt3 = job.steps.find(s => s.name.includes('Run evaluation (attempt 3)'));
 
                let attemptsCount = 0;
                let lastStatus = "Unknown";
 
-               if (attempt1) {
+               if (attempt1 && attempt1.conclusion !== 'skipped') {
                   attemptsCount = 1;
-                  lastStatus = attempt1.conclusion;
+                  lastStatus = attempt1.outcome;
                }
-               if (attempt2 && (attempt2.conclusion !== 'skipped')) {
+               if (attempt2 && attempt2.conclusion !== 'skipped') {
                   attemptsCount = 2;
-                  lastStatus = attempt2.conclusion;
+                  lastStatus = attempt2.outcome;
                }
-               if (attempt3 && (attempt3.conclusion !== 'skipped')) {
+               if (attempt3 && attempt3.conclusion !== 'skipped') {
                   attemptsCount = 3;
-                  lastStatus = attempt3.conclusion;
+                  lastStatus = attempt3.outcome;
                }
 
                reportBody += `**Status**: Failed after ${attemptsCount} attempt(s).\n`;
                reportBody += `**Artifacts**: [Download Results](${findArtifactUrl(tutorialName)})\n\n`;
-               
+
                reportBody += `<details><summary>Attempt Details</summary>\n\n`;
-               if (attempt1) reportBody += `- **Attempt 1**: ${attempt1.conclusion ? attempt1.conclusion.toUpperCase() : 'UNKNOWN'}\n`;
-               if (attempt2 && attempt2.conclusion !== 'skipped') reportBody += `- **Attempt 2**: ${attempt2.conclusion ? attempt2.conclusion.toUpperCase() : 'UNKNOWN'}\n`;
-               if (attempt3 && attempt3.conclusion !== 'skipped') reportBody += `- **Attempt 3**: ${attempt3.conclusion ? attempt3.conclusion.toUpperCase() : 'UNKNOWN'}\n`;
+               if (attempt1 && attempt1.conclusion !== 'skipped') reportBody += `- **Attempt 1**: ${attempt1.outcome ? attempt1.outcome.toUpperCase() : 'UNKNOWN'}\n`;
+               if (attempt2 && attempt2.conclusion !== 'skipped') reportBody += `- **Attempt 2**: ${attempt2.outcome ? attempt2.outcome.toUpperCase() : 'UNKNOWN'}\n`;
+               if (attempt3 && attempt3.conclusion !== 'skipped') reportBody += `- **Attempt 3**: ${attempt3.outcome ? attempt3.outcome.toUpperCase() : 'UNKNOWN'}\n`;
                reportBody += `</details>\n\n---\n`;
             }
             
