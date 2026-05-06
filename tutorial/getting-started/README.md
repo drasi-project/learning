@@ -1,6 +1,6 @@
 # Getting Started with Drasi
 
-### Steps for Github Codespaces
+### Steps for GitHub Codespaces
 1. Wait for the setup scripts to finish
 2. Once complete, your codespace will have drasi and all pre-requisites configured.
 3. Follow the tutorial [instructions here](https://drasi.io/drasi-kubernetes/getting-started/).

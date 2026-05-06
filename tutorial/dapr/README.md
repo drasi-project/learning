@@ -10,7 +10,7 @@ You'll see Drasi in action where:
   - **Dashboard**: Real-time monitoring of Gold customer delays and stock issues
   - **Notifications**: Intelligent business events for inventory thresholds
 
-Follow along the tutorial instructions on [our website here](https://drasi.io/drasi-kubernetes/tutorials/dapr/).
+Follow along the tutorial instructions on [our website here](https://drasi.io/drasi-kubernetes/tutorials/drasi-for-dapr/).
 
 ![Architecture of the Dapr + Drasi setup showing four core services, Drasi monitoring, and three Drasi-powered services](images/01-architectire-overview.png "Dapr + Drasi Tutorial Setup")
 
