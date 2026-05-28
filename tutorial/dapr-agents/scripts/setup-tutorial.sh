@@ -16,7 +16,7 @@
 set -e
 
 echo "========================================="
-echo "Dapr + Drasi Tutorial Setup"
+echo "Dapr Agents + Drasi Tutorial Setup"
 echo "========================================="
 
 # Define k3d version to use across all environments
