@@ -29,17 +29,14 @@ spec:
       name: openai-secret
       key: endpoint
   - name: model
-    valueFrom:
-      configMapKeyRef:
-        name: openai-config
-        key: model
+    secretKeyRef:
+      name: openai-secret
+      key: model
   - name: apiType
-    valueFrom:
-      configMapKeyRef:
-        name: openai-config
-        key: apiType
+    secretKeyRef:
+      name: openai-secret
+      key: apiType
   - name: apiVersion
-    valueFrom:
-      configMapKeyRef:
-        name: openai-config
-        key: apiVersion
+    secretKeyRef:
+      name: openai-secret
+      key: apiVersion
