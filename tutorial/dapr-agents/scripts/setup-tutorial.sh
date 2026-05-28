@@ -161,6 +161,9 @@ kubectl create secret generic openai-secret \
   --from-literal=endpoint="$OPENAI_ENDPOINT" \
   --dry-run=client -o yaml | kubectl apply -f -
 
+# Ensure secrets are created
+sleep 2
+
 echo "Creating configuration..."
 
 # Determine if using Azure or regular OpenAI
@@ -178,7 +181,7 @@ else
     OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2024-02-15"}
 fi
 
-# Log the configuration being used
+# Log the OpenAI configuration being used
 echo "OPENAI_MODEL: $OPENAI_MODEL"
 echo "OPENAI_API_TYPE: $OPENAI_API_TYPE"
 echo "OPENAI_API_VERSION: $OPENAI_API_VERSION"
@@ -189,10 +192,14 @@ kubectl create configmap openai-config \
   --from-literal=apiVersion="$OPENAI_API_VERSION" \
   --dry-run=client -o yaml | kubectl apply -f -
 
+# Ensure configs are created
+sleep 2
+
 echo "Deploying Dapr components..."
 kubectl apply -f services/products/k8s/dapr/statestore.yaml
 kubectl apply -f services/orders/k8s/dapr/statestore.yaml
 kubectl apply -f services/workflow/k8s/dapr/statestore.yaml
+kubectl apply -f services/workflow/k8s/dapr/openai.yaml
 kubectl apply -f services/workflow/k8s/dapr/pubsub.yaml
 kubectl apply -f services/notifications/k8s/dapr/pubsub-drasi.yaml
 
