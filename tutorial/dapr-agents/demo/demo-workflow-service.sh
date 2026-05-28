@@ -132,36 +132,28 @@ echo -e "${GREEN}Low Stock Event Payload:${NC}"
 echo "$LOW_STOCK_EVENT" | jq '.'
 echo
 
-show_command "curl -X POST ${BASE_URL}/workflow-service/trigger-low-stock \\\n  -H 'Content-Type: application/json' \\\n  -d '...'"
+echo -e "${CYAN}Posting product to Products Service...${NC}"
+show_command "curl -X POST ${BASE_URL}/products-service/products \\\n  -H 'Content-Type: application/json' \\\n  -d '...'"
 
 TEMP_FILE=$(mktemp)
 echo "$LOW_STOCK_EVENT" > "$TEMP_FILE"
-RESPONSE=$(execute_with_retry "curl -s -X POST ${BASE_URL}/workflow-service/trigger-low-stock -H 'Content-Type: application/json' -d @${TEMP_FILE}")
+RESPONSE=$(execute_with_retry "curl -s -X POST ${BASE_URL}/products-service/products -H 'Content-Type: application/json' -d @${TEMP_FILE}")
 rm -f "$TEMP_FILE"
 
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Response:${NC}"
+    echo -e "${GREEN}Product Service Response:${NC}"
     echo "$RESPONSE" | jq '.' 2>/dev/null || echo "$RESPONSE"
-    
-    WORKFLOW_ID_1=$(echo "$RESPONSE" | jq -r '.workflowId // .id // empty' 2>/dev/null)
-    if [ -n "$WORKFLOW_ID_1" ]; then
-        echo
-        echo -e "${GREEN}Workflow ID: ${WORKFLOW_ID_1}${NC}"
-    fi
 else
-    echo -e "${RED}Failed to trigger low stock workflow${NC}"
+    echo -e "${RED}Failed to post product to products service${NC}"
 fi
 
 echo
-wait_for_continue "Press Enter to view workflow logs..."
-show_workflow_logs "$WORKFLOW_ID_1"
-
 wait_for_continue "Press Enter to proceed to Critical Stock scenario..."
 echo
 
 print_header "Scenario 2: CRITICAL STOCK WORKFLOW"
 
-echo -e "${CYAN}Creating a product with OUT OF STOCK status (0 units - triggers critical alert workflow)...${NC}"
+echo -e "${CYAN}Creating a product with OUT OF STOCK status (0 units - triggers critical reorder workflow)...${NC}"
 echo
 
 # Create product with critical stock (0 units)
@@ -180,29 +172,22 @@ echo -e "${GREEN}Critical Stock Event Payload:${NC}"
 echo "$CRITICAL_STOCK_EVENT" | jq '.'
 echo
 
-show_command "curl -X POST ${BASE_URL}/workflow-service/trigger-critical-stock \\\n  -H 'Content-Type: application/json' \\\n  -d '...'"
+echo -e "${CYAN}Posting product to Products Service...${NC}"
+show_command "curl -X POST ${BASE_URL}/products-service/products \\\n  -H 'Content-Type: application/json' \\\n  -d '...'"
 
 TEMP_FILE=$(mktemp)
 echo "$CRITICAL_STOCK_EVENT" > "$TEMP_FILE"
-RESPONSE=$(execute_with_retry "curl -s -X POST ${BASE_URL}/workflow-service/trigger-critical-stock -H 'Content-Type: application/json' -d @${TEMP_FILE}")
+RESPONSE=$(execute_with_retry "curl -s -X POST ${BASE_URL}/products-service/products -H 'Content-Type: application/json' -d @${TEMP_FILE}")
 rm -f "$TEMP_FILE"
 
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Response:${NC}"
+    echo -e "${GREEN}Product Service Response:${NC}"
     echo "$RESPONSE" | jq '.' 2>/dev/null || echo "$RESPONSE"
-    
-    WORKFLOW_ID_2=$(echo "$RESPONSE" | jq -r '.workflowId // .id // empty' 2>/dev/null)
-    if [ -n "$WORKFLOW_ID_2" ]; then
-        echo
-        echo -e "${GREEN}Workflow ID: ${WORKFLOW_ID_2}${NC}"
-    fi
 else
-    echo -e "${RED}Failed to trigger critical stock workflow${NC}"
+    echo -e "${RED}Failed to post product to products service${NC}"
 fi
 
 echo
-wait_for_continue "Press Enter to view workflow logs..."
-show_workflow_logs "$WORKFLOW_ID_2"
 
 print_header "Workflow Monitoring"
 
