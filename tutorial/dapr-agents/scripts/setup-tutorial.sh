@@ -144,34 +144,49 @@ kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
 echo "Creating secrets..."
 # Create OpenAI API key and endpoint secret from environment variables or use placeholders
 if [ -z "$OPENAI_API_KEY" ]; then
-    echo "WARNING: OPENAI_API_KEY environment variable not set"
+    echo "ERROR: OPENAI_API_KEY environment variable not set"
     echo "Please set it before running this script:"
     echo "  export OPENAI_API_KEY=your-api-key"
-    echo "Using placeholder value for now..."
-    OPENAI_API_KEY="placeholder-api-key"
+    exit 1
 fi
-if [ -z "$OPENAI_ENDPOINT" ]; then
-    echo "WARNING: OPENAI_ENDPOINT environment variable not set"
-    echo "Please set it before running this script:"
-    echo "  export OPENAI_ENDPOINT=https://your-api-base-url/"
-    echo "Using placeholder value for now..."
-    OPENAI_ENDPOINT="https://your-api-base-url/"
+
+# OPENAI_ENDPOINT defaults to standard OpenAI endpoint
+OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-"https://api.openai.com/v1"}
+if [ -z "${OPENAI_ENDPOINT+x}" ] || [ "$OPENAI_ENDPOINT" = "https://api.openai.com/v1" ]; then
+    echo "INFO: OPENAI_ENDPOINT not set, using default OpenAI endpoint: https://api.openai.com/v1"
 fi
+
 kubectl create secret generic openai-secret \
   --from-literal=api-key="$OPENAI_API_KEY" \
   --from-literal=endpoint="$OPENAI_ENDPOINT" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-echo "Deploying Kubernetes configuration..."
-# Create ConfigMap with optional environment variable overrides (with defaults)
-MODEL=${OPENAI_MODEL:-"your-model"}
-API_TYPE=${OPENAI_API_TYPE:-"your-api-type"}
-API_VERSION=${OPENAI_API_VERSION:-"your-api-version"}
+echo "Creating configuration..."
+
+# Determine if using Azure or regular OpenAI
+if [[ "$OPENAI_ENDPOINT" == *"azure"* ]]; then
+    echo "INFO: Azure OpenAI endpoint detected, using Azure defaults"
+    
+    OPENAI_MODEL=${OPENAI_MODEL:-"gpt-4.1-nano"}
+    OPENAI_API_TYPE=${OPENAI_API_TYPE:-"azure"}
+    OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2025-01-01-preview"}
+else
+    echo "INFO: OpenAI endpoint detected, using OpenAI defaults"
+    
+    OPENAI_MODEL=${OPENAI_MODEL:-"gpt-4-turbo"}
+    OPENAI_API_TYPE=${OPENAI_API_TYPE:-"openai"}
+    OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2024-02-15"}
+fi
+
+# Log the configuration being used
+echo "OPENAI_MODEL: $OPENAI_MODEL"
+echo "OPENAI_API_TYPE: $OPENAI_API_TYPE"
+echo "OPENAI_API_VERSION: $OPENAI_API_VERSION"
 
 kubectl create configmap openai-config \
-  --from-literal=model="$MODEL" \
-  --from-literal=apiType="$API_TYPE" \
-  --from-literal=apiVersion="$API_VERSION" \
+  --from-literal=model="$OPENAI_MODEL" \
+  --from-literal=apiType="$OPENAI_API_TYPE" \
+  --from-literal=apiVersion="$OPENAI_API_VERSION" \
   --dry-run=client -o yaml | kubectl apply -f -
 
 echo "Deploying Dapr components..."
