@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflow
+  labels:
+    app: workflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workflow
+  template:
+    metadata:
+      labels:
+        app: workflow
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "workflow"
+        dapr.io/app-port: "8000"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+      - name: workflow
+        image: ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: DAPR_STORE_NAME
+          value: "workflow-store"
+        - name: DAPR_PUBSUB_NAME
+          value: "workflow-pubsub"
+        - name: LOG_LEVEL
+          value: "INFO"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workflow
+  labels:
+    app: workflow
+spec:
+  selector:
+    app: workflow
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: workflow-stripprefix
+spec:
+  stripPrefix:
+    prefixes:
+    - /workflow-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: workflow
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-workflow-stripprefix@kubernetescrd
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /workflow-service
+        pathType: Prefix
+        backend:
+          service:
+            name: workflow
+            port:
+              number: 80
