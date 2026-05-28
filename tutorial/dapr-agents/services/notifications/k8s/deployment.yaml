@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
       - name: notifications
-        image: ghcr.io/drasi-project/learning/dapr/notifications-service:latest
-        imagePullPolicy: Always
+        image: ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
           name: http

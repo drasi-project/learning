@@ -121,6 +121,62 @@ while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
     ATTEMPT=$((ATTEMPT + 1))
 done
 
+echo "Creating secrets..."
+
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "ERROR: OPENAI_API_KEY environment variable not set"
+    echo "Please set it before running this script:"
+    echo "  export OPENAI_API_KEY=your-api-key"
+    exit 1
+fi
+
+# OPENAI_ENDPOINT defaults to standard OpenAI endpoint
+OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-"https://api.openai.com/v1"}
+if [ -z "${OPENAI_ENDPOINT+x}" ] || [ "$OPENAI_ENDPOINT" = "https://api.openai.com/v1" ]; then
+    echo "INFO: OPENAI_ENDPOINT not set, using default OpenAI endpoint: https://api.openai.com/v1"
+fi
+
+# Determine if using Azure or regular OpenAI for optional config
+if [[ "$OPENAI_ENDPOINT" == *"azure"* ]]; then
+    echo "INFO: Azure OpenAI endpoint detected, using Azure defaults if needed"
+    
+    OPENAI_MODEL=${OPENAI_MODEL:-"gpt-4.1-nano"}
+    OPENAI_API_TYPE=${OPENAI_API_TYPE:-"azure"}
+    OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2025-01-01-preview"}
+else
+    echo "INFO: OpenAI endpoint detected, using OpenAI defaults if needed"
+    
+    OPENAI_MODEL=${OPENAI_MODEL:-"gpt-4-turbo"}
+    OPENAI_API_TYPE=${OPENAI_API_TYPE:-"openai"}
+    OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2024-02-15"}
+fi
+
+kubectl create secret generic openai-secret \
+  --from-literal=api-key="$OPENAI_API_KEY" \
+  --from-literal=endpoint="$OPENAI_ENDPOINT" \
+  --from-literal=model="$OPENAI_MODEL" \
+  --from-literal=apiType="$OPENAI_API_TYPE" \
+  --from-literal=apiVersion="$OPENAI_API_VERSION" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# Ensure secrets are created
+sleep 2
+
+# Build services and load images into k3d
+# TODO: make this optional
+
+# echo "Building images..."
+# docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f ../services/products/Dockerfile .
+# docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f ../services/orders/Dockerfile .
+# docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f ../services/notifications/Dockerfile .
+# docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f ../services/workflow/Dockerfile .
+
+echo "Loading images into k3d cluster..."
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -c drasi-tutorial
+
 echo "Deploying PostgreSQL databases..."
 kubectl apply -f services/products/k8s/postgres/postgres.yaml
 kubectl apply -f services/orders/k8s/postgres/postgres.yaml
@@ -140,47 +196,6 @@ kubectl apply -f services/notifications/k8s/redis/redis.yaml
 
 echo "Waiting for notifications Redis to be ready..."
 kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
-
-echo "Creating secrets..."
-
-if [ -z "$OPENAI_API_KEY" ]; then
-    echo "ERROR: OPENAI_API_KEY environment variable not set"
-    echo "Please set it before running this script:"
-    echo "  export OPENAI_API_KEY=your-api-key"
-    exit 1
-fi
-
-# OPENAI_ENDPOINT defaults to standard OpenAI endpoint
-OPENAI_ENDPOINT=${OPENAI_ENDPOINT:-"https://api.openai.com/v1"}
-if [ -z "${OPENAI_ENDPOINT+x}" ] || [ "$OPENAI_ENDPOINT" = "https://api.openai.com/v1" ]; then
-    echo "INFO: OPENAI_ENDPOINT not set, using default OpenAI endpoint: https://api.openai.com/v1"
-fi
-
-# Determine if using Azure or regular OpenAI for optional config
-if [[ "$OPENAI_ENDPOINT" == *"azure"* ]]; then
-    echo "INFO: Azure OpenAI endpoint detected, using Azure defaults"
-    
-    OPENAI_MODEL=${OPENAI_MODEL:-"gpt-4.1-nano"}
-    OPENAI_API_TYPE=${OPENAI_API_TYPE:-"azure"}
-    OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2025-01-01-preview"}
-else
-    echo "INFO: OpenAI endpoint detected, using OpenAI defaults"
-    
-    OPENAI_MODEL=${OPENAI_MODEL:-"gpt-4-turbo"}
-    OPENAI_API_TYPE=${OPENAI_API_TYPE:-"openai"}
-    OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2024-02-15"}
-fi
-
-kubectl create secret generic openai-secret \
-  --from-literal=api-key="$OPENAI_API_KEY" \
-  --from-literal=endpoint="$OPENAI_ENDPOINT" \
-  --from-literal=model="$OPENAI_MODEL" \
-  --from-literal=apiType="$OPENAI_API_TYPE" \
-  --from-literal=apiVersion="$OPENAI_API_VERSION" \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-# Ensure secrets are created
-sleep 2
 
 echo "Deploying Dapr components..."
 kubectl apply -f services/products/k8s/dapr/statestore.yaml

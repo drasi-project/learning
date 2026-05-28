@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
       - name: orders
-        image: ghcr.io/drasi-project/learning/dapr/orders-service:latest
-        imagePullPolicy: Always
+        image: ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
           name: http

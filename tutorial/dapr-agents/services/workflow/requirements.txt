@@ -1,2 +1,2 @@
-pydantic==2.10.5
+pydantic>=2.10.5
 dapr-agents==1.0.2

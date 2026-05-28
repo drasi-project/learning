@@ -163,9 +163,9 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 
 ## Running the Demos
 
-After setup is complete and Drasi components are deployed, explore the two demo scenarios:
+After setup is complete and Drasi components are deployed, explore the demo scenarios:
 
-### Demo 1: Agent Workflows
+### Demo 1: Pub/Sub-Triggered Agent Workflows
 ```bash
 cd demo
 ./demo-workflow-service.sh
@@ -174,18 +174,7 @@ cd demo
 This demo shows:
 - Workflow orchestration with Dapr
 - State management and persistence
-- Event-driven workflow execution
-
-### Demo 2: Pub/Sub Notifications
-```bash
-cd demo
-./demo-notifications-service.sh
-```
-
-This demo shows:
-- Event-driven pub/sub messaging
-- Real-time notification delivery
-- Dapr pub/sub integration
+- Event-driven workflow execution through pub/sub messages
 
 ## Architecture Overview
 
@@ -216,7 +205,9 @@ Written in Cypher, these queries detect patterns across services:
 
 - **Notifications** (`/notifications-service`): Subscribes to Dapr pub/sub events
 - **Workflow** (`/workflow-service`): Manages agent-based workflows and long-running processes
-- **Workflow Dashboard** (`/workflow-dashboard`): Monitoring dashboard powered by Diagrid for Dapr workflow service
+
+### Dashboards
+- **Workflow Dashboard** (`/workflow-dashboard`): Monitoring dashboard for the Dapr workflow service
 
 ## Utility Scripts
 

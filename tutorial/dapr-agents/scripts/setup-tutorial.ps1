@@ -84,26 +84,6 @@ while (($ATTEMPT -le $MAX_ATTEMPTS) -and (-not $DRASI_INITIALIZED)) {
     $ATTEMPT++
 }
 
-Write-Host "Deploying PostgreSQL databases..." -ForegroundColor Yellow
-kubectl apply -f services/products/k8s/postgres/postgres.yaml
-kubectl apply -f services/orders/k8s/postgres/postgres.yaml
-
-Write-Host "Waiting for PostgreSQL databases to be ready..." -ForegroundColor Yellow
-kubectl wait --for=condition=ready pod -l app=products-db --timeout=120s
-kubectl wait --for=condition=ready pod -l app=orders-db --timeout=120s
-
-Write-Host "Deploying Redis for workflow..." -ForegroundColor Yellow
-kubectl apply -f services/workflow/k8s/redis/redis.yaml
-
-Write-Host "Waiting for workflow Redis to be ready..." -ForegroundColor Yellow
-kubectl wait --for=condition=ready pod -l app=workflow-redis --timeout=120s
-
-Write-Host "Deploying Redis for notifications..." -ForegroundColor Yellow
-kubectl apply -f services/notifications/k8s/redis/redis.yaml
-
-Write-Host "Waiting for notifications Redis to be ready..." -ForegroundColor Yellow
-kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
-
 Write-Host "Creating secrets..." -ForegroundColor Yellow
 
 $openaiApiKey = $env:OPENAI_API_KEY
@@ -147,7 +127,27 @@ kubectl create secret generic openai-secret `
 # Ensure secrets are created
 Start-Sleep -Seconds 2
 
-Write-Host "Deploying Kubernetes configuration..." -ForegroundColor Yellow
+
+
+Write-Host "Deploying PostgreSQL databases..." -ForegroundColor Yellow
+kubectl apply -f services/products/k8s/postgres/postgres.yaml
+kubectl apply -f services/orders/k8s/postgres/postgres.yaml
+
+Write-Host "Waiting for PostgreSQL databases to be ready..." -ForegroundColor Yellow
+kubectl wait --for=condition=ready pod -l app=products-db --timeout=120s
+kubectl wait --for=condition=ready pod -l app=orders-db --timeout=120s
+
+Write-Host "Deploying Redis for workflow..." -ForegroundColor Yellow
+kubectl apply -f services/workflow/k8s/redis/redis.yaml
+
+Write-Host "Waiting for workflow Redis to be ready..." -ForegroundColor Yellow
+kubectl wait --for=condition=ready pod -l app=workflow-redis --timeout=120s
+
+Write-Host "Deploying Redis for notifications..." -ForegroundColor Yellow
+kubectl apply -f services/notifications/k8s/redis/redis.yaml
+
+Write-Host "Waiting for notifications Redis to be ready..." -ForegroundColor Yellow
+kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
 
 Write-Host "Deploying Dapr components..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/dapr/statestore.yaml

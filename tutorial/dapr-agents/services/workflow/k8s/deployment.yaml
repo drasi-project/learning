@@ -19,11 +19,12 @@ spec:
         dapr.io/app-port: "8000"
         dapr.io/enable-api-logging: "true"
         dapr.io/log-level: "info"
+        dapr.io/sidecar-image: "daprio/daprd:1.17.7"
     spec:
       containers:
       - name: workflow
         image: ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
           name: http
@@ -34,18 +35,6 @@ spec:
           value: "workflow-pubsub"
         - name: LOG_LEVEL
           value: "INFO"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
         resources:
           limits:
             cpu: "500m"

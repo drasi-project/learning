@@ -40,3 +40,5 @@ spec:
     secretKeyRef:
       name: openai-secret
       key: apiVersion
+scopes:
+  - workflow
