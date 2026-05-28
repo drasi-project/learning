@@ -5,8 +5,7 @@ This tutorial demonstrates how Drasi supercharges Dapr applications with real-ti
 You'll see Drasi in action where:
 - **Two Dapr microservices** (Products, Orders) manage their own state stores
 - **Drasi monitors** all state stores via logical replication with zero impact on services
-- **Four Drasi-powered services** demonstrate real-time capabilities:
-  - **Dashboard**: Real-time monitoring of at-risk orders and stock issues
+- **Three Drasi-powered services** demonstrate real-time capabilities:
   - **Notifications**: Intelligent business events via pub/sub
   - **Workflow**: Manages agent-based workflows and long-running processes
   - **Workflow Dashboard**: Comprehensive monitoring dashboard for Dapr workflow service
@@ -34,7 +33,6 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
    kubectl apply -f drasi/reactions/
    ```
 5. Access the applications via the forwarded URL:
-   - Dashboard: `https://<your-codespace>.app.github.dev/dashboard`
    - Notifications: `https://<your-codespace>.app.github.dev/notifications-service`
    - Workflow: `https://<your-codespace>.app.github.dev/workflow-service`
    - Workflow Dashboard: `https://<your-codespace>.app.github.dev/workflow-dashboard`
@@ -75,7 +73,6 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
      kubectl apply -f drasi/reactions/
      ```
    - Access applications at:
-     - Dashboard: http://localhost:8123/dashboard
      - Notifications: http://localhost:8123/notifications-service
      - Workflow: http://localhost:8123/workflow-service
      - Workflow Dashboard: http://localhost:8123/workflow-dashboard
@@ -158,7 +155,6 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
    ```
 
 5. **Access the applications**
-   - Dashboard: http://localhost:8123/dashboard
    - Notifications: http://localhost:8123/notifications-service
    - Workflow: http://localhost:8123/workflow-service
    - Workflow Dashboard: `http://localhost:8123/workflow-dashboard`
@@ -167,19 +163,9 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 
 ## Running the Demos
 
-After setup is complete and Drasi components are deployed, explore the three demo scenarios:
+After setup is complete and Drasi components are deployed, explore the two demo scenarios:
 
-### Demo 1: Real-Time Dashboard
-```bash
-cd demo
-./demo-dashboard-service.sh
-```
-
-This demo shows:
-- Detecting at-risk orders that can't be fulfilled due to stock
-- Real-time WebSocket updates via SignalR
-
-### Demo 2: Agent Workflows
+### Demo 1: Agent Workflows
 ```bash
 cd demo
 ./demo-workflow-service.sh
@@ -190,7 +176,7 @@ This demo shows:
 - State management and persistence
 - Event-driven workflow execution
 
-### Demo 3: Pub/Sub Notifications
+### Demo 2: Pub/Sub Notifications
 ```bash
 cd demo
 ./demo-notifications-service.sh
@@ -228,7 +214,6 @@ Written in Cypher, these queries detect patterns across services:
 
 ### Drasi-Powered Services
 
-- **Dashboard** (`/dashboard`): Connects to SignalR for real-time updates
 - **Notifications** (`/notifications-service`): Subscribes to Dapr pub/sub events
 - **Workflow** (`/workflow-service`): Manages agent-based workflows and long-running processes
 - **Workflow Dashboard** (`/workflow-dashboard`): Monitoring dashboard powered by Diagrid for Dapr workflow service
@@ -284,16 +269,6 @@ drasi list reactions
 - Verify services are healthy: `kubectl get pods`
 - For local setup, ensure you're using http://localhost:8123 (not https)
 - For Codespaces, check the PORTS tab for the correct URL
-
-**No data in dashboard:**
-- Verify Drasi sources are deployed: `kubectl get drasissource`
-- Check Drasi query status: `drasi describe query at-risk-orders`
-- Ensure initial data was loaded during setup
-
-**Dashboard not updating:**
-- Verify SignalR reaction is running: `drasi describe reaction signalr-reaction`
-- Check browser console for WebSocket connection errors
-- Ensure the SignalR ingress is deployed: `kubectl get ingress signalr`
 
 **Workflow Dashboard not loading:**
 - Check if the deployment is running: `kubectl get pods -l app=workflow-dashboard`

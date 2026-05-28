@@ -142,7 +142,7 @@ echo "Waiting for notifications Redis to be ready..."
 kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
 
 echo "Creating secrets..."
-# Create OpenAI API key and endpoint secret from environment variables or use placeholders
+
 if [ -z "$OPENAI_API_KEY" ]; then
     echo "ERROR: OPENAI_API_KEY environment variable not set"
     echo "Please set it before running this script:"
@@ -156,17 +156,7 @@ if [ -z "${OPENAI_ENDPOINT+x}" ] || [ "$OPENAI_ENDPOINT" = "https://api.openai.c
     echo "INFO: OPENAI_ENDPOINT not set, using default OpenAI endpoint: https://api.openai.com/v1"
 fi
 
-kubectl create secret generic openai-secret \
-  --from-literal=api-key="$OPENAI_API_KEY" \
-  --from-literal=endpoint="$OPENAI_ENDPOINT" \
-  --dry-run=client -o yaml | kubectl apply -f -
-
-# Ensure secrets are created
-sleep 2
-
-echo "Creating configuration..."
-
-# Determine if using Azure or regular OpenAI
+# Determine if using Azure or regular OpenAI for optional config
 if [[ "$OPENAI_ENDPOINT" == *"azure"* ]]; then
     echo "INFO: Azure OpenAI endpoint detected, using Azure defaults"
     
@@ -181,18 +171,15 @@ else
     OPENAI_API_VERSION=${OPENAI_API_VERSION:-"2024-02-15"}
 fi
 
-# Log the OpenAI configuration being used
-echo "OPENAI_MODEL: $OPENAI_MODEL"
-echo "OPENAI_API_TYPE: $OPENAI_API_TYPE"
-echo "OPENAI_API_VERSION: $OPENAI_API_VERSION"
-
-kubectl create configmap openai-config \
+kubectl create secret generic openai-secret \
+  --from-literal=api-key="$OPENAI_API_KEY" \
+  --from-literal=endpoint="$OPENAI_ENDPOINT" \
   --from-literal=model="$OPENAI_MODEL" \
   --from-literal=apiType="$OPENAI_API_TYPE" \
   --from-literal=apiVersion="$OPENAI_API_VERSION" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# Ensure configs are created
+# Ensure secrets are created
 sleep 2
 
 echo "Deploying Dapr components..."
@@ -206,13 +193,9 @@ kubectl apply -f services/notifications/k8s/dapr/pubsub-drasi.yaml
 echo "Deploying applications..."
 kubectl apply -f services/products/k8s/deployment.yaml
 kubectl apply -f services/orders/k8s/deployment.yaml
-kubectl apply -f services/dashboard/k8s/deployment.yaml
 kubectl apply -f services/notifications/k8s/deployment.yaml
 kubectl apply -f services/workflow/k8s/deployment.yaml
 kubectl apply -f services/workflow-dashboard/k8s/deployment.yaml
-
-echo "Deploying SignalR ingress..."
-kubectl apply -f services/dashboard/k8s/signalr-ingress.yaml
 
 echo "Waiting for all deployments to be ready..."
 kubectl wait --for=condition=available deployment --all --timeout=300s
@@ -234,9 +217,8 @@ echo "========================================="
 echo ""
 if [ -n "$CODESPACES" ]; then
     echo "Applications are available at:"
-    echo "  Dashboard UI: https://<your-codespace>/dashboard"
     echo "  Workflow Service: https://<your-codespace>/workflow-service"
-    echo "  Notifications UI: https://<your-codespace>/notifications-service"
+    echo "  Notifications Service: https://<your-codespace>/notifications-service"
     echo "  Workflow Dashboard: https://<your-codespace>/workflow-dashboard"
     echo ""
     echo "  API Endpoints:"
@@ -244,9 +226,8 @@ if [ -n "$CODESPACES" ]; then
     echo "  Orders: https://<your-codespace>/orders-service/orders"
 else
     echo "Applications are available at:"
-    echo "  Dashboard UI: http://localhost:8123/dashboard"
     echo "  Workflow Service: http://localhost:8123/workflow-service"
-    echo "  Notifications UI: http://localhost:8123/notifications-service"
+    echo "  Notifications Service: http://localhost:8123/notifications-service"
     echo "  Workflow Dashboard: http://localhost:8123/workflow-dashboard"
     echo ""
     echo "  API Endpoints:"
@@ -261,6 +242,4 @@ echo "  kubectl apply -f drasi/reactions/"
 echo ""
 echo "Then explore the demos:"
 echo "  cd demo"
-echo "  ./demo-dashboard-service.sh"
 echo "  ./demo-workflow-service.sh"
-echo "  ./demo-notifications-service.sh"

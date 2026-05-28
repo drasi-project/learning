@@ -105,39 +105,49 @@ Write-Host "Waiting for notifications Redis to be ready..." -ForegroundColor Yel
 kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
 
 Write-Host "Creating secrets..." -ForegroundColor Yellow
-# Create OpenAI API key and endpoint secret from environment variables or use placeholders
+
 $openaiApiKey = $env:OPENAI_API_KEY
-$openaiEndpoint = $env:OPENAI_ENDPOINT
 if ([string]::IsNullOrEmpty($openaiApiKey)) {
-    Write-Host "WARNING: OPENAI_API_KEY environment variable not set" -ForegroundColor Yellow
-    Write-Host "Please set it before running this script:" -ForegroundColor Yellow
-    Write-Host "  `$env:OPENAI_API_KEY = 'your-api-key'" -ForegroundColor Yellow
-    Write-Host "Using placeholder value for now..." -ForegroundColor Yellow
-    $openaiApiKey = "placeholder-api-key"
+    Write-Host "ERROR: OPENAI_API_KEY environment variable not set" -ForegroundColor Red
+    Write-Host "Please set it before running this script:" -ForegroundColor Red
+    Write-Host "  `$env:OPENAI_API_KEY = 'your-api-key'" -ForegroundColor Red
+    exit 1
 }
+
+# OPENAI_ENDPOINT defaults to standard OpenAI endpoint
+$openaiEndpoint = $env:OPENAI_ENDPOINT
 if ([string]::IsNullOrEmpty($openaiEndpoint)) {
-    Write-Host "WARNING: OPENAI_ENDPOINT environment variable not set" -ForegroundColor Yellow
-    Write-Host "Please set it before running this script:" -ForegroundColor Yellow
-    Write-Host "  `$env:OPENAI_ENDPOINT = 'https://your-api-base-url/'" -ForegroundColor Yellow
-    Write-Host "Using placeholder value for now..." -ForegroundColor Yellow
-    $openaiEndpoint = "https://your-api-base-url/"
+    Write-Host "INFO: OPENAI_ENDPOINT not set, using default OpenAI endpoint: https://api.openai.com/v1" -ForegroundColor Green
+    $openaiEndpoint = "https://api.openai.com/v1"
 }
+
+# Determine if using Azure or regular OpenAI for optional config
+if ($openaiEndpoint -like "*azure*") {
+    Write-Host "INFO: Azure OpenAI endpoint detected, using Azure defaults" -ForegroundColor Green
+    
+    $model = if ([string]::IsNullOrEmpty($env:OPENAI_MODEL)) { "gpt-4.1-nano" } else { $env:OPENAI_MODEL }
+    $apiType = if ([string]::IsNullOrEmpty($env:OPENAI_API_TYPE)) { "azure" } else { $env:OPENAI_API_TYPE }
+    $apiVersion = if ([string]::IsNullOrEmpty($env:OPENAI_API_VERSION)) { "2025-01-01-preview" } else { $env:OPENAI_API_VERSION }
+} else {
+    Write-Host "INFO: OpenAI endpoint detected, using OpenAI defaults" -ForegroundColor Green
+    
+    $model = if ([string]::IsNullOrEmpty($env:OPENAI_MODEL)) { "gpt-4-turbo" } else { $env:OPENAI_MODEL }
+    $apiType = if ([string]::IsNullOrEmpty($env:OPENAI_API_TYPE)) { "openai" } else { $env:OPENAI_API_TYPE }
+    $apiVersion = if ([string]::IsNullOrEmpty($env:OPENAI_API_VERSION)) { "2024-02-15" } else { $env:OPENAI_API_VERSION }
+}
+
 kubectl create secret generic openai-secret `
   --from-literal=api-key="$openaiApiKey" `
   --from-literal=endpoint="$openaiEndpoint" `
-  --dry-run=client -o yaml | kubectl apply -f -
-
-Write-Host "Deploying Kubernetes configuration..." -ForegroundColor Yellow
-# Create ConfigMap with optional environment variable overrides (with defaults)
-$model = if ([string]::IsNullOrEmpty($env:OPENAI_MODEL)) { "your-model" } else { $env:OPENAI_MODEL }
-$apiType = if ([string]::IsNullOrEmpty($env:OPENAI_API_TYPE)) { "your-api-type" } else { $env:OPENAI_API_TYPE }
-$apiVersion = if ([string]::IsNullOrEmpty($env:OPENAI_API_VERSION)) { "your-api-version" } else { $env:OPENAI_API_VERSION }
-
-kubectl create configmap openai-config `
   --from-literal=model="$model" `
   --from-literal=apiType="$apiType" `
   --from-literal=apiVersion="$apiVersion" `
   --dry-run=client -o yaml | kubectl apply -f -
+
+# Ensure secrets are created
+Start-Sleep -Seconds 2
+
+Write-Host "Deploying Kubernetes configuration..." -ForegroundColor Yellow
 
 Write-Host "Deploying Dapr components..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/dapr/statestore.yaml
@@ -149,13 +159,9 @@ kubectl apply -f services/notifications/k8s/dapr/pubsub-drasi.yaml
 Write-Host "Deploying applications..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/deployment.yaml
 kubectl apply -f services/orders/k8s/deployment.yaml
-kubectl apply -f services/dashboard/k8s/deployment.yaml
 kubectl apply -f services/notifications/k8s/deployment.yaml
 kubectl apply -f services/workflow/k8s/deployment.yaml
 kubectl apply -f services/workflow-dashboard/k8s/deployment.yaml
-
-Write-Host "Deploying SignalR ingress..." -ForegroundColor Yellow
-kubectl apply -f services/dashboard/k8s/signalr-ingress.yaml
 
 Write-Host "Waiting for all deployments to be ready..." -ForegroundColor Yellow
 kubectl wait --for=condition=available deployment --all --timeout=300s
@@ -177,16 +183,18 @@ Write-Host "=========================================" -ForegroundColor Green
 Write-Host ""
 if ($env:CODESPACES) {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
-    Write-Host "  Dashboard UI: https://<your-codespace>/dashboard" -ForegroundColor White
     Write-Host "  Workflow Service: https://<your-codespace>/workflow-service" -ForegroundColor White
+    Write-Host "  Notifications Service: https://<your-codespace>/notifications-service" -ForegroundColor White
+    Write-Host "  Workflow Dashboard: https://<your-codespace>/workflow-dashboard" -ForegroundColor White
     Write-Host ""
     Write-Host "  API Endpoints:" -ForegroundColor Cyan
     Write-Host "  Products: https://<your-codespace>/products-service/products" -ForegroundColor White
     Write-Host "  Orders: https://<your-codespace>/orders-service/orders" -ForegroundColor White
 } else {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
-    Write-Host "  Dashboard UI: http://localhost:8123/dashboard" -ForegroundColor White
     Write-Host "  Workflow Service: http://localhost:8123/workflow-service" -ForegroundColor White
+    Write-Host "  Notifications Service: http://localhost:8123/notifications-service" -ForegroundColor White
+    Write-Host "  Workflow Dashboard: http://localhost:8123/workflow-dashboard" -ForegroundColor White
     Write-Host ""
     Write-Host "  API Endpoints:" -ForegroundColor Cyan
     Write-Host "  Products: http://localhost:8123/products-service/products" -ForegroundColor White
@@ -200,6 +208,4 @@ Write-Host "  kubectl apply -f drasi/reactions/" -ForegroundColor White
 Write-Host ""
 Write-Host "Then explore the demos:" -ForegroundColor Yellow
 Write-Host "  cd demo" -ForegroundColor White
-Write-Host "  ./demo-dashboard-service.sh" -ForegroundColor White
 Write-Host "  ./demo-workflow-service.sh" -ForegroundColor White
-Write-Host "  ./demo-notifications-service.sh" -ForegroundColor White
