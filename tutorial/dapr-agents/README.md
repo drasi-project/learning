@@ -39,7 +39,7 @@ Add architecture diagram
 ### Pre-configured for you:
 - k3d cluster with Traefik ingress
 - Dapr control plane installed
-- Drasi control plane installed
+- Drasi platform installed
 - PostgreSQL databases deployed for each service
 - Redis deployed for workflow service
 - Redis deployed for notifications service
@@ -62,7 +62,7 @@ Add architecture diagram
 
 2. Steps:
    - Open VS Code
-   - Open this folder: `tutorial/dapr`
+   - Open this folder: `tutorial/dapr-agents`
    - Click "Reopen in Container" when prompted
    - Wait for setup to complete (~5 minutes)
    - Deploy Drasi components:
@@ -78,10 +78,12 @@ Add architecture diagram
 
 ### Pre-configured for you:
 - k3d cluster with Traefik ingress on port 8123
-- Drasi platform installed (includes Dapr)
+- Dapr control plane installed
+- Drasi platform installed
 - PostgreSQL databases deployed for each service
 - Redis deployed for workflow service
 - Redis deployed for notifications service
+- Workflow service hosting agent workflows
 - Diagrid Dashboard for service monitoring
 - All services running with initial data loaded
 
