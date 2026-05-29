@@ -1,6 +1,6 @@
-# Dapr + Drasi Tutorial
+# Dapr Agents + Drasi Tutorial
 
-This tutorial demonstrates how Drasi supercharges Dapr applications with real-time data change processing capabilities across multiple microservices. Originally presented at the Dapr Community Call, this scenario showcases three powerful Drasi reactions that solve common challenges in distributed microservice architectures.
+This tutorial demonstrates how Drasi's change-processing capabilities can be used to trigger long-running AI agent workflows built with the Dapr Agents framework.
 
 You'll see Drasi in action where:
 - **Two Dapr microservices** (Products, Orders) manage their own state stores
@@ -10,9 +10,10 @@ You'll see Drasi in action where:
   - **Workflow**: Trigger agent workflows via pub/sub
 - **Workflow dashboard** provides comprehensive monitoring for the workflow service
 
-Follow along the tutorial instructions on [our website here](https://drasi.io/tutorials/dapr/).
+Follow along the tutorial instructions on [our website here](https://drasi.io/drasi-kubernetes/tutorials/drasi-for-dapr-agents/).
 
-![Architecture of the Dapr + Drasi setup showing four core services, Drasi monitoring, and three Drasi-powered services](images/01-architectire-overview.png "Dapr + Drasi Tutorial Setup")
+## TODO:
+Add architecture diagram
 
 ## What You'll Learn
 
@@ -28,23 +29,25 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 3. When port 80 notification appears, click "Open in Browser"
 4. Deploy Drasi components:
    ```bash
-   kubectl apply -f drasi/sources/
-   kubectl apply -f drasi/queries/
-   kubectl apply -f drasi/reactions/
+   drasi apply -f drasi/sources/*
+   drasi apply -f drasi/queries/*
+   drasi apply -f drasi/reactions/*
    ```
 5. Access the applications via the forwarded URL:
    - Notifications: `https://<your-codespace>.app.github.dev/notifications-service`
-   - Workflow Dashboard: `https://<your-codespace>.app.github.dev`
+   - Workflow Dashboard: `https://<your-codespace>.app.github.dev/`
    - Products API: `https://<your-codespace>.app.github.dev/products-service/products`
    - Orders API: `https://<your-codespace>.app.github.dev/orders-service/orders`
 
 ### Pre-configured for you:
 - k3d cluster with Traefik ingress
-- Drasi platform installed (includes Dapr)
+- Dapr control plane installed
+- Drasi control plane installed
 - PostgreSQL databases deployed for each service
 - Redis deployed for workflow service
 - Redis deployed for notifications service
-- Diagrid Dashboard for service monitoring
+- Workflow service hosting agent workflows
+- Diagrid Dashboard for workflow service monitoring
 - All services running with initial data loaded
 
 ### Troubleshooting:
@@ -67,13 +70,13 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
    - Wait for setup to complete (~5 minutes)
    - Deploy Drasi components:
      ```bash
-     kubectl apply -f drasi/sources/
-     kubectl apply -f drasi/queries/
-     kubectl apply -f drasi/reactions/
+     drasi apply -f drasi/sources/*
+     drasi apply -f drasi/queries/*
+     drasi apply -f drasi/reactions/*
      ```
    - Access applications at:
      - Notifications: http://localhost:8123/notifications-service
-     - Workflow Dashboard: http://localhost:8123
+     - Workflow Dashboard: http://localhost:8123/
      - Products API: http://localhost:8123/products-service/products
      - Orders API: http://localhost:8123/orders-service/orders
 
@@ -98,11 +101,13 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 - Docker
 - kubectl
 - k3d
+- Dapr CLI >=1.15.0
 - Drasi CLI
 
 ### Installation Instructions:
 - **kubectl**: https://kubernetes.io/docs/tasks/tools/
 - **k3d**: https://k3d.io/#installation
+- **Dapr CLI**: https://docs.dapr.io/getting-started/install-dapr-cli/
 - **Drasi CLI**: https://drasi.io/reference/command-line-interface/#get-the-drasi-cli
 
 ### Setup Steps:
@@ -154,7 +159,7 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 
 5. **Access the applications**
    - Notifications: http://localhost:8123/notifications-service
-   - Workflow Dashboard: http://localhost:8123
+   - Workflow Dashboard: http://localhost:8123/
    - Products API: http://localhost:8123/products-service/products
    - Orders API: http://localhost:8123/orders-service/orders
 
@@ -266,4 +271,3 @@ drasi list reactions
 - **Drasi Documentation**: https://drasi.io
 - **Dapr Documentation**: https://docs.dapr.io
 - **Tutorial Walkthrough**: https://drasi.io/tutorials/dapr/
-- **Dapr Community Call Recording**: [Watch on YouTube](https://www.youtube.com/watch?v=S-ImhYfLplM&t=90s)
