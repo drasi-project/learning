@@ -5,8 +5,7 @@ This tutorial demonstrates how Drasi's change-processing capabilities can be use
 You'll see Drasi in action where:
 - **Two Dapr microservices** (Products, Orders) manage their own state stores
 - **Drasi monitors** all state stores via logical replication with zero impact on services
-- **Two Drasi-powered services** demonstrate real-time capabilities:
-  - **Notifications**: Intelligent business events via pub/sub
+- **A Drasi-powered service** demonstrates real-time capabilities:
   - **Workflow**: Trigger agent workflows via pub/sub
 - **Workflow dashboard** provides comprehensive monitoring for the workflow service
 
@@ -18,7 +17,6 @@ Add architecture diagram
 ## What You'll Learn
 
 - How Drasi monitors Dapr state stores without impacting service performance
-- Building real-time dashboards with SignalR reaction
 - Generating intelligent business events with Post Dapr Pub/Sub reaction
 - Running complex queries across distributed data in real-time
 
@@ -34,7 +32,6 @@ Add architecture diagram
    drasi apply -f drasi/reactions/*
    ```
 5. Access the applications via the forwarded URL:
-   - Notifications: `https://<your-codespace>.app.github.dev/notifications-service`
    - Workflow Dashboard: `https://<your-codespace>.app.github.dev/`
    - Products API: `https://<your-codespace>.app.github.dev/products-service/products`
    - Orders API: `https://<your-codespace>.app.github.dev/orders-service/orders`
@@ -75,7 +72,6 @@ Add architecture diagram
      drasi apply -f drasi/reactions/*
      ```
    - Access applications at:
-     - Notifications: http://localhost:8123/notifications-service
      - Workflow Dashboard: http://localhost:8123/
      - Products API: http://localhost:8123/products-service/products
      - Orders API: http://localhost:8123/orders-service/orders
@@ -138,7 +134,7 @@ Add architecture diagram
 
 2. **Navigate to the tutorial directory**
    ```bash
-   cd tutorial/dapr
+   cd tutorial/dapr-agents
    ```
 
 3. **Run the setup script**
@@ -152,13 +148,12 @@ Add architecture diagram
 
 4. **Deploy Drasi components**
    ```bash
-   kubectl apply -f drasi/sources/
-   kubectl apply -f drasi/queries/
-   kubectl apply -f drasi/reactions/
+   drasi apply -f drasi/sources/*
+   drasi apply -f drasi/queries/*
+   drasi apply -f drasi/reactions/*
    ```
 
 5. **Access the applications**
-   - Notifications: http://localhost:8123/notifications-service
    - Workflow Dashboard: http://localhost:8123/
    - Products API: http://localhost:8123/products-service/products
    - Orders API: http://localhost:8123/orders-service/orders
@@ -203,7 +198,6 @@ Written in Cypher, these queries detect patterns across services:
 - **Post Dapr Pub/Sub**: Publishes intelligent business events
 
 ### Drasi-Powered Services
-- **Notifications** (`/notifications-service`): Subscribes to Dapr pub/sub events
 - **Workflow**: Subscribes to Dapr pub/sub events and triggers agent workflows
 
 ### Dashboards
