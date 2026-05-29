@@ -39,12 +39,14 @@ Write-Host "Waiting for cluster to be ready..." -ForegroundColor Yellow
 kubectl wait --for=condition=ready node --all --timeout=60s
 
 Write-Host "Waiting for Traefik to be ready..." -ForegroundColor Yellow
+# Wait for Traefik Helm job to complete
+Write-Host "Waiting for Traefik Helm installation..." -ForegroundColor Yellow
 $MAX_JOB_WAIT = 30
 $JOB_WAITED = 0
 while ($JOB_WAITED -lt $MAX_JOB_WAIT) {
     if (kubectl get job -n kube-system helm-install-traefik 2>$null) {
         Write-Host "Traefik Helm job found, waiting for completion..." -ForegroundColor Yellow
-        kubectl wait --for=condition=complete job/helm-install-traefik -n kube-system --timeout=300s
+        kubectl wait --for=condition=complete job/helm-install-traefik -n kube-system --timeout=300s | Out-Null
         break
     }
     Write-Host "Waiting for Traefik Helm job to appear..." -ForegroundColor Yellow
@@ -52,11 +54,43 @@ while ($JOB_WAITED -lt $MAX_JOB_WAIT) {
     $JOB_WAITED += 2
 }
 
+if ($JOB_WAITED -ge $MAX_JOB_WAIT) {
+    Write-Host "Warning: Traefik Helm job not found after $($MAX_JOB_WAIT)s, continuing anyway..." -ForegroundColor Yellow
+}
+
+# Wait for Traefik CRDs to be available
+Write-Host "Waiting for Traefik CRDs..." -ForegroundColor Yellow
+$MAX_CRD_WAIT = 60
+$CRD_WAITED = 0
+while ($CRD_WAITED -lt $MAX_CRD_WAIT) {
+    # Check for both traefik.containo.us and traefik.io CRDs
+    $crd1 = kubectl get crd middlewares.traefik.containo.us 2>$null
+    $crd2 = kubectl get crd middlewares.traefik.io 2>$null
+    $crd3 = kubectl get crd ingressroutes.traefik.io 2>$null
+    
+    if ($crd1 -and $crd2 -and $crd3) {
+        Write-Host "All Traefik CRDs are ready!" -ForegroundColor Green
+        break
+    }
+    Write-Host "Waiting for Traefik CRDs to be created..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 2
+    $CRD_WAITED += 2
+}
+
+if ($CRD_WAITED -ge $MAX_CRD_WAIT) {
+    Write-Host "Warning: Traefik CRDs not found after $($MAX_CRD_WAIT)s, continuing anyway..." -ForegroundColor Yellow
+}
+
 Write-Host "Initializing Drasi (this will also install Dapr)..." -ForegroundColor Yellow
 
 # Configure Drasi to use kubectl context
 Write-Host "Configuring Drasi to use kubectl context..." -ForegroundColor Yellow
-drasi env kube 2>$null
+if (drasi env kube 2>$null) {
+    Write-Host "Drasi configured to use kubectl context" -ForegroundColor Green
+} else {
+    Write-Host "WARNING: Failed to configure Drasi environment with 'drasi env kube'" -ForegroundColor Yellow
+    Write-Host "Continuing with initialization anyway..." -ForegroundColor Yellow
+}
 
 $MAX_ATTEMPTS = 3
 $ATTEMPT = 1
@@ -65,7 +99,7 @@ $DRASI_INITIALIZED = $false
 while (($ATTEMPT -le $MAX_ATTEMPTS) -and (-not $DRASI_INITIALIZED)) {
     Write-Host "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..." -ForegroundColor Yellow
     
-    if (drasi init) {
+    if (drasi init --dapr-runtime-version 1.17.7 --dapr-sidecar-version 1.17.7) {
         $DRASI_INITIALIZED = $true
         Write-Host "Drasi initialized successfully!" -ForegroundColor Green
     } else {
@@ -153,6 +187,7 @@ Write-Host "Deploying Dapr components..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/dapr/statestore.yaml
 kubectl apply -f services/orders/k8s/dapr/statestore.yaml
 kubectl apply -f services/workflow/k8s/dapr/statestore.yaml
+kubectl apply -f services/workflow/k8s/dapr/openai.yaml
 kubectl apply -f services/workflow/k8s/dapr/pubsub.yaml
 kubectl apply -f services/notifications/k8s/dapr/pubsub-drasi.yaml
 
@@ -183,7 +218,6 @@ Write-Host "=========================================" -ForegroundColor Green
 Write-Host ""
 if ($env:CODESPACES) {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
-    Write-Host "  Workflow Service: https://<your-codespace>/workflow-service" -ForegroundColor White
     Write-Host "  Notifications Service: https://<your-codespace>/notifications-service" -ForegroundColor White
     Write-Host "  Workflow Dashboard: https://<your-codespace>/workflow-dashboard" -ForegroundColor White
     Write-Host ""
@@ -192,7 +226,6 @@ if ($env:CODESPACES) {
     Write-Host "  Orders: https://<your-codespace>/orders-service/orders" -ForegroundColor White
 } else {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
-    Write-Host "  Workflow Service: http://localhost:8123/workflow-service" -ForegroundColor White
     Write-Host "  Notifications Service: http://localhost:8123/notifications-service" -ForegroundColor White
     Write-Host "  Workflow Dashboard: http://localhost:8123/workflow-dashboard" -ForegroundColor White
     Write-Host ""

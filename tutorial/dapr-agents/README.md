@@ -113,24 +113,24 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
    ```bash
    # Required environment variables:
    export OPENAI_API_KEY=your-api-key
-   export OPENAI_ENDPOINT=https://your-api-base-url/
    
    # Optional environment variables (with defaults):
-   export OPENAI_MODEL=your-model                    # Default: gpt-4-mini
-   export OPENAI_API_TYPE=your-api-type              # Default: azure
-   export OPENAI_API_VERSION=your-api-version        # Default: 2025-01-01-preview
+   export OPENAI_ENDPOINT=https://your-api-base-url/ # Default: "https://api.openai.com/v1"
+   export OPENAI_MODEL=your-model                    # Default: "gpt-4.1-nano" for Azure, otherwise "gpt-4-turbo"
+   export OPENAI_API_TYPE=your-api-type              # Default: "azure" or "openai"
+   export OPENAI_API_VERSION=your-api-version        # Default: "2025-01-01-preview" for Azure, otherwise "2025-02-15"
    ```
 
    **For Windows PowerShell:**
    ```powershell
    # Required environment variables:
-   $env:OPENAI_API_KEY = "your-api-key"
-   $env:OPENAI_ENDPOINT = "https://your-api-base-url/"
+   $env:OPENAI_API_KEY = "your-api-key" 
    
    # Optional environment variables (with defaults):
-   $env:OPENAI_MODEL = "your-model"                    # Default: gpt-4-mini
-   $env:OPENAI_API_TYPE = "your-api-type"              # Default: azure
-   $env:OPENAI_API_VERSION = "your-api-version"        # Default: 2025-01-01-preview
+   $env:OPENAI_ENDPOINT = "https://your-api-base-url/" # Default: "https://api.openai.com/v1"
+   $env:OPENAI_MODEL = "your-model"                    # Default: "gpt-4.1-nano" for Azure, otherwise "gpt-4-turbo"
+   $env:OPENAI_API_TYPE = "your-api-type"              # Default: "azure" or "openai"
+   $env:OPENAI_API_VERSION = "your-api-version"        # Default: "2025-01-01-preview" for Azure, otherwise "2025-02-15"
    ```
 
 2. **Navigate to the tutorial directory**
@@ -156,7 +156,6 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 
 5. **Access the applications**
    - Notifications: http://localhost:8123/notifications-service
-   - Workflow: http://localhost:8123/workflow-service
    - Workflow Dashboard: `http://localhost:8123/workflow-dashboard`
    - Products API: http://localhost:8123/products-service/products
    - Orders API: http://localhost:8123/orders-service/orders
@@ -204,7 +203,6 @@ Written in Cypher, these queries detect patterns across services:
 ### Drasi-Powered Services
 
 - **Notifications** (`/notifications-service`): Subscribes to Dapr pub/sub events
-- **Workflow** (`/workflow-service`): Manages agent-based workflows and long-running processes
 
 ### Dashboards
 - **Workflow Dashboard** (`/workflow-dashboard`): Monitoring dashboard for the Dapr workflow service
@@ -264,8 +262,6 @@ drasi list reactions
 **Workflow Dashboard not loading:**
 - Check if the deployment is running: `kubectl get pods -l app=workflow-dashboard`
 - Check logs: `kubectl logs deployment/workflow-dashboard`
-- Verify service account permissions: `kubectl get clusterrole workflow-dashboard`
-- For API token errors, the dashboard works in read-only mode without authentication
 
 ## Learn More
 

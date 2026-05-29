@@ -102,7 +102,7 @@ DRASI_INITIALIZED=false
 while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
     echo "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..."
     
-    if drasi init; then
+    if drasi init --dapr-runtime-version 1.17.7 --dapr-sidecar-version 1.17.7; then
         DRASI_INITIALIZED=true
         echo "Drasi initialized successfully!"
     else
@@ -232,7 +232,6 @@ echo "========================================="
 echo ""
 if [ -n "$CODESPACES" ]; then
     echo "Applications are available at:"
-    echo "  Workflow Service: https://<your-codespace>/workflow-service"
     echo "  Notifications Service: https://<your-codespace>/notifications-service"
     echo "  Workflow Dashboard: https://<your-codespace>/workflow-dashboard"
     echo ""
@@ -241,7 +240,6 @@ if [ -n "$CODESPACES" ]; then
     echo "  Orders: https://<your-codespace>/orders-service/orders"
 else
     echo "Applications are available at:"
-    echo "  Workflow Service: http://localhost:8123/workflow-service"
     echo "  Notifications Service: http://localhost:8123/notifications-service"
     echo "  Workflow Dashboard: http://localhost:8123/workflow-dashboard"
     echo ""

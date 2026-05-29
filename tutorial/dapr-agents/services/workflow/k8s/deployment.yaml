@@ -16,18 +16,13 @@ spec:
       annotations:
         dapr.io/enabled: "true"
         dapr.io/app-id: "workflow"
-        dapr.io/app-port: "8000"
         dapr.io/enable-api-logging: "true"
         dapr.io/log-level: "info"
-        dapr.io/sidecar-image: "daprio/daprd:1.17.7"
     spec:
       containers:
       - name: workflow
         image: ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest
         imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8000
-          name: http
         env:
         - name: DAPR_STORE_NAME
           value: "workflow-store"
@@ -42,46 +37,3 @@ spec:
           requests:
             cpu: "100m"
             memory: "128Mi"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: workflow
-  labels:
-    app: workflow
-spec:
-  selector:
-    app: workflow
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8000
-    protocol: TCP
-  type: ClusterIP
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: workflow-stripprefix
-spec:
-  stripPrefix:
-    prefixes:
-    - /workflow-service
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: workflow
-  annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: default-workflow-stripprefix@kubernetescrd
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /workflow-service
-        pathType: Prefix
-        backend:
-          service:
-            name: workflow
-            port:
-              number: 80
