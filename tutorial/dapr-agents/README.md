@@ -192,9 +192,9 @@ Drasi sources monitor the PostgreSQL databases backing the Dapr state stores via
 
 #### Continuous Queries
 Written in Cypher, these queries detect patterns across services:
-- `at-risk-orders`: Finds orders that can't be fulfilled
-- `low-stock-event`: Products below 20 units
-- `critical-stock-event`: Products below 5 units
+- `at-risk-orders`: Orders that can't be fulfilled due to insufficient stock
+- `low-stock-event`: Products with stock below a given threshold
+- `critical-stock-event`: Products with 0 stock
 
 #### Reactions
 - **Post Dapr Pub/Sub**: Publishes intelligent business events
