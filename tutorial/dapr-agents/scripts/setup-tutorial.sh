@@ -22,6 +22,37 @@ echo "========================================="
 # Define k3d version to use across all environments
 K3D_VERSION="v5.6.0"
 
+install_with_retries() {
+    local tool_name="$1"
+    local install_cmd="$2"
+    local uninstall_cmd="$3"
+    local max_attempts="$4"
+    
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        echo "$tool_name installation attempt $attempt of $max_attempts..."
+        
+        if eval "$install_cmd"; then
+            echo "$tool_name initialized successfully!"
+            return 0
+        fi
+        
+        echo "$tool_name installation failed."
+        
+        if [ $attempt -lt $max_attempts ]; then
+            echo "Uninstalling $tool_name before retry..."
+            eval "$uninstall_cmd" 2>/dev/null || true
+            sleep 5
+        else
+            echo "ERROR: Failed to initialize $tool_name after $max_attempts attempts."
+            return 1
+        fi
+        
+        attempt=$((attempt + 1))
+    done
+}
+
 # Check if we're in GitHub Codespaces
 if [ -n "$CODESPACES" ]; then
     echo "Running in GitHub Codespaces environment"
@@ -84,7 +115,15 @@ if [ $CRD_WAITED -ge $MAX_CRD_WAIT ]; then
     echo "Warning: Traefik CRDs not found after ${MAX_CRD_WAIT}s, continuing anyway..."
 fi
 
-echo "Initializing Drasi (this will also install Dapr)..."
+echo "Initializing Dapr..."
+
+# Dapr should use the current kubectl context automatically
+install_with_retries "Dapr" \
+    "dapr init -k --wait" \
+    "dapr uninstall -k -y" \
+    3 || exit 1
+
+echo "Initializing Drasi (this will also install Dapr if not installed already)..."
 
 # Configure Drasi to use kubectl context
 echo "Configuring Drasi to use kubectl context..."
@@ -95,32 +134,10 @@ else
     echo "Continuing with initialization anyway..."
 fi
 
-MAX_ATTEMPTS=3
-ATTEMPT=1
-DRASI_INITIALIZED=false
-
-while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
-    echo "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..."
-    
-    # Dapr version needs to be >= 1.15 to use conversation API
-    if drasi init --dapr-runtime-version 1.17.7 --dapr-sidecar-version 1.17.7; then
-        DRASI_INITIALIZED=true
-        echo "Drasi initialized successfully!"
-    else
-        echo "Drasi initialization failed."
-        
-        if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
-            echo "Uninstalling Drasi before retry..."
-            drasi uninstall -y 2>/dev/null || true
-            sleep 5
-        else
-            echo "ERROR: Failed to initialize Drasi after $MAX_ATTEMPTS attempts."
-            exit 1
-        fi
-    fi
-    
-    ATTEMPT=$((ATTEMPT + 1))
-done
+install_with_retries "Drasi" \
+    "drasi init" \
+    "drasi uninstall -y" \
+    3 || exit 1
 
 echo "Creating secrets..."
 
@@ -166,10 +183,10 @@ sleep 2
 # Build services and load images into k3d
 # TODO: make this optional
 echo "Building images..."
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile .
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile .
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile .
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile services/products
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile services/orders
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile services/notifications
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile services/workflow
 
 echo "Loading images into k3d cluster..."
 k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
@@ -233,7 +250,7 @@ echo ""
 if [ -n "$CODESPACES" ]; then
     echo "Applications are available at:"
     echo "  Notifications Service: https://<your-codespace>/notifications-service"
-    echo "  Workflow Dashboard: https://<your-codespace>"
+    echo "  Workflow Dashboard: https://<your-codespace>/"
     echo ""
     echo "  API Endpoints:"
     echo "  Products: https://<your-codespace>/products-service/products"
@@ -241,7 +258,7 @@ if [ -n "$CODESPACES" ]; then
 else
     echo "Applications are available at:"
     echo "  Notifications Service: http://localhost:8123/notifications-service"
-    echo "  Workflow Dashboard: http://localhost:8123"
+    echo "  Workflow Dashboard: http://localhost:8123/"
     echo ""
     echo "  API Endpoints:"
     echo "  Products: http://localhost:8123/products-service/products"

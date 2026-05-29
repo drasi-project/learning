@@ -13,11 +13,44 @@
 # limitations under the License.
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "Dapr + Drasi Tutorial Setup" -ForegroundColor Cyan
+Write-Host "Dapr Agents + Drasi Tutorial Setup" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
 # Define k3d version
 $K3D_VERSION = "v5.6.0"
+
+function Install-With-Retries {
+    param(
+        [string]$ToolName,
+        [scriptblock]$InstallScript,
+        [scriptblock]$UninstallScript,
+        [int]$MaxAttempts
+    )
+    
+    $attempt = 1
+    
+    while ($attempt -le $MaxAttempts) {
+        Write-Host "$ToolName installation attempt $attempt of $MaxAttempts..." -ForegroundColor Yellow
+        
+        if (& $InstallScript) {
+            Write-Host "$ToolName initialized successfully!" -ForegroundColor Green
+            return $true
+        }
+        
+        Write-Host "$ToolName installation failed." -ForegroundColor Red
+        
+        if ($attempt -lt $MaxAttempts) {
+            Write-Host "Uninstalling $ToolName before retry..." -ForegroundColor Yellow
+            & $UninstallScript 2>$null
+            Start-Sleep -Seconds 5
+        } else {
+            Write-Host "ERROR: Failed to initialize $ToolName after $MaxAttempts attempts." -ForegroundColor Red
+            return $false
+        }
+        
+        $attempt++
+    }
+}
 
 # Check if we're in GitHub Codespaces
 if ($env:CODESPACES) {
@@ -81,7 +114,19 @@ if ($CRD_WAITED -ge $MAX_CRD_WAIT) {
     Write-Host "Warning: Traefik CRDs not found after $($MAX_CRD_WAIT)s, continuing anyway..." -ForegroundColor Yellow
 }
 
-Write-Host "Initializing Drasi (this will also install Dapr)..." -ForegroundColor Yellow
+Write-Host "Initializing Dapr..." -ForegroundColor Yellow
+
+# Dapr should use the current kubectl context automatically
+$dapr_success = Install-With-Retries -ToolName "Dapr" `
+    -InstallScript { dapr init -k --wait } `
+    -UninstallScript { dapr uninstall -k -y 2>$null } `
+    -MaxAttempts 3
+
+if (-not $dapr_success) {
+    exit 1
+}
+
+Write-Host "Initializing Drasi (this will also install Dapr if not installed already)..." -ForegroundColor Yellow
 
 # Configure Drasi to use kubectl context
 Write-Host "Configuring Drasi to use kubectl context..." -ForegroundColor Yellow
@@ -92,31 +137,13 @@ if (drasi env kube 2>$null) {
     Write-Host "Continuing with initialization anyway..." -ForegroundColor Yellow
 }
 
-$MAX_ATTEMPTS = 3
-$ATTEMPT = 1
-$DRASI_INITIALIZED = $false
+$drasi_success = Install-With-Retries -ToolName "Drasi" `
+    -InstallScript { drasi init } `
+    -UninstallScript { drasi uninstall -y 2>$null } `
+    -MaxAttempts 3
 
-while (($ATTEMPT -le $MAX_ATTEMPTS) -and (-not $DRASI_INITIALIZED)) {
-    Write-Host "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..." -ForegroundColor Yellow
-    
-    # Dapr version needs to be >= 1.15 to use conversation API
-    if (drasi init --dapr-runtime-version 1.17.7 --dapr-sidecar-version 1.17.7) {
-        $DRASI_INITIALIZED = $true
-        Write-Host "Drasi initialized successfully!" -ForegroundColor Green
-    } else {
-        Write-Host "Drasi initialization failed." -ForegroundColor Red
-        
-        if ($ATTEMPT -lt $MAX_ATTEMPTS) {
-            Write-Host "Uninstalling Drasi before retry..." -ForegroundColor Yellow
-            drasi uninstall -y 2>$null
-            Start-Sleep -Seconds 5
-        } else {
-            Write-Host "ERROR: Failed to initialize Drasi after $MAX_ATTEMPTS attempts." -ForegroundColor Red
-            exit 1
-        }
-    }
-    
-    $ATTEMPT++
+if (-not $drasi_success) {
+    exit 1
 }
 
 Write-Host "Creating secrets..." -ForegroundColor Yellow
@@ -165,10 +192,10 @@ Start-Sleep -Seconds 2
 # Build services and load images into k3d
 # TODO: make this optional
 Write-Host "Building images..." -ForegroundColor Yellow
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile .
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile .
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile .
-docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile services/products
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile services/orders
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile services/notifications
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile services/workflow
 
 Write-Host "Loading images into k3d cluster..." -ForegroundColor Yellow
 k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
@@ -232,7 +259,7 @@ Write-Host ""
 if ($env:CODESPACES) {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
     Write-Host "  Notifications Service: https://<your-codespace>/notifications-service" -ForegroundColor White
-    Write-Host "  Workflow Dashboard: https://<your-codespace>" -ForegroundColor White
+    Write-Host "  Workflow Dashboard: https://<your-codespace>/" -ForegroundColor White
     Write-Host ""
     Write-Host "  API Endpoints:" -ForegroundColor Cyan
     Write-Host "  Products: https://<your-codespace>/products-service/products" -ForegroundColor White
@@ -240,7 +267,7 @@ if ($env:CODESPACES) {
 } else {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
     Write-Host "  Notifications Service: http://localhost:8123/notifications-service" -ForegroundColor White
-    Write-Host "  Workflow Dashboard: http://localhost:8123" -ForegroundColor White
+    Write-Host "  Workflow Dashboard: http://localhost:8123/" -ForegroundColor White
     Write-Host ""
     Write-Host "  API Endpoints:" -ForegroundColor Cyan
     Write-Host "  Products: http://localhost:8123/products-service/products" -ForegroundColor White
