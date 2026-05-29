@@ -108,7 +108,7 @@ Add architecture diagram
 - **kubectl**: https://kubernetes.io/docs/tasks/tools/
 - **k3d**: https://k3d.io/#installation
 - **Dapr CLI**: https://docs.dapr.io/getting-started/install-dapr-cli/
-- **Drasi CLI**: https://drasi.io/reference/command-line-interface/#get-the-drasi-cli
+- **Drasi CLI**: https://drasi.io/drasi-kubernetes/reference/command-line-interface/#get-the-drasi-cli
 
 ### Setup Steps:
 
