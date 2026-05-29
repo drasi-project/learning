@@ -164,8 +164,7 @@ sleep 2
 
 # Build services and load images into k3d
 # TODO: make this optional
-
-# echo "Building images..."
+echo "Building images..."
 docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile .
 docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile .
 docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile .
