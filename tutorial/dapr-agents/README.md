@@ -5,10 +5,10 @@ This tutorial demonstrates how Drasi supercharges Dapr applications with real-ti
 You'll see Drasi in action where:
 - **Two Dapr microservices** (Products, Orders) manage their own state stores
 - **Drasi monitors** all state stores via logical replication with zero impact on services
-- **Three Drasi-powered services** demonstrate real-time capabilities:
+- **Two Drasi-powered services** demonstrate real-time capabilities:
   - **Notifications**: Intelligent business events via pub/sub
-  - **Workflow**: Manages agent-based workflows and long-running processes
-  - **Workflow Dashboard**: Comprehensive monitoring dashboard for Dapr workflow service
+  - **Workflow**: Trigger agent workflows via pub/sub
+- **Workflow dashboard** provides comprehensive monitoring for the workflow service
 
 Follow along the tutorial instructions on [our website here](https://drasi.io/tutorials/dapr/).
 
@@ -34,8 +34,7 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
    ```
 5. Access the applications via the forwarded URL:
    - Notifications: `https://<your-codespace>.app.github.dev/notifications-service`
-   - Workflow: `https://<your-codespace>.app.github.dev/workflow-service`
-   - Workflow Dashboard: `https://<your-codespace>.app.github.dev/workflow-dashboard`
+   - Workflow Dashboard: `https://<your-codespace>.app.github.dev`
    - Products API: `https://<your-codespace>.app.github.dev/products-service/products`
    - Orders API: `https://<your-codespace>.app.github.dev/orders-service/orders`
 
@@ -74,8 +73,7 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
      ```
    - Access applications at:
      - Notifications: http://localhost:8123/notifications-service
-     - Workflow: http://localhost:8123/workflow-service
-     - Workflow Dashboard: http://localhost:8123/workflow-dashboard
+     - Workflow Dashboard: http://localhost:8123
      - Products API: http://localhost:8123/products-service/products
      - Orders API: http://localhost:8123/orders-service/orders
 
@@ -156,7 +154,7 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 
 5. **Access the applications**
    - Notifications: http://localhost:8123/notifications-service
-   - Workflow Dashboard: `http://localhost:8123/workflow-dashboard`
+   - Workflow Dashboard: http://localhost:8123
    - Products API: http://localhost:8123/products-service/products
    - Orders API: http://localhost:8123/orders-service/orders
 
@@ -201,11 +199,11 @@ Written in Cypher, these queries detect patterns across services:
 - **Post Dapr Pub/Sub**: Publishes intelligent business events
 
 ### Drasi-Powered Services
-
 - **Notifications** (`/notifications-service`): Subscribes to Dapr pub/sub events
+- **Workflow**: Subscribes to Dapr pub/sub events and triggers agent workflows
 
 ### Dashboards
-- **Workflow Dashboard** (`/workflow-dashboard`): Monitoring dashboard for the Dapr workflow service
+- **Workflow Dashboard** (`/`): Monitoring dashboard for the Dapr workflow service
 
 ## Utility Scripts
 

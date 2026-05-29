@@ -22,5 +22,9 @@ spec:
   metadata:
     - name: redisHost
       value: workflow-redis.default.svc.cluster.local:6379
+    - name: redisPassword
+      value: ""
+    - name: keyPrefix
+      value: "none"
     - name: actorStateStore
       value: "true"

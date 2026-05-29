@@ -219,7 +219,7 @@ Write-Host ""
 if ($env:CODESPACES) {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
     Write-Host "  Notifications Service: https://<your-codespace>/notifications-service" -ForegroundColor White
-    Write-Host "  Workflow Dashboard: https://<your-codespace>/workflow-dashboard" -ForegroundColor White
+    Write-Host "  Workflow Dashboard: https://<your-codespace>" -ForegroundColor White
     Write-Host ""
     Write-Host "  API Endpoints:" -ForegroundColor Cyan
     Write-Host "  Products: https://<your-codespace>/products-service/products" -ForegroundColor White
@@ -227,7 +227,7 @@ if ($env:CODESPACES) {
 } else {
     Write-Host "Applications are available at:" -ForegroundColor Cyan
     Write-Host "  Notifications Service: http://localhost:8123/notifications-service" -ForegroundColor White
-    Write-Host "  Workflow Dashboard: http://localhost:8123/workflow-dashboard" -ForegroundColor White
+    Write-Host "  Workflow Dashboard: http://localhost:8123" -ForegroundColor White
     Write-Host ""
     Write-Host "  API Endpoints:" -ForegroundColor Cyan
     Write-Host "  Products: http://localhost:8123/products-service/products" -ForegroundColor White

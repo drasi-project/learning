@@ -19,7 +19,7 @@ data:
       - name: redisPassword
         value: ""
       - name: keyPrefix
-        value: none
+        value: "none"
       - name: actorStateStore
         value: "true"
 ---
@@ -72,26 +72,15 @@ spec:
   selector:
     app: workflow-dashboard
 ---
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: workflow-dashboard-stripprefix
-spec:
-  stripPrefix:
-    prefixes:
-    - /workflow-dashboard
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: workflow-dashboard
-  annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: default-workflow-dashboard-stripprefix@kubernetescrd
 spec:
   rules:
   - http:
       paths:
-      - path: /workflow-dashboard
+      - path: /
         pathType: Prefix
         backend:
           service:

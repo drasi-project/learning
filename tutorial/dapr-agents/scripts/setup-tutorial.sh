@@ -233,7 +233,7 @@ echo ""
 if [ -n "$CODESPACES" ]; then
     echo "Applications are available at:"
     echo "  Notifications Service: https://<your-codespace>/notifications-service"
-    echo "  Workflow Dashboard: https://<your-codespace>/workflow-dashboard"
+    echo "  Workflow Dashboard: https://<your-codespace>"
     echo ""
     echo "  API Endpoints:"
     echo "  Products: https://<your-codespace>/products-service/products"
@@ -241,7 +241,7 @@ if [ -n "$CODESPACES" ]; then
 else
     echo "Applications are available at:"
     echo "  Notifications Service: http://localhost:8123/notifications-service"
-    echo "  Workflow Dashboard: http://localhost:8123/workflow-dashboard"
+    echo "  Workflow Dashboard: http://localhost:8123"
     echo ""
     echo "  API Endpoints:"
     echo "  Products: http://localhost:8123/products-service/products"
