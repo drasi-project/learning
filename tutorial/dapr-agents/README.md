@@ -118,7 +118,7 @@ Add architecture diagram
    # Optional environment variables (with defaults):
    export OPENAI_ENDPOINT=https://your-api-base-url/ # Default: "https://api.openai.com/v1"
    export OPENAI_MODEL=your-model                    # Default: "gpt-4.1-nano" for Azure, otherwise "gpt-4-turbo"
-   export OPENAI_API_TYPE=your-api-type              # Default: "azure" or "openai"
+   export OPENAI_API_TYPE=your-api-type              # Default: "azure" if endpoint contains "azure", otherwise "openai"
    export OPENAI_API_VERSION=your-api-version        # Default: "2025-01-01-preview" for Azure, otherwise "2025-02-15"
    ```
 
@@ -130,7 +130,7 @@ Add architecture diagram
    # Optional environment variables (with defaults):
    $env:OPENAI_ENDPOINT = "https://your-api-base-url/" # Default: "https://api.openai.com/v1"
    $env:OPENAI_MODEL = "your-model"                    # Default: "gpt-4.1-nano" for Azure, otherwise "gpt-4-turbo"
-   $env:OPENAI_API_TYPE = "your-api-type"              # Default: "azure" or "openai"
+   $env:OPENAI_API_TYPE = "your-api-type"              # Default: "azure" if endpoint contains "azure", otherwise "openai"
    $env:OPENAI_API_VERSION = "your-api-version"        # Default: "2025-01-01-preview" for Azure, otherwise "2025-02-15"
    ```
 
