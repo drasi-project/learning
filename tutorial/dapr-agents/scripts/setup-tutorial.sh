@@ -102,6 +102,7 @@ DRASI_INITIALIZED=false
 while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$DRASI_INITIALIZED" = "false" ]; do
     echo "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..."
     
+    # Dapr version needs to be >= 1.15 to use conversation API
     if drasi init --dapr-runtime-version 1.17.7 --dapr-sidecar-version 1.17.7; then
         DRASI_INITIALIZED=true
         echo "Drasi initialized successfully!"

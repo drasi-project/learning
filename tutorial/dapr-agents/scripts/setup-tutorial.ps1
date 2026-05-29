@@ -99,6 +99,7 @@ $DRASI_INITIALIZED = $false
 while (($ATTEMPT -le $MAX_ATTEMPTS) -and (-not $DRASI_INITIALIZED)) {
     Write-Host "Drasi initialization attempt $ATTEMPT of $MAX_ATTEMPTS..." -ForegroundColor Yellow
     
+    # Dapr version needs to be >= 1.15 to use conversation API
     if (drasi init --dapr-runtime-version 1.17.7 --dapr-sidecar-version 1.17.7) {
         $DRASI_INITIALIZED = $true
         Write-Host "Drasi initialized successfully!" -ForegroundColor Green
