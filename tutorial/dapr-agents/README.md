@@ -258,7 +258,7 @@ drasi list reactions
 **Services not accessible:**
 - Check if k3d cluster is running: `k3d cluster list`
 - Verify services are healthy: `kubectl get pods`
-- For local setup, ensure you're using http://localhost:8123 (not https)
+- For local setup, ensure you're using http://localhost:8123/ (not https)
 - For Codespaces, check the PORTS tab for the correct URL
 
 **Workflow Dashboard not loading:**
@@ -269,4 +269,4 @@ drasi list reactions
 
 - **Drasi Documentation**: https://drasi.io
 - **Dapr Documentation**: https://docs.dapr.io
-- **Tutorial Walkthrough**: https://drasi.io/tutorials/dapr/
+- **Tutorial Walkthrough**: https://drasi.io/drasi-kubernetes/tutorials/drasi-for-dapr-agents/
