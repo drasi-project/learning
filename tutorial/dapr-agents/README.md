@@ -200,7 +200,6 @@ Written in Cypher, these queries detect patterns across services:
 - `critical-stock-event`: Products below 5 units
 
 #### Reactions
-- **SignalR**: Powers real-time dashboard updates
 - **Post Dapr Pub/Sub**: Publishes intelligent business events
 
 ### Drasi-Powered Services
