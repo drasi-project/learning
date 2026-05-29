@@ -166,10 +166,10 @@ sleep 2
 # TODO: make this optional
 
 # echo "Building images..."
-# docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f ../services/products/Dockerfile .
-# docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f ../services/orders/Dockerfile .
-# docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f ../services/notifications/Dockerfile .
-# docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f ../services/workflow/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile .
 
 echo "Loading images into k3d cluster..."
 k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
@@ -249,9 +249,9 @@ else
 fi
 echo ""
 echo "To deploy Drasi components, run:"
-echo "  kubectl apply -f drasi/sources/"
-echo "  kubectl apply -f drasi/queries/"
-echo "  kubectl apply -f drasi/reactions/"
+echo "  drasi apply -f drasi/sources/*"
+echo "  drasi apply -f drasi/queries/*"
+echo "  drasi apply -f drasi/reactions/*"
 echo ""
 echo "Then explore the demos:"
 echo "  cd demo"

@@ -161,7 +161,19 @@ kubectl create secret generic openai-secret `
 # Ensure secrets are created
 Start-Sleep -Seconds 2
 
+# Build services and load images into k3d
+# TODO: make this optional
+Write-Host "Building images..." -ForegroundColor Yellow
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -f services/products/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -f services/orders/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -f services/notifications/Dockerfile .
+docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile .
 
+Write-Host "Loading images into k3d cluster..." -ForegroundColor Yellow
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -c drasi-tutorial
 
 Write-Host "Deploying PostgreSQL databases..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/postgres/postgres.yaml
@@ -235,9 +247,9 @@ if ($env:CODESPACES) {
 }
 Write-Host ""
 Write-Host "To deploy Drasi components, run:" -ForegroundColor Yellow
-Write-Host "  kubectl apply -f drasi/sources/" -ForegroundColor White
-Write-Host "  kubectl apply -f drasi/queries/" -ForegroundColor White
-Write-Host "  kubectl apply -f drasi/reactions/" -ForegroundColor White
+Write-Host "  drasi apply -f drasi/sources/*" -ForegroundColor White
+Write-Host "  drasi apply -f drasi/queries/*" -ForegroundColor White
+Write-Host "  drasi apply -f drasi/reactions/*" -ForegroundColor White
 Write-Host ""
 Write-Host "Then explore the demos:" -ForegroundColor Yellow
 Write-Host "  cd demo" -ForegroundColor White
