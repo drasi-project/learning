@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Base URL for services
-BASE_URL="http://localhost"
+BASE_URL="http://localhost:8123"
 WORKFLOW_POD_NAME=""
 
 # Helper function to print headers
@@ -88,7 +88,7 @@ echo -e "${GREEN}1. Low Stock Workflow: Reorders stock when below threshold${NC}
 echo -e "${GREEN}2. Critical Stock Workflow: Sends alerts when critically low${NC}"
 echo -e "${GREEN}3. Workflow Monitoring: View workflow execution in real-time${NC}"
 echo
-echo -e "${YELLOW}${BOLD}Workflow Dashboard URL: ${BASE_URL}/workflow-dashboard${NC}"
+echo -e "${YELLOW}${BOLD}Workflow Dashboard URL: ${BASE_URL}${NC}"
 echo -e "${YELLOW}You can open the workflow dashboard to monitor execution!${NC}"
 echo
 
@@ -194,7 +194,7 @@ print_header "Workflow Monitoring"
 echo -e "${GREEN}To monitor workflow execution in real-time:${NC}"
 echo
 echo -e "${CYAN}1. Open the Workflow Dashboard:${NC}"
-echo -e "${YELLOW}   ${BASE_URL}/workflow-dashboard${NC}"
+echo -e "${YELLOW}   ${BASE_URL}${NC}"
 echo
 echo -e "${CYAN}2. View workflow pod logs:${NC}"
 echo -e "${YELLOW}   kubectl logs ${WORKFLOW_POD_NAME} -f${NC}"

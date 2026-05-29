@@ -8,7 +8,7 @@ spec:
   version: v1
   metadata:
   - name: redisHost
-    value: "workflow-redis.default.svc.cluster.local:6379"
+    value: "notifications-redis.default.svc.cluster.local:6379"
   - name: redisPassword
     value: ""
   - name: consumerID
