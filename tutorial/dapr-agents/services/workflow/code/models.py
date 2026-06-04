@@ -23,7 +23,7 @@ class Payload(BaseModel):
 class DrasiUnpackedEvent(BaseModel):
     """Drasi unpacked event model for CDC (Change Data Capture) events."""
     op: Literal["i", "u", "d", "x"] = Field(
-        description="Operation type: i (insert), u (update), d (delete), x (unknown)"
+        description="Operation type: i (insert), u (update), d (delete), x (control)"
     )
     ts_ms: int = Field(description="Event timestamp in milliseconds")
     seq: int = Field(description="Event sequence number")
