@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import signal
 
 from dapr_agents import AgentRunner
 from dapr_agents.workflow.utils.core import wait_for_shutdown
