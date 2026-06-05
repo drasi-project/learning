@@ -14,7 +14,7 @@
 # limitations under the License.
 
 echo "========================================="
-echo "Dapr + Drasi Tutorial Cleanup"
+echo "Dapr Agents + Drasi Tutorial Cleanup"
 echo "========================================="
 
 # Delete k3d cluster

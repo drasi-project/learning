@@ -13,7 +13,7 @@
 # limitations under the License.
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "Dapr + Drasi Tutorial - Dev Reload" -ForegroundColor Cyan
+Write-Host "Dapr Agents + Drasi Tutorial - Dev Reload" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
 Write-Host "This script reloads all deployments to pull the latest images" -ForegroundColor Yellow

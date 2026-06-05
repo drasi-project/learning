@@ -13,7 +13,7 @@
 # limitations under the License.
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "Dapr + Drasi Tutorial - Reset Images" -ForegroundColor Cyan
+Write-Host "Dapr Agents + Drasi Tutorial - Reset Images" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
 Write-Host "This script forces a fresh pull of all Docker images" -ForegroundColor Yellow

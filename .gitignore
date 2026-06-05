@@ -7,3 +7,6 @@
 **/*.bak
 **/.claude
 **/CLAUDE.md
+
+# Ignore dev files
+**/*.dev*

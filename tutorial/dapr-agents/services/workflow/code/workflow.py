@@ -1,17 +1,5 @@
-#
-# Copyright 2026 The Dapr Authors
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 from __future__ import annotations
+import os
 
 from dapr.ext.workflow import DaprWorkflowContext
 
@@ -23,9 +11,10 @@ from models import DrasiUnpackedEvent, LowStockEvent
 # Initialize the LLM client and workflow runtime
 llm = DaprChatClient(component_name="openai")
 
+PUBSUB_NAME = os.getenv("DAPR_PUBSUB_NAME", "workflow-pubsub")
 
 @message_router(
-    pubsub="workflow-pubsub", topic="low-stock-events", message_model=DrasiUnpackedEvent
+    pubsub=PUBSUB_NAME, topic="low-stock-events", message_model=DrasiUnpackedEvent
 )
 def low_stock_order_workflow(ctx: DaprWorkflowContext, wf_input: dict) -> str:
     """Order a random amount of stock for a low stock product."""
@@ -43,7 +32,7 @@ def low_stock_order_workflow(ctx: DaprWorkflowContext, wf_input: dict) -> str:
 
 
 @message_router(
-    pubsub="workflow-pubsub", topic="critical-stock-events", message_model=DrasiUnpackedEvent
+    pubsub=PUBSUB_NAME, topic="critical-stock-events", message_model=DrasiUnpackedEvent
 )
 def critical_stock_order_workflow(ctx: DaprWorkflowContext, wf_input: dict) -> str:
     """Order a fixed amount of stock for a critical stock product."""

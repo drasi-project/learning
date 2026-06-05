@@ -24,8 +24,14 @@ spec:
         image: ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest
         imagePullPolicy: IfNotPresent
         env:
-        - name: DAPR_STORE_NAME
-          value: "workflow-store"
+        - name: DAPR_CONVERSATION_NAME
+          value: "workflow-openai"
+        - name: DAPR_MEMORY_STORE_NAME
+          value: "workflow-memory"
+        - name: DAPR_STATE_STORE_NAME
+          value: "workflow-state"
+        - name: DAPR_REGISTRY_STORE_NAME
+          value: "workflow-registry"
         - name: DAPR_PUBSUB_NAME
           value: "workflow-pubsub"
         - name: LOG_LEVEL

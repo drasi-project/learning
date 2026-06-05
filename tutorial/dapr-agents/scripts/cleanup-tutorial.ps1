@@ -13,7 +13,7 @@
 # limitations under the License.
 
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "Dapr + Drasi Tutorial Cleanup" -ForegroundColor Cyan
+Write-Host "Dapr Agents + Drasi Tutorial Cleanup" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
 # Delete k3d cluster

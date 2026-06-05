@@ -14,7 +14,7 @@
 # limitations under the License.
 
 echo "========================================="
-echo "Dapr + Drasi Tutorial - Reset Images"
+echo "Dapr Agents + Drasi Tutorial - Reset Images"
 echo "========================================="
 
 echo "This script forces a fresh pull of all Docker images"

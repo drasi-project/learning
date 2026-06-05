@@ -14,7 +14,7 @@
 # limitations under the License.
 
 echo "========================================="
-echo "Dapr + Drasi Tutorial - Dev Reload"
+echo "Dapr Agents + Drasi Tutorial - Dev Reload"
 echo "========================================="
 
 echo "This script reloads all deployments to pull the latest images"

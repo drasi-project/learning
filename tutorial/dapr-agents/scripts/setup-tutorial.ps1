@@ -226,9 +226,11 @@ kubectl wait --for=condition=ready pod -l app=notifications-redis --timeout=120s
 Write-Host "Deploying Dapr components..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/dapr/statestore.yaml
 kubectl apply -f services/orders/k8s/dapr/statestore.yaml
-kubectl apply -f services/workflow/k8s/dapr/statestore.yaml
+kubectl apply -f services/workflow/k8s/dapr/memory.yaml
 kubectl apply -f services/workflow/k8s/dapr/openai.yaml
 kubectl apply -f services/workflow/k8s/dapr/pubsub.yaml
+kubectl apply -f services/workflow/k8s/dapr/registry.yaml
+kubectl apply -f services/workflow/k8s/dapr/state.yaml
 kubectl apply -f services/notifications/k8s/dapr/pubsub-drasi.yaml
 
 Write-Host "Deploying applications..." -ForegroundColor Yellow
