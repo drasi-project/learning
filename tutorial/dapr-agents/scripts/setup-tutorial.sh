@@ -189,10 +189,12 @@ docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service
 docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile services/workflow
 
 echo "Loading images into k3d cluster..."
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -c drasi-tutorial
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -c drasi-tutorial
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -c drasi-tutorial
+k3d image import \
+    ghcr.io/drasi-project/learning/dapr-agents/products-service:latest \
+    ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest \
+    ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest \
+    ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest \
+    -c drasi-tutorial
 
 echo "Deploying PostgreSQL databases..."
 kubectl apply -f services/products/k8s/postgres/postgres.yaml

@@ -198,10 +198,11 @@ docker build -t ghcr.io/drasi-project/learning/dapr-agents/notifications-service
 docker build -t ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -f services/workflow/Dockerfile services/workflow
 
 Write-Host "Loading images into k3d cluster..." -ForegroundColor Yellow
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest -c drasi-tutorial
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest -c drasi-tutorial
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest -c drasi-tutorial
-k3d image import ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest -c drasi-tutorial
+k3d image import ghcr.io/drasi-project/learning/dapr-agents/products-service:latest `
+    ghcr.io/drasi-project/learning/dapr-agents/orders-service:latest `
+    ghcr.io/drasi-project/learning/dapr-agents/notifications-service:latest `
+    ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest `
+    -c drasi-tutorial
 
 Write-Host "Deploying PostgreSQL databases..." -ForegroundColor Yellow
 kubectl apply -f services/products/k8s/postgres/postgres.yaml
