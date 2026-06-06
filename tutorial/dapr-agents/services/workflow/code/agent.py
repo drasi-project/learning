@@ -47,6 +47,7 @@ def make_agent() -> DurableAgent:
         pubsub=AgentPubSubConfig(
             pubsub_name=PUBSUB_NAME,
             agent_topic="order-agent-topic",
+            broadcast_topic="order-agent-topic", # Why does it only work when broadcast topic is included
         ),
         execution=AgentExecutionConfig(max_iterations=1),
     )

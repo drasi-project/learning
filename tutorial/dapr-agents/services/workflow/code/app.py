@@ -18,7 +18,7 @@ async def main() -> None:
     agent = make_agent()
 
     # Add Drasi CDC source
-    agent.add_activation(drasi_trigger)
+    agent.add_activation(drasi_trigger())
 
     runner = AgentRunner()
     try:
