@@ -2,7 +2,8 @@ from typing import Any, Dict, Literal, Optional
 
 from pydantic import BaseModel, Field
 
-# Once Drasi models are exported in the reaction SDK we can replace these
+
+# Unpacked event models
 class Source(BaseModel):
     """Source information for a Drasi event."""
     queryId: str = Field(description="The query ID that generated this event")
