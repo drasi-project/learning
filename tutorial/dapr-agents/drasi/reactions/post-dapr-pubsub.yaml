@@ -4,20 +4,20 @@ name: stock-notifications-publisher
 spec:
   kind: PostDaprPubSub
   queries:
-    # Publish low stock events to the order agent's topic
+    # Publish low stock events to the inventory events topic
     low-stock-event-query: >
       {
         "pubsubName": "notifications-pubsub",
-        "topicName": "order-agent-topic",
+        "topicName": "inventory-events",
         "format": "Unpacked",
         "skipControlSignals": true
       }
     
-    # Publish critical stock events to the order agent's topic
+    # Publish critical stock events to the inventory events topic
     critical-stock-event-query: >
       {
         "pubsubName": "notifications-pubsub",
-        "topicName": "order-agent-topic",
+        "topicName": "inventory-events",
         "format": "Unpacked",
         "skipControlSignals": true
       }

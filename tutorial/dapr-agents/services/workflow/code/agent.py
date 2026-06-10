@@ -11,8 +11,10 @@ from dapr_agents.agents.configs import (
 from dapr_agents.memory import ConversationDaprStateMemory
 from dapr_agents.storage.daprstores.stateservice import StateStoreService
 
+
 CONVERSATION_NAME = os.getenv("DAPR_CONVERSATION_NAME", "workflow-openai")
 PUBSUB_NAME = os.getenv("DAPR_PUBSUB_NAME", "workflow-pubsub")
+AGENT_PUBSUB_TOPIC = os.getenv("DAPR_AGENT_PUBSUB_TOPIC", "order-agent")
 MEMORY_STORE_NAME = os.getenv("DAPR_MEMORY_STORE_NAME", "workflow-memory")
 STATE_STORE_NAME = os.getenv("DAPR_STATE_STORE_NAME", "workflow-store")
 REGISTRY_STORE_NAME = os.getenv("DAPR_REGISTRY_STORE_NAME", "workflow-registry")
@@ -46,8 +48,8 @@ def make_agent() -> DurableAgent:
         ),
         pubsub=AgentPubSubConfig(
             pubsub_name=PUBSUB_NAME,
-            agent_topic="order-agent-topic",
-            broadcast_topic="order-agent-topic", # Why does it only work when broadcast topic is included
+            agent_topic=AGENT_PUBSUB_TOPIC,
+            broadcast_topic=AGENT_PUBSUB_TOPIC, # TODO: why does it only work when broadcast topic is included
         ),
         execution=AgentExecutionConfig(max_iterations=1),
     )
