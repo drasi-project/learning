@@ -36,8 +36,6 @@ spec:
           value: "workflow-pubsub"
         - name: DAPR_AGENT_PUBSUB_TOPIC
           value: "order-agent"
-        - name: DAPR_DRASI_PUBSUB_TOPIC
-          value: "inventory-events"
         - name: LOG_LEVEL
           value: "INFO"
         resources:

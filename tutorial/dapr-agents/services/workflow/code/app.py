@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
+from typing import Any
 
 from dapr_agents import AgentRunner
 from dapr_agents.agents.schemas import TriggerAction
@@ -17,7 +17,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-DRASI_PUBSUB_TOPIC = os.getenv("DAPR_DRASI_PUBSUB_TOPIC", "inventory-events")
 DRASI_OP_TO_DESCRIPTION = {
     "i": "insert",
     "u": "update",
@@ -26,7 +25,7 @@ DRASI_OP_TO_DESCRIPTION = {
 }
 
 
-def make_task(event: DrasiUnpackedEvent) -> TriggerAction:
+def make_task(event: DrasiUnpackedEvent, ctx: Any) -> TriggerAction:
     return TriggerAction(
         task=(
             f"Create a summary of the changes in this {DRASI_OP_TO_DESCRIPTION[event.op]} event for the '{event.payload.source.queryId}' query.\n"
@@ -39,12 +38,12 @@ def make_task(event: DrasiUnpackedEvent) -> TriggerAction:
 async def main() -> None:
     agent = make_agent()
 
-    # Add Drasi CDC source
-    drasi_trigger(agent, topic=DRASI_PUBSUB_TOPIC, mapper=make_task)
+    # Add Drasi CDC sources
+    drasi_trigger(agent, query_id="low-stock-event-query", mapper=make_task)
+    drasi_trigger(agent, query_id="critical-stock-event-query", mapper=make_task)
 
     runner = AgentRunner()
     try:
-        # Allow the agent to react to Drasi events 
         runner.subscribe(agent)
         await wait_for_shutdown()
     finally:
