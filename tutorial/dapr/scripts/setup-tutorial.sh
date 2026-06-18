@@ -212,9 +212,9 @@ else
 fi
 echo ""
 echo "To deploy Drasi components, run:"
-echo "  kubectl apply -f drasi/sources/"
-echo "  kubectl apply -f drasi/queries/"
-echo "  kubectl apply -f drasi/reactions/"
+echo "  drasi apply -f drasi/sources/*"
+echo "  drasi apply -f drasi/queries/*"
+echo "  drasi apply -f drasi/reactions/*"
 echo ""
 echo "Then explore the demos:"
 echo "  cd demo"
