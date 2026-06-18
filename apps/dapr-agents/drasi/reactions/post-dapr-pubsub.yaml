@@ -1,0 +1,21 @@
+kind: Reaction
+apiVersion: v1
+name: stock-notifications-publisher
+spec:
+  kind: PostDaprPubSub
+  queries:
+    low-stock-event-query: >
+      {
+        "pubsubName": "notifications-pubsub",
+        "topicName": "drasi-events-low-stock-event-query",
+        "format": "Unpacked",
+        "skipControlSignals": true
+      }
+    
+    critical-stock-event-query: >
+      {
+        "pubsubName": "notifications-pubsub",
+        "topicName": "drasi-events-critical-stock-event-query",
+        "format": "Unpacked",
+        "skipControlSignals": true
+      }
