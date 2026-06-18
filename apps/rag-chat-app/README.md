@@ -178,7 +178,7 @@ The Chat Application:
 
 ## Resources
 
-- [Drasi Documentation](https://drasi.io/docs)
+- [Drasi Documentation](https://drasi.io/reference)
 - [Semantic Kernel Documentation](https://learn.microsoft.com/semantic-kernel)
 - [Qdrant Documentation](https://qdrant.tech/documentation)
 

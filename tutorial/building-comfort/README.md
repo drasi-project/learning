@@ -8,7 +8,7 @@ You'll see Drasi in action in a scenario where:
 - Changes to PostgreSQL are instantly detected by **Drasi**
 - A **Dashboard** displays real-time comfort levels and alerts via SignalR
 
-Follow along the tutorial instructions on [our website here](https://drasi.io/tutorials/building-comfort/).
+Follow along the tutorial instructions on [our website here](https://drasi.io/drasi-kubernetes/tutorials/building-comfort/).
 
 ![Architecture of setup including a control panel for room sensors. Measurements stored in PostgreSQL database, and a realtime dashboard built using Drasi.](images/building-comfort-architecture.png "Building Comfort Tutorial Setup")
 
