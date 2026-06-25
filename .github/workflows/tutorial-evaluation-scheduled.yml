@@ -84,7 +84,7 @@ jobs:
               --deny-tool 'shell(dd *)' \
               --allow-url localhost \
               --allow-url 127.0.0.1 \
-              --model gemini-3-pro-preview || true
+              --model claude-opus-4.7 || true
             REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
             if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
               exit 1
@@ -127,7 +127,7 @@ jobs:
               --deny-tool 'shell(dd *)' \
               --allow-url localhost \
               --allow-url 127.0.0.1 \
-              --model gemini-3-pro-preview || true
+              --model claude-opus-4.7 || true
             REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
             if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
               exit 1
@@ -169,7 +169,7 @@ jobs:
               --deny-tool 'shell(dd *)' \
               --allow-url localhost \
               --allow-url 127.0.0.1 \
-              --model claude-opus-4.6 || true
+              --model claude-opus-4.7 || true
             REPORT=$(find . -name "report.md" -path "*/evaluation-*/*" | sort -r | head -1)
             if [ -z "$REPORT" ] || ! grep -qiE "^##\s*STATUS:\s*SUCCESS" "$REPORT"; then
               exit 1

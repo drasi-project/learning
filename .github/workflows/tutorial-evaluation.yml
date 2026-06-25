@@ -19,7 +19,7 @@ on:
         default: 'main'
       model:
         description: 'AI model to use for evaluation'
-        default: 'gemini-3-pro-preview'
+        default: 'claude-opus-4.7'
 
 jobs:
   setup:
