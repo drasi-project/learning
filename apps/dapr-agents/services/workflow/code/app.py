@@ -38,10 +38,10 @@ def make_task(event: DrasiUnpackedEvent, ctx: Any) -> TriggerAction:
 async def main() -> None:
     agent = make_agent()
 
-    # Add Drasi CDC sources
-    drasi_trigger(agent, query_id="low-stock-event-query", mapper=make_task)
-    drasi_trigger(agent, query_id="critical-stock-event-query", mapper=make_task)
-
+    # Register Drasi query subscriptions
+    drasi_trigger(agent, query_id="critical-stock-event-query", task_mapper=make_task)
+    drasi_trigger(agent, query_id="low-stock-event-query", task_mapper=make_task)
+    
     runner = AgentRunner()
     try:
         runner.subscribe(agent)
