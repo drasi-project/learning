@@ -1,0 +1,21 @@
+name: DevSkim
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '30 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  devskim:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: drasi-project/.github/.github/workflows/devskim.yaml@main

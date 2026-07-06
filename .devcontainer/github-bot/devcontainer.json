@@ -1,6 +1,6 @@
 {
 	"name": "GitHub Bot with Drasi",
-	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/github-bot",
 	"onCreateCommand": "sed -i 's/\r$//' ../../.devcontainer/github-bot/post-create.sh && sed -i  's/\r$//' ../../.devcontainer/github-bot/on-create.sh && bash ../../.devcontainer/github-bot/on-create.sh",
   	"postCreateCommand": "bash ../../.devcontainer/github-bot/post-create.sh",
@@ -21,7 +21,10 @@
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features
 	"features": {
-	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {
+	    "version": "29",
+	    "moby": "false"
+	  },
 	  "ghcr.io/rio/features/k3d:1": {}
 	},
 	// Configure environment variables

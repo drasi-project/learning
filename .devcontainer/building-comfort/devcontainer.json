@@ -1,6 +1,6 @@
 {
   "name": "Building Comfort with Drasi",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}/tutorial/building-comfort",
   "onCreateCommand": "bash ../../.devcontainer/building-comfort/on-create.sh",
   "postCreateCommand": "bash ../../.devcontainer/building-comfort/post-create.sh",
@@ -19,7 +19,7 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "27",
+      "version": "29",
       "moby": "false"
     },
     "ghcr.io/devcontainers/features/node:1": {

@@ -1,6 +1,6 @@
 {
 	"name": "Absence of Change with Drasi",
-	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
 	"hostRequirements": {
 		"cpus": 4
 	},
@@ -27,7 +27,7 @@
 	// Features to add to the dev container. More info: https://containers.dev/features
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"version": "27",
+			"version": "29",
 			"moby": "false"
 		},
 		"ghcr.io/devcontainers/features/node:1": {
