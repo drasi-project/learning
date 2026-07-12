@@ -1,5 +1,5 @@
 # Getting Started with Drasi
-Follow the tutorial [instructions here](https://drasi.io/tutorials/absence-of-change).
+Follow the tutorial [instructions here](https://drasi.io/drasi-kubernetes/tutorials/absence-of-change).
 
 ### Steps for running in VS Code with a Dev Container
 1. Open this directory in Visual Studio Code

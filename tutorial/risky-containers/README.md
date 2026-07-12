@@ -1,5 +1,5 @@
 # Getting Started with Drasi
-Follow the tutorial [instructions here](https://drasi.io/tutorials/risky-containers).
+Follow the tutorial [instructions here](https://drasi.io/drasi-kubernetes/tutorials/risky-containers).
 
 ### Steps for running in VS Code with a Dev Container
 1. Open this directory in Visual Studio Code
