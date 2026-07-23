@@ -10,7 +10,22 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Base URL for services
-BASE_URL="http://localhost"
+if [ -z "$BASE_URL" ]; then
+    if [ -n "$CODESPACES" ]; then
+        BASE_URL="http://localhost"
+    elif command -v docker >/dev/null 2>&1 && docker inspect k3d-drasi-tutorial-serverlb >/dev/null 2>&1; then
+        PORT=$(docker port k3d-drasi-tutorial-serverlb 80 2>/dev/null | head -n1 | cut -d: -f2)
+        if [ -n "$PORT" ]; then
+            BASE_URL="http://localhost:${PORT}"
+        else
+            BASE_URL="http://localhost:8123"
+        fi
+    else
+        BASE_URL="http://localhost:8123"
+    fi
+fi
+
+echo "Using BASE_URL: ${BASE_URL}"
 
 # Track created entities for cleanup
 CREATED_ORDERS=()
@@ -40,23 +55,25 @@ execute_with_retry() {
     local retry_delay=2
     
     for i in $(seq 1 $max_retries); do
-        # Execute command and capture output and exit code
-        output=$(eval "$cmd" 2>&1)
-        exit_code=$?
-        
-        # Check if successful or if output contains error patterns
-        if [ $exit_code -eq 0 ] && ! echo "$output" | grep -q "_InactiveRpcError\|Socket closed\|StatusCode.UNAVAILABLE"; then
+        # Execute command and capture output and HTTP status code
+        response=$(eval "$cmd -w '\n%{http_code}'" 2>/dev/null)
+        http_code=$(echo "$response" | tail -1)
+        output=$(echo "$response" | sed '$d')
+
+        if [[ "$http_code" =~ ^2[0-9]{2}$ ]]; then
             echo "$output"
             return 0
         fi
         
         # If it's not the last retry, wait before retrying
         if [ $i -lt $max_retries ]; then
+            echo "Attempt $i failed (HTTP $http_code). Retrying in ${retry_delay}s..."
             sleep $retry_delay
         fi
     done
     
     # If all retries failed, return error
+    echo "Error: Failed after $max_retries attempts."
     return 1
 }
 
