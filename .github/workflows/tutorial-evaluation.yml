@@ -18,8 +18,10 @@ on:
         description: 'Branch from docs repo to use'
         default: 'main'
       model:
-        description: 'AI model to use for evaluation'
-        default: 'claude-opus-4.7'
+        description: 'Optional model override (leave blank for Copilot CLI default)'
+        type: string
+        required: false
+        default: ''
 
 jobs:
   setup:
@@ -102,10 +104,17 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_TOKEN }}
           DRASI_TUTORIAL_EVALUATION: "true"
+          EVALUATION_MODEL: ${{ inputs.model }}
         with:
           configFile: ${{ needs.setup.outputs.devcontainer }}
           push: never
+          env: |
+            EVALUATION_MODEL
           runCmd: |
+            set --
+            if [ -n "$EVALUATION_MODEL" ]; then
+              set -- --model "$EVALUATION_MODEL"
+            fi
             timeout 1200 copilot -p "$(cat prompt.md)" \
               --allow-all-tools \
               --allow-all-paths \
@@ -123,7 +132,7 @@ jobs:
               --deny-tool 'shell(dd *)' \
               --allow-url localhost \
               --allow-url 127.0.0.1 \
-              --model ${{ inputs.model }}
+              "$@"
 
       - name: Check evaluation status
         if: always()
