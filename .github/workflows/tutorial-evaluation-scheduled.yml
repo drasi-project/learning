@@ -34,7 +34,7 @@ jobs:
             learning_path: tutorial/absence-of-change
           - tutorial: risky-containers
             devcontainer: .devcontainer/risky-containers/devcontainer.json
-            docs_path: docs/content/tutorials/risky-containers
+            docs_path: docs/content/drasi-kubernetes/tutorials/risky-containers
             learning_path: tutorial/risky-containers
 
     steps:

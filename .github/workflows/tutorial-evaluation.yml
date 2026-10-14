@@ -67,7 +67,7 @@ jobs:
               ;;
             risky-containers)
               echo "devcontainer=.devcontainer/risky-containers/devcontainer.json" >> $GITHUB_OUTPUT
-              echo "docs_path=docs/content/tutorials/risky-containers" >> $GITHUB_OUTPUT
+              echo "docs_path=docs/content/drasi-kubernetes/tutorials/risky-containers" >> $GITHUB_OUTPUT
               echo "learning_path=tutorial/risky-containers" >> $GITHUB_OUTPUT
               ;;
             *)
