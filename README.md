@@ -7,6 +7,14 @@ This repo contains code for a tutorial and a few sample applications that use Dr
 
 [The step-by-step tutorial linked here](https://drasi.io/getting-started/) will help you get Drasi up and running quickly and show you how easy it is to create Sources, Continuous Queries, and Reactions.
 
+## Automated Tutorial Evaluation
+
+The [manual evaluation workflow](.github/workflows/tutorial-evaluation.yml) and
+[scheduled evaluation workflow](.github/workflows/tutorial-evaluation-scheduled.yml)
+use Copilot CLI's default model rather than a pinned model ID. The manual workflow
+accepts an optional `model` input to override that default; leave it blank to use
+the CLI default. Scheduled evaluations always use the CLI default.
+
 ## Sample Applications
 Following sample applications demonstrate usage of Drasi in different scenarios:
 1. [Building comfort](apps/building-comfort)- Drasi for a building management scenario
