@@ -1,0 +1,29 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: workflow-openai
+  namespace: default
+spec:
+  type: conversation.openai
+  version: v1
+  metadata:
+  - name: key
+    secretKeyRef:
+      name: openai-secret
+      key: api-key
+  - name: endpoint
+    secretKeyRef:
+      name: openai-secret
+      key: endpoint
+  - name: model
+    secretKeyRef:
+      name: openai-secret
+      key: model
+  - name: apiType
+    secretKeyRef:
+      name: openai-secret
+      key: apiType
+  - name: apiVersion
+    secretKeyRef:
+      name: openai-secret
+      key: apiVersion

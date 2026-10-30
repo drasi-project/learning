@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflow
+  labels:
+    app: workflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workflow
+  template:
+    metadata:
+      labels:
+        app: workflow
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "workflow"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+      - name: workflow
+        image: ghcr.io/drasi-project/learning/dapr-agents/workflow-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: DAPR_CONVERSATION_NAME
+          value: "workflow-openai"
+        - name: DAPR_MEMORY_STORE_NAME
+          value: "workflow-memory"
+        - name: DAPR_STATE_STORE_NAME
+          value: "workflow-state"
+        - name: DAPR_REGISTRY_STORE_NAME
+          value: "workflow-registry"
+        - name: DAPR_PUBSUB_NAME
+          value: "workflow-pubsub"
+        - name: DAPR_AGENT_PUBSUB_TOPIC
+          value: "order-agent"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
