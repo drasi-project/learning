@@ -8,7 +8,7 @@ You'll see Drasi in action where:
 - Changes from both systems are observed by **Drasi**
 - **Dashboards** display order readiness and delays in real-time via SignalR
 
-Follow along the tutorial instructions on [our website here](https://drasi.io/tutorials/curbside-pickup/).
+Follow along the tutorial instructions on [our website here](https://drasi.io/drasi-kubernetes/tutorials/curbside-pickup/).
 
 ![Architecture of the setup including a retail-ops app for managing orders in PostgreSQL and physical-ops app for managing vehicles in MySQL. Two realtime dashboards built using Drasi that can detect complex conditions across databases and different services.](images/curbside-pickup-architecture.png "Curbside Pickup Tutorial Setup")
 
