@@ -175,9 +175,9 @@ if ($env:CODESPACES) {
 }
 Write-Host ""
 Write-Host "To deploy Drasi components, run:" -ForegroundColor Yellow
-Write-Host "  kubectl apply -f drasi/sources/" -ForegroundColor White
-Write-Host "  kubectl apply -f drasi/queries/" -ForegroundColor White
-Write-Host "  kubectl apply -f drasi/reactions/" -ForegroundColor White
+Write-Host "  drasi apply -f drasi/sources/*" -ForegroundColor White
+Write-Host "  drasi apply -f drasi/queries/*" -ForegroundColor White
+Write-Host "  drasi apply -f drasi/reactions/*" -ForegroundColor White
 Write-Host ""
 Write-Host "Then explore the demos:" -ForegroundColor Yellow
 Write-Host "  cd demo" -ForegroundColor White

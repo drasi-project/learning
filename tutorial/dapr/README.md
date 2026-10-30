@@ -29,9 +29,9 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 3. When port 80 notification appears, click "Open in Browser"
 4. Deploy Drasi components:
    ```bash
-   kubectl apply -f drasi/sources/
-   kubectl apply -f drasi/queries/
-   kubectl apply -f drasi/reactions/
+   drasi apply -f drasi/sources/*
+   drasi apply -f drasi/queries/*
+   drasi apply -f drasi/reactions/*
    ```
 5. Access the applications via the forwarded URL:
    - Catalog UI: `https://<your-codespace>.app.github.dev/catalogue-service`
@@ -69,9 +69,9 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
    - Wait for setup to complete (~5 minutes)
    - Deploy Drasi components:
      ```bash
-     kubectl apply -f drasi/sources/
-     kubectl apply -f drasi/queries/
-     kubectl apply -f drasi/reactions/
+     drasi apply -f drasi/sources/*
+     drasi apply -f drasi/queries/*
+     drasi apply -f drasi/reactions/*
      ```
    - Access applications at:
      - Catalog UI: http://localhost:8123/catalogue-service
@@ -126,9 +126,9 @@ Follow along the tutorial instructions on [our website here](https://drasi.io/tu
 
 3. **Deploy Drasi components**
    ```bash
-   kubectl apply -f drasi/sources/
-   kubectl apply -f drasi/queries/
-   kubectl apply -f drasi/reactions/
+   drasi apply -f drasi/sources/*
+   drasi apply -f drasi/queries/*
+   drasi apply -f drasi/reactions/*
    ```
 
 4. **Access the applications**
